@@ -10,10 +10,6 @@ cd translator/
 ```
 
 ```bash
-cd translator/
-```
-
-```bash
 uv venv
 ```
 
@@ -22,7 +18,7 @@ source .venv/bin/activate
 ```
 
 ```bash
-antlr4 -Dlanguage=Python3 Lisp.g4
+antlr4 -Dlanguage=Python3 -visitor Lisp.g4
 ```
 
 ```bash
