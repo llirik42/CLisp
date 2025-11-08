@@ -1,15 +1,40 @@
 grammar Lisp;
 
-prog
-    : sexpr EOF #program
+program
+    : expression* EOF
     ;
 
-sexpr : '(' PRINT exprNumber ')' #printExpr ;
+expression
+    : IDENTIFIER #variable
+    | constantExpression #constant
+    | procedureCallExpression #procedureCall
+    ;
 
-exprNumber : NUMBER #number ;
+procedureCallExpression : '(' operator operand* ')' ;
+operator : expression ;
+operand : expression ;
 
-PRINT : 'print' ;
-KEYWORD : ':' SYMBOL ;
-NUMBER  : '-'? [0-9]+ ('.' [0-9]+)? ;
-SYMBOL  : [a-zA-Z_+\-*/?<>=!$%&^~][a-zA-Z0-9_+\-*/?<>=!$%&^~]* ;
-WS      : [ \t\r\n,]+ -> skip ;
+constantExpression
+    : boolConstant
+    | stringConstant
+    | integerConstant
+    ;
+
+boolConstant : BOOLEAN;
+
+stringConstant : STRING ;
+
+integerConstant : NUMBER;
+
+BOOLEAN : '#t' | '#f';
+IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
+NUMBER: SIGN? DIGIT+;
+STRING : '"' (~'\\' | ESCAPED_DOUBLEQUOTE | ESCAPED_BACKSLASH | '\\n')* '"';
+WS : [ \t\r\n,]+ -> skip ;
+
+fragment DIGIT : [0-9] ;
+fragment LETTER : [a-zA-Z] ;
+fragment EXTENDED_CHAR : [!$%&*+-./:<=>?@^_~] ;
+fragment ESCAPED_DOUBLEQUOTE : '\\"';
+fragment ESCAPED_BACKSLASH : '\\\\';
+fragment SIGN : [+-];
