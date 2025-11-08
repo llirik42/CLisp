@@ -10,6 +10,10 @@ class CodeTemplate:
         self.__data = {}
         self.__template_pre = env.get_template(name)
         self.__template_post = env.get_template("destroy.c")
+        self.__final = False
+
+    def make_final(self):
+        self.__final = True
 
     def set_indent_level(self, level: int):
         self.__data["indent_level"] = level
@@ -33,10 +37,20 @@ class CodeTemplate:
         return self.render_pre() + self.render_post()
 
     def render_pre(self) -> str:
-        return self.__template_pre.render(self.__data) + "\n" + self.__code_pre
+        tmp = self.__template_pre.render(self.__data) + "\n" + self.__code_pre
+
+        if self.__final:
+            return tmp[:-1]  # remove trailing \n
+
+        return tmp
 
     def render_post(self) -> str:
-        return self.__code_post + "\n" + self.__template_post.render(self.__data)
+        tmp = self.__code_post + "\n" + self.__template_post.render(self.__data)
+
+        if self.__final:
+            return tmp + "\n"
+
+        return tmp
 
 class CodeTemplateCreator:
     def __init__(self, env: Environment):

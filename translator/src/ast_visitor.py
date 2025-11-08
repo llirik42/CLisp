@@ -18,7 +18,12 @@ class ASTVisitor(LispVisitor):
         self.__variable_number = 0
 
     def visitProgram(self, ctx: LispParser.ProgramContext):
-        code = [self.visit(c)[1].render() for c in ctx.expression()]
+        templates = [self.visit(c)[1] for c in ctx.expression()]
+
+        for t in templates:
+            t.make_final()
+
+        code = [t.render() for t in templates]
         return "\n".join(code)
 
 
