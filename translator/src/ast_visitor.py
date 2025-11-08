@@ -34,7 +34,7 @@ class ASTVisitor(LispVisitor):
         operands = ctx.operand()
 
         operand_names = []
-        operand_templates = []
+        operand_templates: list[CodeTemplate] = []
 
         for op in operands:
             op_name, op_template = self.visit(op)
@@ -45,9 +45,10 @@ class ASTVisitor(LispVisitor):
 
         t0 = template
         variable_name = self.__create_variable_name()
-        t0.update(result=variable_name)
+        t0.update(var=variable_name)
         for t1 in operand_templates[::-1]:
-            t1.update(code=t0.render())
+            t1.add_code_pre(t0.render_pre())
+            t1.add_code_post(t0.render_post())
             t0 = t1
 
         return variable_name, t0
