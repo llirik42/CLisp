@@ -1,9 +1,9 @@
-from jinja2 import Environment
+from jinja2 import Environment, FileSystemLoader
+
+__all__ = ["Code", "CodeCreator"]
 
 
-__all__ = ["CodeTemplate", "CodeTemplateCreator"]
-
-class CodeTemplate:
+class Code:
     def __init__(self, name: str, env: Environment):
         self.__code_pre = ""
         self.__code_post = ""
@@ -15,10 +15,7 @@ class CodeTemplate:
     def make_final(self):
         self.__final = True
 
-    def set_indent_level(self, level: int):
-        self.__data["indent_level"] = level
-
-    def update(self, **kwargs) -> None:
+    def update_data(self, **kwargs) -> None:
         self.__data.update(kwargs)
 
     def add_code_pre(self, code: str):
@@ -26,12 +23,6 @@ class CodeTemplate:
 
     def add_code_post(self, code: str):
         self.__code_post = code + self.__code_post
-
-    def get_code_pre(self) -> str:
-        return self.__code_pre
-
-    def get_code_post(self) -> str:
-        return self.__code_post
 
     def render(self) -> str:
         return self.render_pre() + self.render_post()
@@ -52,18 +43,19 @@ class CodeTemplate:
 
         return tmp
 
-class CodeTemplateCreator:
-    def __init__(self, env: Environment):
-        self.__env = env
 
-    def make_int(self) -> CodeTemplate:
-        return CodeTemplate("make_integer.c", self.__env)
+class CodeCreator:
+    def __init__(self, templates_folder_path: str):
+        self.__env = Environment(loader=FileSystemLoader(templates_folder_path))
 
-    def make_string(self) -> CodeTemplate:
-        return CodeTemplate("make_string.c", self.__env)
+    def make_int(self) -> Code:
+        return Code("make_integer.c", self.__env)
 
-    def make_boolean(self) -> CodeTemplate:
-        return CodeTemplate("make_boolean.c", self.__env)
+    def make_string(self) -> Code:
+        return Code("make_string.c", self.__env)
 
-    def procedure_call(self) -> CodeTemplate:
-        return CodeTemplate("procedure_call.c", self.__env)
+    def make_boolean(self) -> Code:
+        return Code("make_boolean.c", self.__env)
+
+    def procedure_call(self) -> Code:
+        return Code("procedure_call.c", self.__env)
