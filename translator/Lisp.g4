@@ -28,8 +28,8 @@ integerConstant : NUMBER ;
 
 TRUE: '#t' ;
 FALSE: '#f' ;
-IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
 NUMBER: SIGN? DIGIT+ ;
+IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
 STRING : '"' (~'\\' | ESCAPED_DOUBLEQUOTE | ESCAPED_BACKSLASH | '\\n')* '"' ;
 WS : [ \t\r\n,]+ -> skip ;
 COMMENT : ';' ~[\r\n]* -> skip ;

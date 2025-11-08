@@ -75,7 +75,7 @@ class ASTVisitor(LispVisitor):
     def visitIntegerConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         c_variable_name = self.__create_variable_name()
         template = self.__template_creator.make_int()
-        value = ctx.getText()
+        value = int(ctx.getText())
         template.update_data(var=c_variable_name, value=value)
         return c_variable_name, template
 
