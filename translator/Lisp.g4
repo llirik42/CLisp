@@ -5,28 +5,34 @@ program
     ;
 
 expression
-    : IDENTIFIER #variable
-    | constantExpression #constant
-    | procedureCallExpression #procedureCall
+    : constant
+    | variable
+    | procedureCall
     ;
 
-procedureCallExpression : '(' operator operand* ')' ;
+procedureCall : '(' operator operand* ')' ;
 operator : expression ;
 operand : expression ;
 
-constantExpression
+constant
     : boolConstant
     | stringConstant
     | integerConstant
     ;
 
-boolConstant : BOOLEAN;
+boolConstant : true | false;
+
+true : TRUE;
+false : FALSE;
 
 stringConstant : STRING ;
 
 integerConstant : NUMBER;
 
-BOOLEAN : '#t' | '#f';
+variable : IDENTIFIER;
+
+TRUE: '#t';
+FALSE: '#f';
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
 NUMBER: SIGN? DIGIT+;
 STRING : '"' (~'\\' | ESCAPED_DOUBLEQUOTE | ESCAPED_BACKSLASH | '\\n')* '"';
