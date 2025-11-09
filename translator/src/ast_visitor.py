@@ -24,7 +24,7 @@ class ASTVisitor(LispVisitor):
 
         rendered = [t.render() for t in templates]
 
-        code = self.code_creator.top_level()
+        code = self.code_creator.main_function()
         code.update_data(code="\n".join(rendered))
 
         return code.render()
@@ -54,8 +54,8 @@ class ASTVisitor(LispVisitor):
         variable_name = self.__create_variable_name()
         t0.update_data(var=variable_name)
         for t1 in operand_templates[::-1]:
-            t1.add_code_pre(t0.render_pre())
-            t1.add_code_post(t0.render_post())
+            t1.add_main_epilog(t0.render_main())
+            t1.add_secondary_prolog(t0.render_secondary())
             t0 = t1
 
         return variable_name, t0
