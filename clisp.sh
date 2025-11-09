@@ -1,11 +1,13 @@
 #!/bin/bash
 
+ANTLR_JAR="/usr/local/lib/antlr-4.13.2-complete.jar"
+
 if [ ! -d translator/.venv ]; then
     cd translator/
     uv venv
     source .venv/bin/activate
     uv sync
-    antlr4 -Dlanguage=Python3 -visitor Lisp.g4 -o src
+    java -Xmx500M -cp "$ANTLR_JAR:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o src Lisp.g4
     deactivate
     cd ..
 fi
