@@ -16,6 +16,10 @@ Object* make_int(int value);
 
 void destroy(Object* obj);
 
-void print(Object* obj);
+// TODO:
+Object* display(Object* obj);
+
+// TODO:
+Object* clisp_add(Object* a1, Object* a2);
 
 #endif
