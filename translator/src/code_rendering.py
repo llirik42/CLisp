@@ -4,13 +4,14 @@ __all__ = ["Code", "CodeCreator"]
 
 
 class Code:
-    def __init__(self, name: str, env: Environment):
+    def __init__(self, name: str, env: Environment, post: bool = True):
         self.__code_pre = ""
         self.__code_post = ""
         self.__data = {}
         self.__template_pre = env.get_template(name)
         self.__template_post = env.get_template("destroy.c")
         self.__final = False
+        self.__post = post
 
     def make_final(self):
         self.__final = True
@@ -25,7 +26,10 @@ class Code:
         self.__code_post = code + self.__code_post
 
     def render(self) -> str:
-        return self.render_pre() + self.render_post()
+        if self.__post:
+            return self.render_pre() + self.render_post()
+
+        return self.render_pre()
 
     def render_pre(self) -> str:
         tmp = self.__template_pre.render(self.__data) + "\n" + self.__code_pre
@@ -59,3 +63,6 @@ class CodeCreator:
 
     def procedure_call(self) -> Code:
         return Code("procedure_call.c", self.__env)
+
+    def top_level(self) -> Code:
+        return Code("top_level.c", self.__env, post=False)

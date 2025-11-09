@@ -11,11 +11,9 @@ VisitResult = tuple[str, Code]
 
 
 class ASTVisitor(LispVisitor):
-    def __init__(
-        self, procedure_table: ProcedureTable, template_creator: CodeCreator
-    ):
+    def __init__(self, procedure_table: ProcedureTable, code_creator: CodeCreator):
         self.__procedure_table = procedure_table
-        self.__template_creator = template_creator
+        self.code_creator = code_creator
         self.__variable_number = 0
 
     def visitProgram(self, ctx: LispParser.ProgramContext):
@@ -24,11 +22,15 @@ class ASTVisitor(LispVisitor):
         for t in templates:
             t.make_final()
 
-        code = [t.render() for t in templates]
-        return "\n".join(code)
+        rendered = [t.render() for t in templates]
+
+        code = self.code_creator.top_level()
+        code.update_data(code="\n".join(rendered))
+
+        return code.render()
 
     def visitProcedureCall(self, ctx: LispParser.ProcedureCallContext) -> VisitResult:
-        template = self.__template_creator.procedure_call()
+        template = self.code_creator.procedure_call()
 
         lisp_function = ctx.operator().getText()
 
@@ -60,21 +62,21 @@ class ASTVisitor(LispVisitor):
 
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         c_variable_name = self.__create_variable_name()
-        template = self.__template_creator.make_boolean()
+        template = self.code_creator.make_boolean()
         value = 1 if ctx.getText() == "#t" else 0
         template.update_data(var=c_variable_name, value=value)
         return c_variable_name, template
 
     def visitStringConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         c_variable_name = self.__create_variable_name()
-        template = self.__template_creator.make_string()
+        template = self.code_creator.make_string()
         value = ctx.getText()
         template.update_data(var=c_variable_name, value=value)
         return c_variable_name, template
 
     def visitIntegerConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         c_variable_name = self.__create_variable_name()
-        template = self.__template_creator.make_int()
+        template = self.code_creator.make_int()
         value = int(ctx.getText())
         template.update_data(var=c_variable_name, value=value)
         return c_variable_name, template
