@@ -4,14 +4,20 @@
 
 Install [ANTLR4](https://github.com/antlr/antlr4/blob/master/doc/getting-started.md#installation).
 
+Install uv:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
 ## Usage
 
 ```bash
-./clisp input_file
+./clisp.sh input_file
 ```
 
 ## Example
 
 ```bash
-./clisp example.scm
+./clisp.sh example.scm
 ```
