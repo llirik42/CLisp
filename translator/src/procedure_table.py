@@ -1,6 +1,7 @@
 import json
 from typing import Optional
 
+
 __all__ = ["ProcedureTable"]
 
 
