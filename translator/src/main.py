@@ -20,7 +20,7 @@ def write_generated_code(output_file: str, code: str) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="CLisp translator", description="Generates C-code from Lisp-code"
+        prog="CLisp translator", description="Generates C-code from Lisp-code."
     )
     parser.add_argument("input_file")
     parser.add_argument("-o", "--output-file", required=False)
