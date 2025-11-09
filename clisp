@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if [ ! -d translator/.venv ]; then
+    cd translator/
+    uv venv
+    source .venv/bin/activate
+    antlr4 -Dlanguage=Python3 -visitor Lisp.g4
+    uv sync
+    deactivate
+fi
+
 if [ ! -d build ]; then
     mkdir build
 fi
