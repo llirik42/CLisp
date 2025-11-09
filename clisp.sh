@@ -26,8 +26,6 @@ python src/main.py "../$1" -o "../build/out.c"
 deactivate
 cd ..
 
-cp runtime/runtime.h runtime/runtime.c build 
-
 cd build
-gcc out.c runtime.c -o out
+gcc -o out out.c -I../runtime -L../lib -lruntime -Wl,-rpath,../lib
 ./out
