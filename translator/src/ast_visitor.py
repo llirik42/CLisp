@@ -34,7 +34,7 @@ class ASTVisitor(LispVisitor):
 
         lisp_function = ctx.operator().getText()
 
-        c_function = self.__procedure_table.get_c_name(lisp_function)
+        c_function = self.__procedure_table.get_c_func(lisp_function)
 
         template.update_data(function=c_function)
 
