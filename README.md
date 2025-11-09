@@ -13,7 +13,7 @@ Install [ANTLR4](https://github.com/antlr/antlr4/blob/master/doc/getting-started
 ## Example
 
 ```bash
-./clisp 
+./clisp example.scm
 ```
 
 ```
