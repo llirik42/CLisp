@@ -17,7 +17,7 @@ Object* make_int(int value);
 void destroy(Object* obj);
 
 // TODO:
-Object* display(Object* obj);
+Object* clisp_display(Object* obj);
 
 // TODO:
 Object* clisp_add(Object* a1, Object* a2);

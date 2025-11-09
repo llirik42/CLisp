@@ -27,7 +27,7 @@ void destroy(Object* obj) {
     free(obj);
 }
 
-Object* display(Object* obj) {
+Object* clisp_display(Object* obj) {
     // TODO:
     IntValue* v = obj->value;
     printf("%d\n", v->value);
