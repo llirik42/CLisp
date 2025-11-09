@@ -15,7 +15,3 @@ Install [ANTLR4](https://github.com/antlr/antlr4/blob/master/doc/getting-started
 ```bash
 ./clisp example.scm
 ```
-
-```
-> 6
-```
