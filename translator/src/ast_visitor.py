@@ -95,7 +95,7 @@ class ASTVisitor(LispVisitor):
         code = start_code
 
         for operand_code in operand_codes[::-1]:
-            operand_code.add_main_epilog(start_code.render_main())
+            operand_code.add_main_epilog(code.render_main())
             operand_code.add_secondary_prolog(code.render_secondary())
             code = operand_code
 
