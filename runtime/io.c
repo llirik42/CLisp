@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "base.h"
+#include "core.h"
 
 Object* clisp_display(Object* obj) {
     // TODO:

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "const_types.h"
+
 enum ObjectType {
     INTEGER,
     DOUBLE,
@@ -10,9 +12,5 @@ typedef struct {
     void* value;
     enum ObjectType type;
 } Object;
-
-typedef struct {
-    int value;
-} IntValue;
 
 void destroy(Object* obj);

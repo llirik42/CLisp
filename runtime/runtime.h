@@ -3,7 +3,7 @@
 #ifndef RUNTIME
 #define RUNTIME
 
-#include "base.h"
+#include "core.h"
 #include "arithmetic.h"
 #include "io.h"
 #include "const.h"

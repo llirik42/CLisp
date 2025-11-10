@@ -1,5 +1,5 @@
 #pragma once
-#include "base.h"
+#include "core.h"
 
 // TODO:
 Object* clisp_display(Object* obj);

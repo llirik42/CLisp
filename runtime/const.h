@@ -1,5 +1,5 @@
 #pragma once
 
-#include "base.h"
+#include "core.h"
 
 Object* make_int(int value);
