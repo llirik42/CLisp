@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ANTLR_JAR="/usr/local/lib/antlr-4.13.2-complete.jar"
-
+RED='\033[0;31m'
+NC='\033[0m'
 if [ ! -d translator/.venv ]; then
     cd translator/
     uv venv
@@ -18,6 +19,12 @@ fi
 
 if [ -f build/out ]; then
     rm build/out
+fi
+
+if [[(! -d ./lib)]] || [[(! -f "./lib/libruntime.so") ]]; then
+  echo -e "${RED}Error: no runtime library!${NC}"
+  echo -e "Execute ./compile_runtime_lib.sh"
+  exit 1
 fi
 
 cd translator
