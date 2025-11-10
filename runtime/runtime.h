@@ -5,7 +5,7 @@
 
 #include "base.h"
 #include "arithmetic.h"
-#include "stdio.h"
+#include "io.h"
 #include "const.h"
 
 #endif
