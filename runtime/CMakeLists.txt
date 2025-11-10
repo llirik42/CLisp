@@ -11,7 +11,7 @@ file(GLOB_RECURSE SOURCE_FILES
         "*.c"
 )
 
-add_library(runtime SHARED runtime.c)
+add_library(runtime SHARED ${SOURCE_FILES})
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
