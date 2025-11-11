@@ -10,10 +10,10 @@ Install uv:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Compile runtime library:
+Launch installing script:
 
 ```bash
-./runtime_lib_complie.sh
+./install.sh
 ```
 
 ## Usage
