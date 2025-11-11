@@ -29,7 +29,7 @@ fi
 
 cd translator
 source .venv/bin/activate
-python src/main.py "../$1" -o "../build/out.c"
+python src/main.py -f "../$1" -o "../build/out.c"
 deactivate
 cd ..
 

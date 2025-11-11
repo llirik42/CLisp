@@ -1,11 +1,11 @@
-from antlr4 import FileStream, CommonTokenStream
+from antlr4 import FileStream, CommonTokenStream, InputStream, StdinStream
 from antlr4.error.ErrorListener import ErrorListener
 
 from LispLexer import LispLexer
 from LispParser import LispParser
 
 
-__all__ = ["read_ast"]
+__all__ = ["read_ast_file", "read_ast_stdin"]
 
 
 class CustomErrorListener(ErrorListener):
@@ -29,16 +29,35 @@ class CustomErrorListener(ErrorListener):
         return self.__error
 
 
-def read_ast(input_file: str):
+def read_ast_file(input_file: str):
     """
-    Parses the Lisp-file and returns its AST.
+    Reads the Lisp-code from the file and returns its AST.
 
     :param input_file: path to the Lisp-file.
     :raises SyntaxError: the file has syntax errors.
     :raises FileNotFoundError: the file not found.
     """
 
-    input_stream = FileStream(input_file)
+    return _read_ast(FileStream(input_file))
+
+
+def read_ast_stdin():
+    """
+    Reads the Lisp-file from the stdin and returns its AST.
+    """
+
+    return _read_ast(StdinStream())
+
+
+def _read_ast(input_stream: InputStream):
+    """
+    Reads the Lisp-code from the stream and returns its AST.
+
+    :param input_stream: stream with the code.
+    :raises SyntaxError: the file has syntax errors.
+    :raises FileNotFoundError: the file not found.
+    """
+
     lexer = LispLexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = LispParser(stream)
