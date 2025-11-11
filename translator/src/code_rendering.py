@@ -168,13 +168,25 @@ class CodeCreator:
 
     def procedure_call(self) -> Code:
         """
-        Returns code that call a procedure.
+        Returns code that calls a procedure.
 
         :raises KeyError: template-file of the code not found.
         """
 
         return Code(
             template=self.__get_template("procedure_call"),
+            secondary_template=self.__get_template("destroy"),
+        )
+
+    def condition(self) -> Code:
+        """
+        Returns code of condition (if).
+
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("condition"),
             secondary_template=self.__get_template("destroy"),
         )
 

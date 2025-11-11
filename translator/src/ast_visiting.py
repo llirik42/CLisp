@@ -1,5 +1,7 @@
 from typing import Union
 
+from antlr4 import ParserRuleContext
+
 from LispParser import LispParser
 
 from LispVisitor import LispVisitor
@@ -13,7 +15,18 @@ from variable_manager import VariableManager
 __all__ = ["ASTVisitor"]
 
 
+class VisitingException(Exception):
+    def __init__(self, message: str, ctx: ParserRuleContext):
+        super().__init__(f"{message} [{ctx.getText()}]")
+        self.__ctx = ctx
+
+    @property
+    def ctx(self) -> ParserRuleContext:
+        return self.__ctx
+
+
 VisitResult = tuple[str, Code]
+C_NULL = "NULL"
 
 
 class ASTVisitor(LispVisitor):
@@ -38,24 +51,55 @@ class ASTVisitor(LispVisitor):
 
         return main_function_code.render()
 
+    def visitCondition(self, ctx: LispParser.ConditionContext) -> VisitResult:
+        test = ctx.test()
+        consequent = ctx.consequent()
+        alternate = ctx.alternate()
+
+        test_name, test_code = self.visit(test)
+        consequent_name, consequent_code = self.visit(consequent)
+
+        expr_var_name = self.__variable_manager.create_variable_name()
+        expr_code = self.__code_creator.condition()
+        expr_code.update_data(
+            var=expr_var_name,
+            test=test_name,
+            consequent=consequent_name,
+            alternate=C_NULL,
+        )
+        wrapping_codes = [test_code, consequent_code]
+
+        if alternate is not None:
+            alternate_name, alternate_code = self.visit(alternate)
+            expr_code.update_data(alternate=alternate_name)
+            wrapping_codes.append(alternate_code)
+
+        expr_code = self.__wrap_code(
+            start_code=expr_code, wrapping_codes=wrapping_codes
+        )
+
+        return expr_var_name, expr_code
+
     def visitProcedureCall(self, ctx: LispParser.ProcedureCallContext) -> VisitResult:
         lisp_function = ctx.operator().getText()
         c_function = self.__procedure_table.get_c_func(lisp_function)
+
+        if c_function is None:
+            raise VisitingException(
+                message=f'Operator "{lisp_function}" not found!', ctx=ctx
+            )
 
         expr_code = self.__code_creator.procedure_call()
         expr_code.update_data(function=c_function)
 
         operand_variable_names, operand_codes = self.__visit_operands(ctx.operand())
 
-        c_variable_name = self.__variable_manager.create_variable_name()
+        expr_var_name = self.__variable_manager.create_variable_name()
 
-        # Update data must be before wrapping, so that the wrapped code contains all the data
-        expr_code.update_data(args=operand_variable_names, var=c_variable_name)
-        expr_code = self.__wrap_procedure_into_operands(
-            start_code=expr_code, operand_codes=operand_codes
-        )
+        expr_code.update_data(args=operand_variable_names, var=expr_var_name)
+        expr_code = self.__wrap_code(start_code=expr_code, wrapping_codes=operand_codes)
 
-        return c_variable_name, expr_code
+        return expr_var_name, expr_code
 
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         return self.__visit_constant(
@@ -74,9 +118,9 @@ class ASTVisitor(LispVisitor):
         )
 
     def __visit_constant(self, code: Code, value: Union[str, int]) -> VisitResult:
-        c_variable_name = self.__variable_manager.create_variable_name()
-        code.update_data(var=c_variable_name, value=value)
-        return c_variable_name, code
+        expr_var_name = self.__variable_manager.create_variable_name()
+        code.update_data(var=expr_var_name, value=value)
+        return expr_var_name, code
 
     def __visit_operands(self, operands) -> tuple[list[str], list[Code]]:
         operand_names = []
@@ -90,14 +134,12 @@ class ASTVisitor(LispVisitor):
         return operand_names, operand_codes
 
     @staticmethod
-    def __wrap_procedure_into_operands(
-        start_code: Code, operand_codes: list[Code]
-    ) -> Code:
+    def __wrap_code(start_code: Code, wrapping_codes: list[Code]) -> Code:
         code = start_code
 
-        for operand_code in operand_codes[::-1]:
-            operand_code.add_main_epilog(code.render_main())
-            operand_code.add_secondary_prolog(code.render_secondary())
-            code = operand_code
+        for c in wrapping_codes[::-1]:
+            c.add_main_epilog(code.render_main())
+            c.add_secondary_prolog(code.render_secondary())
+            code = c
 
         return code
