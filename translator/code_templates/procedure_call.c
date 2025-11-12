@@ -1,1 +1,1 @@
-Object* {{ var }} = {{ function }}({{ args | join(', ') }});
+{% set args = [args | length] + args %}Object* {{ var }} = {{ function }}({{ args | join(', ') }});
