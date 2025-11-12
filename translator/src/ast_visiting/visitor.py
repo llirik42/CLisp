@@ -1,47 +1,19 @@
 from typing import Union
 
-from antlr4 import ParserRuleContext
-
-from LispParser import LispParser
-
-from LispVisitor import LispVisitor
-from procedure_table import ProcedureTable
-
-from code_rendering import CodeCreator, Code
-
-from variable_manager import VariableManager
+from src.LispParser import LispParser
+from src.LispVisitor import LispVisitor
+from src.code_rendering import CodeCreator, Code, C_IF
+from src.procedure_table import ProcedureTable
+from .context import ConditionVisitingContext
+from .exceptions import VisitingException
+from .lisp import LISP_TRUE
+from .variable_manager import VariableManager
 
 
 __all__ = ["ASTVisitor"]
 
 
-class VisitingException(Exception):
-    def __init__(self, message: str, ctx: ParserRuleContext):
-        super().__init__(f"{message} [{ctx.getText()}]")
-        self.__ctx = ctx
-
-    @property
-    def ctx(self) -> ParserRuleContext:
-        return self.__ctx
-
-
 VisitResult = tuple[str, Code]
-C_NULL = "NULL"
-
-
-class EvaluableVisitingContext:
-    def __init__(self):
-        self.__counter = 0
-
-    def __enter__(self):
-        self.__counter += 1
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.__counter -= 1
-
-    @property
-    def f(self):
-        return self.__counter > 0
 
 
 class ASTVisitor(LispVisitor):
@@ -54,7 +26,7 @@ class ASTVisitor(LispVisitor):
         self.__procedure_table = procedure_table
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
-        self.__ctx = EvaluableVisitingContext()
+        self.__condition_visiting_ctx = ConditionVisitingContext()
 
     def visitProgram(self, ctx: LispParser.ProgramContext):
         final_codes = [self.visit(e)[1] for e in ctx.expression()]
@@ -73,19 +45,21 @@ class ASTVisitor(LispVisitor):
         alternate = ctx.alternate()
 
         test_name, test_code = self.visit(test)
-        with self.__ctx:
+        with self.__condition_visiting_ctx:
             consequent_name, consequent_code = self.visit(consequent)
 
         operand_names = [test_name, consequent_name]
         operand_codes = [test_code, consequent_code]
 
         if alternate is not None:
-            with self.__ctx:
+            with self.__condition_visiting_ctx:
                 alternate_name, alternate_code = self.visit(alternate)
             operand_names.append(alternate_name)
             operand_codes.append(alternate_code)
 
-        return self.__visit_function(function_name="clisp_if", operand_names=operand_names, operand_codes=operand_codes)
+        return self.__visit_function(
+            function_name=C_IF, operand_names=operand_names, operand_codes=operand_codes
+        )
 
     def visitProcedureCall(self, ctx: LispParser.ProcedureCallContext) -> VisitResult:
         lisp_function = ctx.operator().getText()
@@ -103,7 +77,7 @@ class ASTVisitor(LispVisitor):
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         return self.__visit_constant(
             code=self.__code_creator.make_boolean(),
-            value=1 if ctx.getText() == "#t" else 0,
+            value=1 if ctx.getText() == LISP_TRUE else 0,
         )
 
     def visitStringConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
@@ -121,8 +95,10 @@ class ASTVisitor(LispVisitor):
         code.update_data(var=expr_var_name, value=value)
         return expr_var_name, code
 
-    def __visit_function(self, function_name: str, operand_names: list[str], operand_codes: list[Code]) -> VisitResult:
-        if self.__ctx.f:
+    def __visit_function(
+        self, function_name: str, operand_names: list[str], operand_codes: list[Code]
+    ) -> VisitResult:
+        if self.__condition_visiting_ctx.visiting:
             expr_code = self.__code_creator.make_evaluable()
         else:
             expr_code = self.__code_creator.function_call()

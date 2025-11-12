@@ -5,7 +5,9 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 
-__all__ = ["Code", "CodeCreator"]
+__all__ = ["Code", "CodeCreator", "C_IF"]
+
+C_IF = "clisp_if"
 
 
 class Code:

@@ -5,7 +5,7 @@ from ast_visiting import ASTVisitor
 from code_rendering import CodeCreator
 from procedure_table import ProcedureTable
 from ast_reading import read_ast_file, read_ast_stdin
-from variable_manager import VariableManager
+from src.ast_visiting.variable_manager import VariableManager
 
 
 def write_generated_code(output_file: str, code: str) -> None:
