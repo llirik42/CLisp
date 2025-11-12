@@ -22,6 +22,14 @@ class ASTVisitor(LispVisitor):
         code_creator: CodeCreator,
         variable_manager: VariableManager,
     ):
+        """
+        Class represents a visitor of AST of the Lisp. Result of the visiting - code on C, that can be used in interpretation.
+
+        :param procedure_table: procedure table.
+        :param code_creator: code creator.
+        :param variable_manager: variable manager.
+        """
+
         self.__procedure_table = procedure_table
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager

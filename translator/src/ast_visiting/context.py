@@ -1,6 +1,10 @@
 class ConditionVisitingContext:
+    """
+    Class indicated whether visitor started visiting "condition" or not. The generated code of the visited expressions depends on this fact (while visiting "condition" procedure calls become deferred).
+    """
+
     def __init__(self):
-        self.__counter = 0
+        self.__counter = 0  # Counter is used instead of the flag to correctly handle nested "conditions"
 
     def __enter__(self):
         self.__counter += 1
@@ -10,4 +14,8 @@ class ConditionVisitingContext:
 
     @property
     def visiting(self):
+        """
+        Whether visitor started visiting "condition" or not.
+        """
+
         return self.__counter > 0
