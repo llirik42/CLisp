@@ -31,12 +31,10 @@ class Code:
         self.__secondary_prolog = (
             ""  # Code that will be inserted before the secondary template
         )
-
         self.__template = template
         self.__data = (
             {}
         )  # Data to be inserted both into the main and secondary templates
-
         self.__secondary_template = secondary_template
         self.__final = False
 

@@ -33,7 +33,6 @@ class EvaluableVisitingContext:
     def __init__(self):
         self.__f = False
 
-
     def __enter__(self):
         self.__f = True
 
@@ -43,7 +42,6 @@ class EvaluableVisitingContext:
     @property
     def f(self):
         return self.__f
-
 
 
 class ASTVisitor(LispVisitor):
@@ -79,11 +77,6 @@ class ASTVisitor(LispVisitor):
             consequent_name, consequent_code = self.visit(consequent)
 
         expr_code = self.__code_creator.condition()
-        expr_code.update_data(
-            test=test_name,
-            consequent=consequent_name,
-            alternate=C_NULL,
-        )
         wrapping_codes = [test_code, consequent_code]
 
         if alternate is not None:
@@ -95,7 +88,9 @@ class ASTVisitor(LispVisitor):
             expr_code.update_data(alternate=C_NULL)
 
         expr_var_name = self.__variable_manager.create_variable_name()
-        expr_code.update_data(var=expr_var_name)
+        expr_code.update_data(
+            var=expr_var_name, test=test_name, consequent=consequent_name
+        )
         expr_code = self.__wrap_code(
             start_code=expr_code, wrapping_codes=wrapping_codes
         )
@@ -111,21 +106,22 @@ class ASTVisitor(LispVisitor):
                 message=f'Operator "{lisp_function}" not found!', ctx=ctx
             )
 
+        operand_variable_names, operand_codes = self.__visit_operands(ctx.operand())
+
         if self.__ctx.f:
             expr_code = self.__code_creator.make_evaluable()
         else:
             expr_code = self.__code_creator.procedure_call()
 
-        expr_code.update_data(function=c_function)
-
-        operand_variable_names, operand_codes = self.__visit_operands(ctx.operand())
-
         expr_var_name = self.__variable_manager.create_variable_name()
+        expr_code.update_data(
+            function=c_function, args=operand_variable_names, var=expr_var_name
+        )
+        wrapped_expr_code = self.__wrap_code(
+            start_code=expr_code, wrapping_codes=operand_codes
+        )
 
-        expr_code.update_data(args=operand_variable_names, var=expr_var_name)
-        expr_code = self.__wrap_code(start_code=expr_code, wrapping_codes=operand_codes)
-
-        return expr_var_name, expr_code
+        return expr_var_name, wrapped_expr_code
 
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         return self.__visit_constant(
