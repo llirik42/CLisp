@@ -2,7 +2,7 @@ import argparse
 
 
 from ast_visiting import ASTVisitor
-from code_rendering import CodeCreator
+from src.code_rendering import CodeCreator
 from procedure_table import ProcedureTable
 from ast_reading import read_ast_file, read_ast_stdin
 from src.ast_visiting.variable_manager import VariableManager

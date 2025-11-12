@@ -6,7 +6,6 @@ from src.code_rendering import CodeCreator, Code, C_IF
 from src.procedure_table import ProcedureTable
 from .context import ConditionVisitingContext
 from .exceptions import VisitingException
-from .lisp import LISP_TRUE
 from .variable_manager import VariableManager
 
 
@@ -77,7 +76,7 @@ class ASTVisitor(LispVisitor):
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         return self.__visit_constant(
             code=self.__code_creator.make_boolean(),
-            value=1 if ctx.getText() == LISP_TRUE else 0,
+            value=1 if ctx.getText() == "#t" else 0,
         )
 
     def visitStringConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
