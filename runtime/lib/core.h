@@ -6,8 +6,12 @@ enum ObjectType {
     INTEGER,
     DOUBLE,
     RATIO,
+    BOOLEAN,
     EVALUABLE,
+    STRING,
 };
+
+char* get_object_type_name(enum ObjectType type);
 
 typedef struct {
     void* value;

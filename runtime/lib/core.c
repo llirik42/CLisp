@@ -11,3 +11,22 @@ void destroy(Object* obj) {
     free_memory(obj->value);
     free_memory(obj);
 }
+
+
+char* get_object_type_name(enum ObjectType type) {
+    switch(type) {
+        case INTEGER:
+            return "INTEGER";
+        case DOUBLE:
+            return "DOUBLE";
+        case RATIO:
+            return "RATIO";
+        case BOOLEAN:
+            return "BOOLEAN";
+        case EVALUABLE:
+            return "EVALUABLE";
+        case STRING:
+            return "STRING";
+    }
+    return "UNKNOWN";
+}

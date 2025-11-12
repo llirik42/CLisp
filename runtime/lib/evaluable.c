@@ -22,7 +22,7 @@ Object* make_evaluable(Object* (*func)(unsigned int, Object**), unsigned int cou
 
 Object* evaluate(Object* function_wrapper_obj) {
     if (function_wrapper_obj->type != EVALUABLE) {
-        fprintf(stderr, "evaluate: function_wrapper is not POSTPONED");
+        fprintf(stderr, "evaluate: function_wrapper is not EVALUABLE\n");
         exit(EXIT_FAILURE);
     }
 
