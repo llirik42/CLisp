@@ -1,6 +1,6 @@
 #include "core.h"
 
-#include <stdlib.h>
+#include "memory.h"
 
 void destroy(Object* obj) {
     if (!obj) {
@@ -8,6 +8,6 @@ void destroy(Object* obj) {
     }
 
     // TODO:
-    free(obj->value);
-    free(obj);
+    free_memory(obj->value);
+    free_memory(obj);
 }

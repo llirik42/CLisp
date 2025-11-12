@@ -6,7 +6,7 @@ enum ObjectType {
     INTEGER,
     DOUBLE,
     RATIO,
-    POSTPONED,
+    EVALUABLE,
 };
 
 typedef struct {

@@ -1,28 +1,27 @@
-#include "postponed.h"
-#include "utils.h"
+#include "evaluable.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-Object* make_evaluable(Object* (*func)(int, Object**), int count, Object** args) {
-    FunctionWrapper* wrapper = malloc(sizeof(FunctionWrapper));
-    check_allocated(wrapper);
+#include "memory.h"
+
+Object* make_evaluable(Object* (*func)(unsigned int, Object**), unsigned int count, Object** args) {
+    FunctionWrapper* wrapper = allocate_memory(sizeof(FunctionWrapper));
 
     wrapper->args_count = count;
     wrapper->function = func;
     wrapper->args = args;
 
-    Object* obj = malloc(sizeof(Object));
-    check_allocated(obj);
+    Object* obj = allocate_memory(sizeof(Object));
 
-    obj->type = POSTPONED;
+    obj->type = EVALUABLE;
     obj->value = wrapper;
     return obj;
 }
 
-Object* evaluate(const Object* function_wrapper_obj) {
-    if (function_wrapper_obj->type != POSTPONED) {
+Object* evaluate(Object* function_wrapper_obj) {
+    if (function_wrapper_obj->type != EVALUABLE) {
         fprintf(stderr, "evaluate: function_wrapper is not POSTPONED");
         exit(EXIT_FAILURE);
     }
