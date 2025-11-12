@@ -29,6 +29,23 @@ VisitResult = tuple[str, Code]
 C_NULL = "NULL"
 
 
+class EvaluableVisitingContext:
+    def __init__(self):
+        self.__f = False
+
+
+    def __enter__(self):
+        self.__f = True
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.__f = False
+
+    @property
+    def f(self):
+        return self.__f
+
+
+
 class ASTVisitor(LispVisitor):
     def __init__(
         self,
@@ -39,6 +56,7 @@ class ASTVisitor(LispVisitor):
         self.__procedure_table = procedure_table
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
+        self.__ctx = EvaluableVisitingContext()
 
     def visitProgram(self, ctx: LispParser.ProgramContext):
         final_codes = [self.visit(e)[1] for e in ctx.expression()]
@@ -57,7 +75,9 @@ class ASTVisitor(LispVisitor):
         alternate = ctx.alternate()
 
         test_name, test_code = self.visit(test)
-        consequent_name, consequent_code = self.visit(consequent)
+
+        with self.__ctx:
+            consequent_name, consequent_code = self.visit(consequent)
 
         expr_var_name = self.__variable_manager.create_variable_name()
         expr_code = self.__code_creator.condition()
@@ -70,7 +90,8 @@ class ASTVisitor(LispVisitor):
         wrapping_codes = [test_code, consequent_code]
 
         if alternate is not None:
-            alternate_name, alternate_code = self.visit(alternate)
+            with self.__ctx:
+                alternate_name, alternate_code = self.visit(alternate)
             expr_code.update_data(alternate=alternate_name)
             wrapping_codes.append(alternate_code)
 
@@ -89,7 +110,11 @@ class ASTVisitor(LispVisitor):
                 message=f'Operator "{lisp_function}" not found!', ctx=ctx
             )
 
-        expr_code = self.__code_creator.procedure_call()
+        if self.__ctx.f:
+            expr_code = self.__code_creator.make_evaluable()
+        else:
+            expr_code = self.__code_creator.procedure_call()
+
         expr_code.update_data(function=c_function)
 
         operand_variable_names, operand_codes = self.__visit_operands(ctx.operand())

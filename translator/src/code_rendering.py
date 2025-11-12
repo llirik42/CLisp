@@ -166,6 +166,18 @@ class CodeCreator:
             secondary_template=self.__get_template("destroy"),
         )
 
+    def make_evaluable(self) -> Code:
+        """
+        Returns code that creates an evaluable variable.
+
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("make_evaluable"),
+            secondary_template=self.__get_template("destroy"),
+        )
+
     def procedure_call(self) -> Code:
         """
         Returns code that calls a procedure.
