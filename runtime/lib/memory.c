@@ -5,14 +5,14 @@
 
 void check_allocated(void* ptr) {
     if (!ptr) {
-        perror("Not enough memory!");
+        perror("malloc");
         exit(EXIT_FAILURE);
     }
 }
 
 void* allocate_memory(size_t size) {
     if (!size) {
-        perror("Memory allocation: no memory block size!");
+        fprintf(stderr, "Memory allocation: no memory block size!");
         exit(EXIT_FAILURE);
     }
 
