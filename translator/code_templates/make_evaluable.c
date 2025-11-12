@@ -1,1 +1,2 @@
-{% set args = [args | length] + args %}Object* {{ var }} = make_evaluable({{ function }}, {{ args | join(', ') }});
+{% set argList = var+'_args' %}Object* {{ argList }}[] = {% raw %}{{% endraw %}{{ args | join(', ') }}{% raw %}}{% endraw %};
+Object* {{ var }} = make_evaluable({{ function }}, {{ argList }}, {{ args | length }});
