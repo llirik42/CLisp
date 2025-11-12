@@ -8,7 +8,7 @@ file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
 
 file(GLOB_RECURSE SOURCE_FILES
-        "*.c"
+        "./lib/*.c"
 )
 
 add_library(runtime SHARED ${SOURCE_FILES})
@@ -20,3 +20,5 @@ set_target_properties(runtime PROPERTIES
         PREFIX ""
         SUFFIX ".so"
 )
+
+add_executable(sandbox ${SOURCE_FILES} sandbox/main.c)

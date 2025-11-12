@@ -3,10 +3,10 @@
 #ifndef RUNTIME
 #define RUNTIME
 
-#include "core.h"
-#include "arithmetic.h"
-#include "io.h"
-#include "const.h"
-#include "postponed.h"
+#include "lib/core.h"
+#include "lib/arithmetic.h"
+#include "lib/io.h"
+#include "lib/const.h"
+#include "lib/postponed.h"
 
 #endif
