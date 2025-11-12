@@ -178,6 +178,18 @@ class CodeCreator:
             secondary_template=self.__get_template("destroy"),
         )
 
+    def make_unspecified(self) -> Code:
+        """
+        Returns code that creates "unspecified".
+
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("make_unspecified"),
+            secondary_template=self.__get_template("destroy"),
+        )
+
     def procedure_call(self) -> Code:
         """
         Returns code that calls a procedure.

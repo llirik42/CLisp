@@ -74,26 +74,35 @@ class ASTVisitor(LispVisitor):
         consequent = ctx.consequent()
         alternate = ctx.alternate()
 
+
         test_name, test_code = self.visit(test)
 
         with self.__ctx:
             consequent_name, consequent_code = self.visit(consequent)
 
-        expr_var_name = self.__variable_manager.create_variable_name()
+
         expr_code = self.__code_creator.condition()
         expr_code.update_data(
-            var=expr_var_name,
             test=test_name,
             consequent=consequent_name,
             alternate=C_NULL,
         )
         wrapping_codes = [test_code, consequent_code]
 
-        if alternate is not None:
+        if alternate is None:
+            alternate_name = self.__variable_manager.create_variable_name()
+            alternate_code = self.__code_creator.make_unspecified()
+            alternate_code.update_data(var=alternate_name)
+            expr_code.update_data(alternate=alternate_name)
+            wrapping_codes.append(alternate_code)
+        else:
             with self.__ctx:
                 alternate_name, alternate_code = self.visit(alternate)
             expr_code.update_data(alternate=alternate_name)
             wrapping_codes.append(alternate_code)
+
+        expr_var_name = self.__variable_manager.create_variable_name()
+        expr_code.update_data(var=expr_var_name)
 
         expr_code = self.__wrap_code(
             start_code=expr_code, wrapping_codes=wrapping_codes
