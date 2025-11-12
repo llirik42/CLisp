@@ -1,9 +1,9 @@
 from typing import Union
 
-from src.LispParser import LispParser
-from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code, C_IF
-from src.procedure_table import ProcedureTable
+from LispParser import LispParser
+from LispVisitor import LispVisitor
+from code_rendering import CodeCreator, Code, C_IF
+from procedure_table import ProcedureTable
 from .context import ConditionVisitingContext
 from .exceptions import VisitingException
 from .variable_manager import VariableManager

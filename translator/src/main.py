@@ -2,10 +2,10 @@ import argparse
 
 
 from ast_visiting import ASTVisitor
-from src.code_rendering import CodeCreator
+from code_rendering import CodeCreator
 from procedure_table import ProcedureTable
 from ast_reading import read_ast_file, read_ast_stdin
-from src.ast_visiting.variable_manager import VariableManager
+from ast_visiting.variable_manager import VariableManager
 
 
 def write_generated_code(output_file: str, code: str) -> None:
