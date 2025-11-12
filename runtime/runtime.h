@@ -7,5 +7,6 @@
 #include "arithmetic.h"
 #include "io.h"
 #include "const.h"
+#include "postponed.h"
 
 #endif

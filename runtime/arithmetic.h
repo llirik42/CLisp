@@ -2,4 +2,4 @@
 #include "core.h"
 
 // TODO:
-Object* clisp_add(Object* a1, Object* a2);
+Object* clisp_add(int count, Object** args);
