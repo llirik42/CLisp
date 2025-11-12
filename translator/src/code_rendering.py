@@ -5,7 +5,9 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 
-__all__ = ["Code", "CodeCreator"]
+__all__ = ["Code", "CodeCreator", "C_IF"]
+
+C_IF = "clisp_if"
 
 
 class Code:
@@ -31,12 +33,10 @@ class Code:
         self.__secondary_prolog = (
             ""  # Code that will be inserted before the secondary template
         )
-
         self.__template = template
         self.__data = (
             {}
         )  # Data to be inserted both into the main and secondary templates
-
         self.__secondary_template = secondary_template
         self.__final = False
 
@@ -166,15 +166,39 @@ class CodeCreator:
             secondary_template=self.__get_template("destroy"),
         )
 
-    def procedure_call(self) -> Code:
+    def make_evaluable(self) -> Code:
         """
-        Returns code that call a procedure.
+        Returns code that creates an evaluable variable.
 
         :raises KeyError: template-file of the code not found.
         """
 
         return Code(
-            template=self.__get_template("procedure_call"),
+            template=self.__get_template("make_evaluable"),
+            secondary_template=self.__get_template("destroy"),
+        )
+
+    def function_call(self) -> Code:
+        """
+        Returns code that calls a function.
+
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("function_call"),
+            secondary_template=self.__get_template("destroy"),
+        )
+
+    def condition(self) -> Code:
+        """
+        Returns code of condition (if).
+
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("condition"),
             secondary_template=self.__get_template("destroy"),
         )
 

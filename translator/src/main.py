@@ -1,10 +1,11 @@
 import argparse
 
 
-from ast_visitor import ASTVisitor
-from code_rendering import CodeCreator
+from ast_visiting import ASTVisitor
+from src.code_rendering import CodeCreator
 from procedure_table import ProcedureTable
 from ast_reading import read_ast_file, read_ast_stdin
+from src.ast_visiting.variable_manager import VariableManager
 
 
 def write_generated_code(output_file: str, code: str) -> None:
@@ -38,7 +39,11 @@ def main():
 
     code_creator = CodeCreator(args.templates)
     procedure_table = ProcedureTable(args.procedure_table)
-    visitor = ASTVisitor(procedure_table, code_creator)
+    visitor = ASTVisitor(
+        procedure_table=procedure_table,
+        code_creator=code_creator,
+        variable_manager=VariableManager(),
+    )
 
     output_code = visitor.visit(ast)
     write_generated_code(args.output_file, output_code)
