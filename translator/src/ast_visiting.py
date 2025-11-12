@@ -31,17 +31,17 @@ C_NULL = "NULL"
 
 class EvaluableVisitingContext:
     def __init__(self):
-        self.__f = False
+        self.__counter = 0
 
     def __enter__(self):
-        self.__f = True
+        self.__counter += 1
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.__f = False
+        self.__counter -= 1
 
     @property
     def f(self):
-        return self.__f
+        return self.__counter > 0
 
 
 class ASTVisitor(LispVisitor):
@@ -76,26 +76,16 @@ class ASTVisitor(LispVisitor):
         with self.__ctx:
             consequent_name, consequent_code = self.visit(consequent)
 
-        expr_code = self.__code_creator.condition()
-        wrapping_codes = [test_code, consequent_code]
+        operand_names = [test_name, consequent_name]
+        operand_codes = [test_code, consequent_code]
 
         if alternate is not None:
             with self.__ctx:
                 alternate_name, alternate_code = self.visit(alternate)
-            expr_code.update_data(alternate=alternate_name)
-            wrapping_codes.append(alternate_code)
-        else:
-            expr_code.update_data(alternate=C_NULL)
+            operand_names.append(alternate_name)
+            operand_codes.append(alternate_code)
 
-        expr_var_name = self.__variable_manager.create_variable_name()
-        expr_code.update_data(
-            var=expr_var_name, test=test_name, consequent=consequent_name
-        )
-        expr_code = self.__wrap_code(
-            start_code=expr_code, wrapping_codes=wrapping_codes
-        )
-
-        return expr_var_name, expr_code
+        return self.__visit_function(function_name="clisp_if", operand_names=operand_names, operand_codes=operand_codes)
 
     def visitProcedureCall(self, ctx: LispParser.ProcedureCallContext) -> VisitResult:
         lisp_function = ctx.operator().getText()
@@ -106,22 +96,9 @@ class ASTVisitor(LispVisitor):
                 message=f'Operator "{lisp_function}" not found!', ctx=ctx
             )
 
-        operand_variable_names, operand_codes = self.__visit_operands(ctx.operand())
+        operand_names, operand_codes = self.__visit_operands(ctx.operand())
 
-        if self.__ctx.f:
-            expr_code = self.__code_creator.make_evaluable()
-        else:
-            expr_code = self.__code_creator.procedure_call()
-
-        expr_var_name = self.__variable_manager.create_variable_name()
-        expr_code.update_data(
-            function=c_function, args=operand_variable_names, var=expr_var_name
-        )
-        wrapped_expr_code = self.__wrap_code(
-            start_code=expr_code, wrapping_codes=operand_codes
-        )
-
-        return expr_var_name, wrapped_expr_code
+        return self.__visit_function(c_function, operand_names, operand_codes)
 
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         return self.__visit_constant(
@@ -143,6 +120,22 @@ class ASTVisitor(LispVisitor):
         expr_var_name = self.__variable_manager.create_variable_name()
         code.update_data(var=expr_var_name, value=value)
         return expr_var_name, code
+
+    def __visit_function(self, function_name: str, operand_names: list[str], operand_codes: list[Code]) -> VisitResult:
+        if self.__ctx.f:
+            expr_code = self.__code_creator.make_evaluable()
+        else:
+            expr_code = self.__code_creator.function_call()
+
+        expr_var_name = self.__variable_manager.create_variable_name()
+        expr_code.update_data(
+            function=function_name, args=operand_names, var=expr_var_name
+        )
+        wrapped_expr_code = self.__wrap_code(
+            start_code=expr_code, wrapping_codes=operand_codes
+        )
+
+        return expr_var_name, wrapped_expr_code
 
     def __visit_operands(self, operands) -> tuple[list[str], list[Code]]:
         operand_names = []

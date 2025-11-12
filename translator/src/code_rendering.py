@@ -176,15 +176,15 @@ class CodeCreator:
             secondary_template=self.__get_template("destroy"),
         )
 
-    def procedure_call(self) -> Code:
+    def function_call(self) -> Code:
         """
-        Returns code that calls a procedure.
+        Returns code that calls a function.
 
         :raises KeyError: template-file of the code not found.
         """
 
         return Code(
-            template=self.__get_template("procedure_call"),
+            template=self.__get_template("function_call"),
             secondary_template=self.__get_template("destroy"),
         )
 
