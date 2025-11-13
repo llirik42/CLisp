@@ -2,7 +2,7 @@ from typing import Union
 
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code, C_IF
+from src.code_rendering import CodeCreator, Code
 from src.procedure_table import ProcedureTable
 from .context import ConditionVisitingContext
 from .exceptions import VisitingException
@@ -47,6 +47,8 @@ class ASTVisitor(LispVisitor):
         return main_function_code.render()
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> VisitResult:
+        name = "if"
+
         test = ctx.test()
         consequent = ctx.consequent()
         alternate = ctx.alternate()
@@ -65,7 +67,9 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(alternate_code)
 
         return self.__visit_function(
-            function_name=C_IF, operand_names=operand_names, operand_codes=operand_codes
+            function_name=self.__procedure_table.get_c_func(name),
+            operand_names=operand_names,
+            operand_codes=operand_codes,
         )
 
     def visitProcedureCall(self, ctx: LispParser.ProcedureCallContext) -> VisitResult:

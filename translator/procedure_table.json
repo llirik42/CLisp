@@ -2,6 +2,7 @@
   "display": "clisp_display",
   "+": "clisp_add",
   ">": "clisp_greater",
+  "if": "clisp_if",
   "not": "clisp_not",
   "==": "clisp_equal"
 }
