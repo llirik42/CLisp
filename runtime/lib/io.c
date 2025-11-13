@@ -1,7 +1,6 @@
 #include "io.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "const.h"
 #include "core.h"

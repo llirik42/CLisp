@@ -1,5 +1,6 @@
 #include "logic.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "const.h"
@@ -7,8 +8,11 @@
 #include "utils.h"
 
 Object* clisp_if(CLISP_FUNC_PARAMS) {
-    // TODO: 2-3 ARGS
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 3, EQUAL);
+    if (count < 1 || count > 3) {
+        char error[128];
+        snprintf(error, 128, "Invalid number of arguments passed to clisp_if! Expected 1 or 2. Got %d", count);
+        print_error_and_exit(error, 0);
+    }
 
     CHECK_FUNC_ARGUMENT_TYPE(get_object_type(args[0]), BOOLEAN);
 
@@ -18,6 +22,10 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
 
     if (test_value) {
         return evaluate(consequent);
+    }
+
+    if (count == 2) {
+        return make_unspecified();
     }
 
     return evaluate(alternative);
