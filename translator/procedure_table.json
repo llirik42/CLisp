@@ -1,4 +1,7 @@
 {
   "display": "clisp_display",
-  "+": "clisp_add"
+  "+": "clisp_add",
+  ">": "clisp_greater",
+  "not": "clisp_not",
+  "==": "clisp_equal"
 }
