@@ -1,4 +1,4 @@
-class ConditionVisitingContext:
+class EvaluableMakingContext:
     """
     Class indicated whether visitor started visiting "condition" or not. The generated code of the visited expressions depends on this fact (while visiting "condition" procedure calls become deferred).
     """
@@ -13,7 +13,7 @@ class ConditionVisitingContext:
         self.__counter -= 1
 
     @property
-    def visiting(self):
+    def should_make_evaluable(self):
         """
         Whether visitor started visiting "condition" or not.
         """
