@@ -30,7 +30,7 @@ Object* clisp_display(CLISP_FUNC_PARAMS) {
             }
             break;
         case UNSPECIFIED:
-            printf("null\n");
+            printf("unspecified\n");
             break;
         default:
             printf("Undisplayable type\n");
