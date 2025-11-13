@@ -10,7 +10,7 @@
 Object* clisp_if(CLISP_FUNC_PARAMS) {
     if (count < 1 || count > 3) {
         char error[128];
-        snprintf(error, 128, "Invalid number of arguments passed to clisp_if! Expected 1 or 2. Got %d", count);
+        snprintf(error, 128, "Invalid number of arguments passed to clisp_if! Expected 2 or 3. Got %d", count);
         print_error_and_exit(error, 0);
     }
 
