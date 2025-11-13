@@ -10,6 +10,8 @@ expression
     : literal
     | variable
     | condition
+    | and
+    | or
     | procedureCall
     | procedure
     | assignment
@@ -21,27 +23,29 @@ literal
 
 variable : IDENTIFIER ;
 
-condition : '(' IF test consequent alternate? ')' ;
+condition : LBRACKET IF test consequent alternate? RBRACKET ;
+and : LBRACKET AND test* RBRACKET ;
+or : LBRACKET OR test* RBRACKET ;
 test : expression ;
 consequent : expression ;
 alternate : expression ;
 
-procedureCall : '(' operator operand* ')' ;
+procedureCall : LBRACKET operator operand* RBRACKET ;
 operator : expression ;
 operand : expression ;
 
-procedure : '(' LAMBDA formals body  ')' ;
+procedure : LBRACKET LAMBDA formals body RBRACKET ;
 formals
     : fixedFormals
     | variadicFormals
     | periodFormals
     ;
 
-fixedFormals : '(' variable* ')' ;
+fixedFormals : LBRACKET variable* RBRACKET ;
 variadicFormals : variable ;
-periodFormals : '(' variable+ PERIOD variable ')' ;
+periodFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
 
-assignment : '(' SET variable expression ')' ;
+assignment : LBRACKET SET variable expression RBRACKET ;
 
 constant
     : boolConstant
@@ -57,12 +61,16 @@ FALSE: '#f' ;
 LAMBDA : 'lambda' ;
 PERIOD : '.' ;
 IF : 'if' ;
+AND : 'and' ;
+OR : 'or' ;
 SET : 'set!';
 NUMBER: SIGN? DIGIT+ ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
 STRING : '"' (~'\\' | ESCAPED_DOUBLEQUOTE | ESCAPED_BACKSLASH | '\\n')* '"' ;
 WS : [ \t\r\n,]+ -> skip ;
 COMMENT : ';' ~[\r\n]* -> skip ;
+LBRACKET : '(' ;
+RBRACKET : ')' ;
 
 fragment DIGIT : [0-9] ;
 fragment LETTER : [a-zA-Z] ;
