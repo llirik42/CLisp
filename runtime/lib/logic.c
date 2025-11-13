@@ -7,15 +7,16 @@
 #include "utils.h"
 
 Object* clisp_if(CLISP_FUNC_PARAMS) {
+    // TODO: 2-3 ARGS
     CHECK_FUNC_ARGUMENTS_COUNT(count, 3, EQUAL);
 
     CHECK_FUNC_ARGUMENT_TYPE(get_object_type(args[0]), BOOLEAN);
 
-    unsigned int test = get_boolean_value(args[0]);
+    unsigned char test_value = get_boolean_value(args[0]);
     Object* consequent = args[1];
     Object* alternative = args[2];
 
-    if (test) {
+    if (test_value) {
         return evaluate(consequent);
     }
 
