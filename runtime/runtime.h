@@ -8,5 +8,6 @@
 #include "lib/io.h"
 #include "lib/const.h"
 #include "lib/evaluable.h"
+#include "lib/logic.h"
 
 #endif

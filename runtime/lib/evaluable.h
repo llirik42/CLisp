@@ -7,6 +7,8 @@ typedef struct {
     unsigned int args_count;
 } FunctionWrapper;
 
-Object* make_evaluable(Object* (*func)(unsigned int, Object**), unsigned int count, Object** args);
+Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAMS);
+
+void destroy_evaluable(Object* obj);
 
 Object* evaluate(Object* function_wrapper_obj);

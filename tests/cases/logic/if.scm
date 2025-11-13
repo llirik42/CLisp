@@ -1,0 +1,18 @@
+******************[TESTING CODE]******************
+(display (if #t 1 2))
+(display (if #t 1 2))
+(display (if #t (+ 1 1) (+ 2 2)))
+(display (if #f (+ 1 1) (+ 2 2)))
+(display (if #t (if #t (+ 1 1) (+ 2 2)) (if #t (+ 3 3) (+ 4 4))))
+(display (if #t (if #f (+ 1 1) (+ 2 2)) (if #t (+ 3 3) (+ 4 4))))
+(display (if #f (if #t (+ 1 1) (+ 2 2)) (if #t (+ 3 3) (+ 4 4))))
+(display (if #f (if #t (+ 1 1) (+ 2 2)) (if #f (+ 3 3) (+ 4 4))))
+******************[EXPECTED OUT]******************
+1
+2
+2
+4
+2
+4
+6
+8

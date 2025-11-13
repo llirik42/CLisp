@@ -6,7 +6,7 @@
 
 #include "memory.h"
 
-Object* make_evaluable(Object* (*func)(unsigned int, Object**), unsigned int count, Object** args) {
+Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAMS) {
     FunctionWrapper* wrapper = allocate_memory(sizeof(FunctionWrapper));
 
     wrapper->args_count = count;
@@ -20,9 +20,14 @@ Object* make_evaluable(Object* (*func)(unsigned int, Object**), unsigned int cou
     return obj;
 }
 
+void destroy_evaluable(Object* obj) {
+    free_memory(obj->value);
+    free_memory(obj);
+}
+
 Object* evaluate(Object* function_wrapper_obj) {
     if (function_wrapper_obj->type != EVALUABLE) {
-        fprintf(stderr, "evaluate: function_wrapper is not POSTPONED");
+        fprintf(stderr, "evaluate: function_wrapper is not EVALUABLE\n");
         exit(EXIT_FAILURE);
     }
 

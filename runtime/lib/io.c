@@ -3,16 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "const.h"
 #include "core.h"
+#include "utils.h"
 
-Object* clisp_display(unsigned int count, Object** args) {
-    // TODO:
-    if (count != 1) {
-        fprintf(stderr, "display: exprected 1 argument!");
-        exit(EXIT_FAILURE);
-    }
+Object* clisp_display(CLISP_FUNC_PARAMS) {
 
-    IntValue* v = args[0]->value;
-    printf("%d\n", v->value);
+    CHECK_FUNC_ARGUMENTS_COUNT(count, 1, EQUAL);
+
+    printf("%d\n", get_int_value(args[0]));
     return NULL;
 }
