@@ -1,0 +1,15 @@
+******************[TESTING CODE]******************
+(display 1)
+(display 1.2)
+(display #t)
+(display #f)
+(display "hello")
+(display (display 0))
+******************[EXPECTED OUT]******************
+1
+1.2
+true
+false
+hello
+0
+unspecified
