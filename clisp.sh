@@ -24,7 +24,7 @@ if [ ! -d translator/.venv ]; then
 fi
 
 cd translator
-.venv/bin/python3 src/main.py -f "../$1" -o "../build/out.c"
+.venv/bin/python3 -m src.main -f "../$1" -o "../build/out.c"
 cd ..
 
 cd build

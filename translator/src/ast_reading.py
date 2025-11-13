@@ -1,8 +1,8 @@
 from antlr4 import FileStream, CommonTokenStream, InputStream, StdinStream
 from antlr4.error.ErrorListener import ErrorListener
 
-from LispLexer import LispLexer
-from LispParser import LispParser
+from .LispLexer import LispLexer
+from .LispParser import LispParser
 
 
 __all__ = ["read_ast_file", "read_ast_stdin"]

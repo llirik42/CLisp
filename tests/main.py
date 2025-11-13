@@ -1,10 +1,11 @@
+import os
 import subprocess
 from pathlib import Path
 from subprocess import CompletedProcess
 
 import pytest
 
-from config import (TRANSLATOR_MAIN_PATH, TRANSLATOR_BASE_DIR, TRANSLATOR_PYTHON_EXECUTABLE_PATH,
+from config import (TRANSLATOR_PATH, TRANSLATOR_BASE_DIR, TRANSLATOR_PYTHON_EXECUTABLE_PATH,
                     CASES_PATH, BUILD_PATH, COMPILE_SCRIPT_PATH)
 
 
@@ -24,14 +25,18 @@ def run_translator():
         if cwd is None:
             cwd = TRANSLATOR_BASE_DIR
 
-        command = [str(TRANSLATOR_PYTHON_EXECUTABLE_PATH), str(TRANSLATOR_MAIN_PATH)] + args.split()
+        command = [str(TRANSLATOR_PYTHON_EXECUTABLE_PATH), "-m",  TRANSLATOR_PATH] + args.split()
+        _env = os.environ
+        _env["PYTHONPATH"] = str(TRANSLATOR_BASE_DIR)
+
         result = subprocess.run(
             command,
             capture_output=True,
             text=True,
             input=input_text,
             cwd=cwd,
-            check=True
+            check=True,
+            env=_env
         )
 
         return result

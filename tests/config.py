@@ -2,7 +2,7 @@ import pathlib
 
 TRANSLATOR_BASE_DIR = pathlib.Path(__file__).parent.parent / "translator"
 
-TRANSLATOR_MAIN_PATH = TRANSLATOR_BASE_DIR / "src" / "main.py"
+TRANSLATOR_PATH = "src.main"
 
 TRANSLATOR_PYTHON_EXECUTABLE_PATH = TRANSLATOR_BASE_DIR / ".venv" / "bin" / "python"
 
