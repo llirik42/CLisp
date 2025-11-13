@@ -3,14 +3,13 @@
 #include "const.h"
 #include "utils.h"
 
-Object* clisp_add(unsigned int count, Object** args) {
+Object* clisp_add(CLISP_FUNC_PARAMS) {
 
     CHECK_FUNC_ARGUMENTS_COUNT(count, 1, GREATER);
 
     int sum = 0;
     for (int i = 0; i < count; i++) {
-        IntValue* v1 = args[i]->value;
-        sum += v1->value;
+        sum += get_int_value(args[i]);
     }
 
     return make_int(sum);

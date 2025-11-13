@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "const.h"
+
 void print_error_and_exit(char* message, unsigned char use_perror) {
     if (!use_perror) {
         fprintf(stderr, "%s", message);
@@ -55,14 +57,12 @@ void check_func_argument_numeric_type(const char* func_name, enum ObjectType typ
 }
 
 double unwrap_numeric_to_double(Object* numeric) {
-    switch (numeric->type) {
+    switch (get_object_type(numeric)) {
         case INTEGER: {
-            IntValue* unwrapped_int = numeric->value;
-            return unwrapped_int->value;
+            return get_int_value(numeric);
         }
         case DOUBLE: {
-            DoubleValue* unwrapped_double = numeric->value;
-            return unwrapped_double->value;
+            return get_double_value(numeric);
         }
         default:
             print_error_and_exit("Failed to unwrap numeric value. Invalid type.\n", 0);

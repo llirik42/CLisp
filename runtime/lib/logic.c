@@ -4,7 +4,7 @@
 #include "evaluable.h"
 #include "utils.h"
 
-Object* clisp_if(unsigned int count, Object** args) {
+Object* clisp_if(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 3, EQUAL);
 
     CHECK_FUNC_ARGUMENT_TYPE(args[0]->type, BOOLEAN);
@@ -24,14 +24,14 @@ Object* clisp_if(unsigned int count, Object** args) {
     return args[2];
 }
 
-Object* clisp_greater(unsigned int count, Object** args) {
+Object* clisp_greater(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 2, EQUAL);
 
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(args[0]->type);
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(args[1]->type);
 
     if (unwrap_numeric_to_double(args[0]) > unwrap_numeric_to_double(args[1])) {
-        return make_boolean(1);
+        return make_true();
     }
-    return make_boolean(0);
+    return make_false();
 }
