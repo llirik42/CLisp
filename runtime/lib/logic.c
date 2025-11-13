@@ -7,18 +7,16 @@
 Object* clisp_if(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 3, EQUAL);
 
-    CHECK_FUNC_ARGUMENT_TYPE(args[0]->type, BOOLEAN);
+    CHECK_FUNC_ARGUMENT_TYPE(get_object_type(args[0]), BOOLEAN);
 
-    BooleanValue* test = args[0]->value;
-
-    if (test->value) {
-        if (args[1]->type == EVALUABLE) {
+    if (get_boolean_value(args[0])) {
+        if (get_object_type(args[1]) == EVALUABLE) {
             return evaluate(args[1]);
         }
         return args[1];
     }
 
-    if (args[2]->type == EVALUABLE) {
+    if (get_object_type(args[2]) == EVALUABLE) {
         return evaluate(args[2]);
     }
     return args[2];
@@ -27,8 +25,8 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
 Object* clisp_greater(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 2, EQUAL);
 
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(args[0]->type);
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(args[1]->type);
+    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(args[0]));
+    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(args[1]));
 
     if (unwrap_numeric_to_double(args[0]) > unwrap_numeric_to_double(args[1])) {
         return make_true();
