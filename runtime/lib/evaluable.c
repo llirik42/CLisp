@@ -26,7 +26,7 @@ void destroy_evaluable(Object* obj) {
 }
 
 Object* evaluate(Object* function_wrapper_obj) {
-    if (function_wrapper_obj->type != EVALUABLE) {
+    if (get_object_type(function_wrapper_obj) != EVALUABLE) {
         fprintf(stderr, "evaluate: function_wrapper is not EVALUABLE\n");
         exit(EXIT_FAILURE);
     }
