@@ -1,9 +1,5 @@
 #include "evaluable.h"
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "memory.h"
 
 Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAMS) {
