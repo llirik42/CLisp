@@ -2,6 +2,17 @@
 
 #include "const.h"
 #include "evaluable.h"
+#include "memory.h"
+
+Object* make_unspecified() {
+    Object* obj = allocate_memory(sizeof(Object));
+    obj->type = UNSPECIFIED;
+    return obj;
+}
+
+void destroy_unspecified(Object* obj) {
+    free_memory(obj);
+}
 
 void destroy(Object* obj) {
     if (!obj) {
@@ -24,6 +35,8 @@ void destroy(Object* obj) {
         case EVALUABLE:
             destroy_evaluable(obj);
             break;
+        case UNSPECIFIED:
+            destroy_unspecified(obj);
         default: ;
     }
 }
@@ -35,14 +48,14 @@ char* get_object_type_name(enum ObjectType type) {
             return "INTEGER";
         case DOUBLE:
             return "DOUBLE";
-        case RATIO:
-            return "RATIO";
         case BOOLEAN:
             return "BOOLEAN";
         case EVALUABLE:
             return "EVALUABLE";
         case STRING:
             return "STRING";
+        case UNSPECIFIED:
+            return "UNSPECIFIED";
     }
     return "UNKNOWN";
 }

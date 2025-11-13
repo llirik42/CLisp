@@ -1,6 +1,7 @@
 #include "arithmetic.h"
 
 #include "const.h"
+#include "evaluable.h"
 #include "utils.h"
 
 Object* clisp_add(CLISP_FUNC_PARAMS) {
@@ -9,7 +10,7 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
 
     int sum = 0;
     for (int i = 0; i < count; i++) {
-        sum += get_int_value(args[i]);
+        sum += get_int_value(evaluate(args[i]));
     }
 
     return make_int(sum);

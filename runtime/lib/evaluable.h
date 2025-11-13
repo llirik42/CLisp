@@ -11,4 +11,4 @@ Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAM
 
 void destroy_evaluable(Object* obj);
 
-Object* evaluate(Object* function_wrapper_obj);
+Object* evaluate(Object* obj);

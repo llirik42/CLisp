@@ -1,9 +1,5 @@
 #include "evaluable.h"
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "memory.h"
 
 Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAMS) {
@@ -25,13 +21,12 @@ void destroy_evaluable(Object* obj) {
     free_memory(obj);
 }
 
-Object* evaluate(Object* function_wrapper_obj) {
-    if (get_object_type(function_wrapper_obj) != EVALUABLE) {
-        fprintf(stderr, "evaluate: function_wrapper is not EVALUABLE\n");
-        exit(EXIT_FAILURE);
+Object* evaluate(Object* obj) {
+    if (get_object_type(obj) != EVALUABLE) {
+        return obj;
     }
 
-    const FunctionWrapper* wrapper = function_wrapper_obj->value;
+    const FunctionWrapper* wrapper = obj->value;
 
     return wrapper->function(wrapper->args_count, wrapper->args);
 }
