@@ -72,7 +72,7 @@ class ASTVisitor(LispVisitor):
             operand_codes=operand_codes,
         )
 
-    def visitAnd(self, ctx: LispParser.ConditionContext) -> VisitResult:
+    def visitAnd(self, ctx: LispParser.AndContext) -> VisitResult:
         name = str(ctx.getChild(1))
 
         with self.__condition_visiting_ctx:
@@ -84,7 +84,7 @@ class ASTVisitor(LispVisitor):
             operand_codes=operand_codes,
         )
 
-    def visitOr(self, ctx: LispParser.ConditionContext) -> VisitResult:
+    def visitOr(self, ctx: LispParser.OrContext) -> VisitResult:
         name = str(ctx.getChild(1))
 
         with self.__condition_visiting_ctx:
@@ -115,12 +115,14 @@ class ASTVisitor(LispVisitor):
             value=1 if ctx.getText() == "#t" else 0,
         )
 
-    def visitStringConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
+    def visitStringConstant(self, ctx: LispParser.StringConstantContext) -> VisitResult:
         return self.__visit_constant(
             code=self.__code_creator.make_string(), value=ctx.getText()
         )
 
-    def visitIntegerConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
+    def visitIntegerConstant(
+        self, ctx: LispParser.IntegerConstantContext
+    ) -> VisitResult:
         return self.__visit_constant(
             code=self.__code_creator.make_int(), value=int(ctx.getText())
         )
