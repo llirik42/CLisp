@@ -17,7 +17,24 @@ class FunctionTable:
 
         self.__table = json.load(open(json_path))
 
-    def get_c_func(self, identifier: str) -> Optional[str]:
+    def get_c_func(self, identifier: str) -> str:
+        """
+        Returns name of a C-function matching the identifier.
+
+        :param identifier: function identifier.
+        :raises ValueError: function not found.
+        """
+
+        res = self.__table.get(identifier, None)
+
+        if res is None:
+            raise ValueError(
+                f'Couldn\'t find function by identifier "{identifier}" not found'
+            )
+
+        return res
+
+    def try_get_c_func(self, identifier: str) -> Optional[str]:
         """
         Returns name of a C-function matching the identifier or None if it doesn't exist.
 

@@ -35,7 +35,7 @@ class ASTVisitor(LispVisitor):
         self.__variable_manager = variable_manager
         self.__condition_visiting_ctx = EvaluableMakingContext()
 
-    def visitProgram(self, ctx: LispParser.ProgramContext):
+    def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
         final_codes = [self.visit(e)[1] for e in ctx.expression()]
         for c in final_codes:
             c.make_final()
@@ -49,6 +49,7 @@ class ASTVisitor(LispVisitor):
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> VisitResult:
         identifier = "if"
+        c_function = self.__function_table.get_c_func(identifier)
 
         test = ctx.test()
         consequent = ctx.consequent()
@@ -68,51 +69,57 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(alternate_code)
 
         return self.__visit_function(
-            function_name=self.__function_table.get_c_func(identifier),
+            function_name=c_function,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitAnd(self, ctx: LispParser.AndContext) -> VisitResult:
         identifier = "and"
+        c_function = self.__function_table.get_c_func(identifier)
 
         with self.__condition_visiting_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
 
         return self.__visit_function(
-            function_name=self.__function_table.get_c_func(identifier),
+            function_name=c_function,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitOr(self, ctx: LispParser.OrContext) -> VisitResult:
         identifier = "or"
+        c_function = self.__function_table.get_c_func(identifier)
 
         with self.__condition_visiting_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
 
         return self.__visit_function(
-            function_name=self.__function_table.get_c_func(identifier),
+            function_name=c_function,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitProcedureCall(self, ctx: LispParser.ProcedureCallContext) -> VisitResult:
         lisp_function = ctx.operator().getText()
-        c_function = self.__function_table.get_c_func(lisp_function)
 
-        if c_function is None:
+        try:
+            c_function = self.__function_table.get_c_func(lisp_function)
+        except ValueError as e:
             raise VisitingException(
                 message=f'Operator "{lisp_function}" not found!', ctx=ctx
-            )
+            ) from e
 
         operand_names, operand_codes = self.__visit_operands(ctx.operand())
 
-        return self.__visit_function(c_function, operand_names, operand_codes)
+        return self.__visit_function(
+            function_name=c_function,
+            operand_names=operand_names,
+            operand_codes=operand_codes,
+        )
 
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
         c_function = self.__function_table.get_c_func("#boolean#")
-        assert c_function is not None
 
         code = self.__code_creator.make_constant(function=c_function)
         value = 1 if ctx.getText() == "#t" else 0
@@ -131,8 +138,6 @@ class ASTVisitor(LispVisitor):
             value = "\\'"  # Escape single quote
 
         c_function = self.__function_table.get_c_func("#character#")
-        assert c_function is not None
-
         code = self.__code_creator.make_constant(function=c_function)
 
         return self.__visit_constant(code=code, value=f"'{value}'")
@@ -147,16 +152,12 @@ class ASTVisitor(LispVisitor):
         self, ctx: LispParser.IntegerConstantContext
     ) -> VisitResult:
         c_function = self.__function_table.get_c_func("#integer#")
-        assert c_function is not None
-
         code = self.__code_creator.make_constant(function=c_function)
 
         return self.__visit_constant(code=code, value=int(ctx.getText()))
 
     def visitFloatConstant(self, ctx: LispParser.FloatConstantContext) -> VisitResult:
         c_function = self.__function_table.get_c_func("#float#")
-        assert c_function is not None
-
         code = self.__code_creator.make_constant(function=c_function)
 
         return self.__visit_constant(code=code, value=float(ctx.getText()))
