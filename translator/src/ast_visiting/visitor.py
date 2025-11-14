@@ -118,8 +118,13 @@ class ASTVisitor(LispVisitor):
     def visitCharacterConstant(
         self, ctx: LispParser.CharacterConstantContext
     ) -> VisitResult:
+        value = f"{ctx.getText()[2:]}"
+
+        if value == "'":
+            value = "\\'"  # Escape single quote
+
         return self.__visit_constant(
-            code=self.__code_creator.make_character(), value=f"'{ctx.getText()[2:]}'"
+            code=self.__code_creator.make_character(), value=f"'{value}'"
         )
 
     def visitStringConstant(self, ctx: LispParser.StringConstantContext) -> VisitResult:
