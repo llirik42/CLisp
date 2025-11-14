@@ -140,6 +140,30 @@ class CodeCreator:
             secondary_template=self.__get_template("destroy"),
         )
 
+    def make_float(self) -> Code:
+        """
+        Returns code that creates a float variable.
+
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("make_float"),
+            secondary_template=self.__get_template("destroy"),
+        )
+
+    def make_character(self) -> Code:
+        """
+        Returns code that creates a character variable.
+
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("make_character"),
+            secondary_template=self.__get_template("destroy"),
+        )
+
     def make_string(self) -> Code:
         """
         Returns code that creates a string variable.
