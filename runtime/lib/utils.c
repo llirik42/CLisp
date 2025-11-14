@@ -81,3 +81,9 @@ unsigned char obj_to_boolean(Object* obj) {
 
     return 1;
 }
+
+void destroy_if_evaluable(Object* from, Object* to) {
+    if (get_object_type(from) == EVALUABLE) {
+        destroy(to);
+    }
+}

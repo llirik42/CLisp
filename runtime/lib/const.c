@@ -31,7 +31,7 @@ void destroy_int(Object* obj) {
 }
 
 Object* make_double(double value) {
-    DoubleValue* obj_value = allocate_memory(sizeof(IntValue));
+    DoubleValue* obj_value = allocate_memory(sizeof(DoubleValue));
     obj_value->value = value;
 
     Object* obj = allocate_memory(sizeof(Object));
