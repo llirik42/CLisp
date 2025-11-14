@@ -46,7 +46,7 @@ Object* clisp_or(CLISP_FUNC_PARAMS) {
         return make_false();
     }
 
-    for (int i = 0; i < count - 1; i++) {
+    for (unsigned int i = 0; i < count - 1; i++) {
         Object* statement = evaluate(args[i]);
 
         // 1 v A = 1
@@ -70,7 +70,7 @@ Object* clisp_and(CLISP_FUNC_PARAMS) {
         return make_true();
     }
 
-    for (int i = 0; i < count - 1; i++) {
+    for (unsigned int i = 0; i < count - 1; i++) {
         Object* statement = evaluate(args[i]);
 
         // 0 & A = 1
