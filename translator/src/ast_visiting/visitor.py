@@ -2,7 +2,7 @@ from typing import Union
 
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code
+from src.code_rendering import CodeCreator, Code, wrap_code
 from src.function_table import FunctionTable
 from .context import EvaluableMakingContext
 from .exceptions import VisitingException
@@ -182,7 +182,7 @@ class ASTVisitor(LispVisitor):
         expr_code.update_data(
             function=function_name, args=operand_names, var=expr_var_name
         )
-        wrapped_expr_code = self.__wrap_code(
+        wrapped_expr_code = wrap_code(
             start_code=expr_code, wrapping_codes=operand_codes
         )
 
@@ -198,14 +198,3 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(op_template)
 
         return operand_names, operand_codes
-
-    @staticmethod
-    def __wrap_code(start_code: Code, wrapping_codes: list[Code]) -> Code:
-        code = start_code
-
-        for c in wrapping_codes[::-1]:
-            c.add_main_epilog(code.render_main())
-            c.add_secondary_prolog(code.render_secondary())
-            code = c
-
-        return code

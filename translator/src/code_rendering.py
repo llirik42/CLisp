@@ -5,7 +5,7 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 
-__all__ = ["Code", "CodeCreator"]
+__all__ = ["Code", "wrap_code", "CodeCreator"]
 
 
 class Code:
@@ -115,6 +115,53 @@ class Code:
         """
 
         return f"{self.render_main()}{self.render_secondary()}"
+
+
+def wrap_code(start_code: Code, wrapping_codes: list[Code]) -> Code:
+    """
+    Function wraps start code into the wrapping ones.
+
+    **Example**
+
+    start code::
+
+        func11()  # main part
+
+        func12()  # secondary part
+
+    wrapping code[0]::
+
+        func21()  # main part
+
+        func22()  # secondary part
+
+    wrapping code[1]::
+
+        func31()  # main part
+
+        func32()  # secondary part
+
+    result::
+
+        # main part
+        func11()
+        func21()
+        func31()
+
+        # secondary part
+        func32()
+        func22()
+        func12()
+    """
+
+    code = start_code
+
+    for c in wrapping_codes[::-1]:
+        c.add_main_epilog(code.render_main())
+        c.add_secondary_prolog(code.render_secondary())
+        code = c
+
+    return code
 
 
 class CodeCreator:
