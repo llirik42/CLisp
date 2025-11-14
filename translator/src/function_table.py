@@ -33,12 +33,3 @@ class FunctionTable:
             )
 
         return res
-
-    def try_get_c_func(self, identifier: str) -> Optional[str]:
-        """
-        Returns name of a C-function matching the identifier or None if it doesn't exist.
-
-        :param identifier: function identifier.
-        """
-
-        return self.__table.get(identifier, None)
