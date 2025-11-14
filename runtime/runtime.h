@@ -9,5 +9,6 @@
 #include "lib/const.h"
 #include "lib/evaluable.h"
 #include "lib/logic.h"
+#include "lib/comparation.h"
 
 #endif

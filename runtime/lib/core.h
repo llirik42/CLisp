@@ -19,6 +19,7 @@ typedef struct {
 } Object;
 
 #define CLISP_FUNC_PARAMS unsigned int count, Object** args
+#define CLISP_FUNC_PARAMS_WITHOUT_TYPES count, args
 
 enum ObjectType get_object_type(Object* obj);
 
