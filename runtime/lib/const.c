@@ -1,6 +1,5 @@
 #include "const.h"
 
-#include <stdio.h>
 #include <string.h>
 
 #include "memory.h"
@@ -87,15 +86,9 @@ Object* make_string(char* value) {
     StringValue* obj_value = allocate_memory(sizeof(StringValue));
     obj_value->length = strlen(value);
 
-    if (obj_value->length) {
-        char* container = allocate_memory(sizeof(char) * obj_value->length);
-        strcpy(container, value);
-        obj_value->value = container;
-    } else {
-        char* container = allocate_memory(sizeof(char));
-        container[0] = '\0';
-        obj_value->value = container;
-    }
+    char* container = allocate_memory(sizeof(char) * (obj_value->length + 1));
+    strcpy(container, value);
+    obj_value->value = container;
 
     Object* obj = allocate_memory(sizeof(Object));
     obj->value = obj_value;
