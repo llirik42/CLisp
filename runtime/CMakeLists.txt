@@ -15,6 +15,8 @@ add_library(runtime SHARED ${SOURCE_FILES})
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+target_compile_options(runtime PUBLIC -Wall -Werror -Wextra -pedantic)
+
 set_target_properties(runtime PROPERTIES
         OUTPUT_NAME "libruntime"
         PREFIX ""
