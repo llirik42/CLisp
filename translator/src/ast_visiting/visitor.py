@@ -115,6 +115,18 @@ class ASTVisitor(LispVisitor):
             value=1 if ctx.getText() == "#t" else 0,
         )
 
+    def visitCharacterConstant(
+        self, ctx: LispParser.CharacterConstantContext
+    ) -> VisitResult:
+        value = f"{ctx.getText()[2:]}"
+
+        if value == "'":
+            value = "\\'"  # Escape single quote
+
+        return self.__visit_constant(
+            code=self.__code_creator.make_character(), value=f"'{value}'"
+        )
+
     def visitStringConstant(self, ctx: LispParser.StringConstantContext) -> VisitResult:
         return self.__visit_constant(
             code=self.__code_creator.make_string(), value=ctx.getText()
@@ -127,7 +139,14 @@ class ASTVisitor(LispVisitor):
             code=self.__code_creator.make_int(), value=int(ctx.getText())
         )
 
-    def __visit_constant(self, code: Code, value: Union[str, int]) -> VisitResult:
+    def visitFloatConstant(self, ctx: LispParser.FloatConstantContext) -> VisitResult:
+        return self.__visit_constant(
+            code=self.__code_creator.make_float(), value=float(ctx.getText())
+        )
+
+    def __visit_constant(
+        self, code: Code, value: Union[str, int, float]
+    ) -> VisitResult:
         expr_var_name = self.__variable_manager.create_variable_name()
         code.update_data(var=expr_var_name, value=value)
         return expr_var_name, code
