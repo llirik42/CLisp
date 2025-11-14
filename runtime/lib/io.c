@@ -22,6 +22,9 @@ Object* clisp_display(CLISP_FUNC_PARAMS) {
         case STRING:
             printf("%s\n", get_string_value(to_display));
             break;
+        case CHAR:
+            printf("%c\n", get_char_value(to_display));
+            break;
         case BOOLEAN:
             if (get_boolean_value(to_display)) {
                 printf("true\n");

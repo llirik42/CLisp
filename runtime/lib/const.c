@@ -112,3 +112,23 @@ void destroy_string(Object* obj) {
     free_memory(container);
     destroy_simple_object(obj);
 }
+
+Object* make_char(char value) {
+    CharValue* obj_value = allocate_memory(sizeof(CharValue));
+    obj_value->value = value;
+
+    Object* obj = allocate_memory(sizeof(Object));
+    obj->value = obj_value;
+    obj->type = CHAR;
+
+    return obj;
+}
+
+char get_char_value(Object* obj) {
+    CharValue* obj_value = obj->value;
+    return obj_value->value;
+}
+
+void destroy_char(Object* obj) {
+    destroy_simple_object(obj);
+}
