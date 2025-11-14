@@ -32,6 +32,9 @@ void destroy(Object* obj) {
         case STRING:
             destroy_string(obj);
             break;
+        case CHAR:
+            destroy_char(obj);
+            break;
         case EVALUABLE:
             destroy_evaluable(obj);
             break;
@@ -54,6 +57,8 @@ char* get_object_type_name(enum ObjectType type) {
             return "EVALUABLE";
         case STRING:
             return "STRING";
+        case CHAR:
+            return "CHAR";
         case UNSPECIFIED:
             return "UNSPECIFIED";
     }

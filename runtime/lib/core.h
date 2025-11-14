@@ -8,6 +8,7 @@ enum ObjectType {
     BOOLEAN,
     EVALUABLE,
     STRING,
+    CHAR,
     UNSPECIFIED,
 };
 
