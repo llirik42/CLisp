@@ -16,6 +16,7 @@ void check_func_argument_numeric_type(const char* func_name, enum ObjectType typ
 
 double unwrap_numeric_to_double(Object* numeric);
 
+unsigned char obj_to_boolean(Object* obj);
 
 #define CHECK_FUNC_ARGUMENTS_COUNT(args_count, expected_count, mode) check_func_arguments_count(__func__, args_count, expected_count, mode)
 

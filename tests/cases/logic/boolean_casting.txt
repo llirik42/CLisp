@@ -1,13 +1,6 @@
 ******************[TESTING CODE]******************
-(display 1)
-(display #t)
-(display #f)
-(display "hello")
-(display (display 0))
+(display (and ""))
+(display (and 1))
 ******************[EXPECTED OUT]******************
-1
 true
-false
-hello
-0
-unspecified
+true

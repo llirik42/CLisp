@@ -1,0 +1,83 @@
+#include "comparation.h"
+
+#include <stdio.h>
+#include <string.h>
+
+#include "const.h"
+#include "evaluable.h"
+#include "utils.h"
+
+typedef unsigned int (*comparison_fn)(double, double);
+
+unsigned int greater_than(double a, double b) { return a > b; }
+unsigned int greater_or_equal_than(double a, double b) { return a >= b; }
+unsigned int less_than(double a, double b) { return a < b; }
+unsigned int less_or_equal_than(double a, double b) { return a <= b; }
+
+Object* numeric_comparison(CLISP_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
+    check_func_arguments_count(func_name, count, 2, EQUAL);
+
+    Object* left_term = evaluate(args[0]);
+    Object* right_term = evaluate(args[1]);
+
+    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(left_term));
+    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(right_term));
+
+    if (compare(unwrap_numeric_to_double(left_term), unwrap_numeric_to_double(right_term))) {
+        return make_true();
+    }
+
+    return make_false();
+}
+
+Object* clisp_greater(CLISP_FUNC_PARAMS) {
+    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, greater_than);
+}
+
+Object* clisp_greater_or_equal(CLISP_FUNC_PARAMS) {
+    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, greater_or_equal_than);
+}
+
+Object* clisp_less(CLISP_FUNC_PARAMS) {
+    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, less_than);
+}
+
+Object* clisp_less_or_equal(CLISP_FUNC_PARAMS) {
+    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, less_or_equal_than);
+}
+
+Object *clisp_equal(CLISP_FUNC_PARAMS) {
+    CHECK_FUNC_ARGUMENTS_COUNT(count, 2, EQUAL);
+
+    Object* left_term = evaluate(args[0]);
+    Object* right_term = evaluate(args[1]);
+
+    if (get_object_type(left_term) != get_object_type(right_term)) {
+        return make_false();
+    }
+
+    unsigned char result = 0;
+
+    switch (get_object_type(left_term)) {
+        case INTEGER:
+            result = get_int_value(left_term) == get_int_value(right_term);
+            break;
+        case BOOLEAN:
+            result = get_boolean_value(left_term) == get_boolean_value(right_term);
+            break;
+        case DOUBLE:
+            result = get_double_value(left_term) == get_double_value(right_term);
+            break;
+        case STRING:
+            if (!strcmp(get_string_value(left_term), get_string_value(right_term))) {
+                result = 1;
+            } else {
+                result = 0;
+            }
+            break;
+        default:
+            print_error_and_exit("Unexpected terminal type in clisp_equal\n", 0);
+    }
+
+    return make_boolean(result);
+}

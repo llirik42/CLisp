@@ -1,0 +1,26 @@
+******************[TESTING CODE]******************
+(display (> 1 2))
+(display (> 2 1))
+(display (> 2 2))
+(display (>= 1 2))
+(display (>= 2 1))
+(display (>= 2 2))
+(display (< 1 2))
+(display (< 2 1))
+(display (< 2 2))
+(display (<= 1 2))
+(display (<= 2 1))
+(display (<= 2 2))
+******************[EXPECTED OUT]******************
+false
+true
+false
+false
+true
+true
+true
+false
+false
+true
+false
+true

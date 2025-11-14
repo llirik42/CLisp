@@ -86,7 +86,7 @@ Object* make_string(char* value) {
     StringValue* obj_value = allocate_memory(sizeof(StringValue));
     obj_value->length = strlen(value);
 
-    char* container = allocate_memory(sizeof(char) * obj_value->length);
+    char* container = allocate_memory(sizeof(char) * (obj_value->length + 1));
     strcpy(container, value);
     obj_value->value = container;
 
