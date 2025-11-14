@@ -1,0 +1,6 @@
+******************[TESTING CODE]******************
+(display (and ""))
+(display (and 1))
+******************[EXPECTED OUT]******************
+true
+true

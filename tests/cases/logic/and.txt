@@ -1,4 +1,7 @@
 ******************[TESTING CODE]******************
+(display (and))
+(display (and #f))
+(display (and #t))
 (display (and #f #f))
 (display (and #f #t))
 (display (and #t #f))
@@ -7,6 +10,9 @@
 (display (and #f #t #t #t #t))
 (display (and #t #t #t #t #t))
 ******************[EXPECTED OUT]******************
+true
+false
+true
 false
 false
 false

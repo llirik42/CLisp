@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -68,4 +69,15 @@ double unwrap_numeric_to_double(Object* numeric) {
             print_error_and_exit("Failed to unwrap numeric value. Invalid type.\n", 0);
             return 0.0;
     }
+}
+
+unsigned char obj_to_boolean(Object* obj) {
+
+    assert(get_object_type(obj) != EVALUABLE);
+
+    if (get_object_type(obj) == BOOLEAN) {
+        return get_boolean_value(obj);
+    }
+
+    return 1;
 }
