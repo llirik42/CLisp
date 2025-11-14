@@ -1,1 +1,1 @@
-Object* {{ var }} = make_float({{ value }});
+Object* {{ var }} = make_double({{ value }});
