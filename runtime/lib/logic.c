@@ -10,13 +10,11 @@
 Object* clisp_if(CLISP_FUNC_PARAMS) {
     if (count < 1 || count > 3) {
         char error[128];
-        snprintf(error, 128, "Invalid number of arguments passed to clisp_if! Expected 2 or 3. Got %d", count);
+        snprintf(error, 128, "Invalid number of arguments passed to clisp_if! Expected 2 or 3. Got %d\n", count);
         print_error_and_exit(error, 0);
     }
 
-    CHECK_FUNC_ARGUMENT_TYPE(get_object_type(args[0]), BOOLEAN);
-
-    unsigned char test_value = get_boolean_value(args[0]);
+    unsigned char test_value = obj_to_boolean(args[0]);
     Object* consequent = args[1];
     Object* alternative = args[2];
 
@@ -31,63 +29,61 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
     return evaluate(alternative);
 }
 
-Object* clisp_greater(CLISP_FUNC_PARAMS) {
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 2, EQUAL);
+Object* clisp_not(CLISP_FUNC_PARAMS) {
+    CHECK_FUNC_ARGUMENTS_COUNT(count, 1, EQUAL);
 
-    Object* left_term = evaluate(args[0]);
-    Object* right_term = evaluate(args[1]);
+    Object* term = evaluate(args[0]);
 
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(left_term));
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(right_term));
+    if (obj_to_boolean(term)) {
+        return make_false();
+    }
+    return make_true();
+}
 
-    if (unwrap_numeric_to_double(left_term) > unwrap_numeric_to_double(right_term)) {
+Object* clisp_or(CLISP_FUNC_PARAMS) {
+
+    if (count == 0) {
+        return make_false();
+    }
+
+    for (int i = 0; i < count - 1; i++) {
+        Object* statement = evaluate(args[i]);
+
+        // 1 v A = 1
+        if (obj_to_boolean(statement)) {
+            return make_true();
+        }
+    }
+
+    Object* last_statement = evaluate(args[count - 1]);
+
+    if (obj_to_boolean(last_statement)) {
         return make_true();
     }
 
     return make_false();
 }
 
-Object* clisp_not(CLISP_FUNC_PARAMS) {
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 1, EQUAL);
+Object* clisp_and(CLISP_FUNC_PARAMS) {
 
-    Object* term = evaluate(args[0]);
-
-    CHECK_FUNC_ARGUMENT_TYPE(get_object_type(term), BOOLEAN);
-
-    if (get_boolean_value(term)) {
-        return make_false();
-    }
-    return make_true();
-}
-
-Object* clisp_equal(CLISP_FUNC_PARAMS) {
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 2, EQUAL);
-
-    Object* left_term = evaluate(args[0]);
-    Object* right_term = evaluate(args[1]);
-
-    if (get_object_type(left_term) != get_object_type(right_term)) {
-        return make_false();
+    if (count == 0) {
+        return make_true();
     }
 
-    unsigned char result = 0;
+    for (int i = 0; i < count - 1; i++) {
+        Object* statement = evaluate(args[i]);
 
-    switch (get_object_type(left_term)) {
-        case INTEGER:
-            result = get_int_value(left_term) == get_int_value(right_term);
-            break;
-        case BOOLEAN:
-            result = get_boolean_value(left_term) == get_boolean_value(right_term);
-            break;
-        case DOUBLE:
-            result = get_double_value(left_term) == get_double_value(right_term);
-            break;
-        case STRING:
-            result = strcmp(get_string_value(left_term), get_string_value(right_term));
-            break;
-        default:
-            print_error_and_exit("Unexpected terminal type in clisp_equal", 0);
+        // 0 & A = 1
+        if (!obj_to_boolean(statement)) {
+            return make_false();
+        }
     }
 
-    return make_boolean(result);
+    Object* last_statement = evaluate(args[count - 1]);
+
+    if (obj_to_boolean(last_statement)) {
+        return make_true();
+    }
+
+    return make_false();
 }

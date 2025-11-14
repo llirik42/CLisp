@@ -16,3 +16,7 @@ typedef struct {
     char* value;
     unsigned int length;
 } StringValue;
+
+typedef struct {
+    char value;
+} CharValue;

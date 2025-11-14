@@ -1,0 +1,22 @@
+******************[TESTING CODE]******************
+(display (== 1 2))
+(display (== 2 2))
+(display (== #t #t))
+(display (== #f #f))
+(display (== #t #f))
+(display (== "hello" "hello"))
+(display (== "hello" "bye"))
+(display (== 1 #t))
+(display (== 1 "true"))
+(display (== #t "true"))
+******************[EXPECTED OUT]******************
+false
+true
+true
+true
+false
+true
+false
+false
+false
+false

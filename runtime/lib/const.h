@@ -31,3 +31,9 @@ char* get_string_value(Object* obj);
 unsigned int get_string_length(Object* obj);
 
 void destroy_string(Object* obj);
+
+Object* make_char(char value);
+
+char get_char_value(Object* obj);
+
+void destroy_char(Object* obj);

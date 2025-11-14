@@ -86,7 +86,7 @@ Object* make_string(char* value) {
     StringValue* obj_value = allocate_memory(sizeof(StringValue));
     obj_value->length = strlen(value);
 
-    char* container = allocate_memory(sizeof(char) * obj_value->length);
+    char* container = allocate_memory(sizeof(char) * (obj_value->length + 1));
     strcpy(container, value);
     obj_value->value = container;
 
@@ -110,5 +110,25 @@ unsigned int get_string_length(Object* obj) {
 void destroy_string(Object* obj) {
     char* container = get_string_value(obj);
     free_memory(container);
+    destroy_simple_object(obj);
+}
+
+Object* make_char(char value) {
+    CharValue* obj_value = allocate_memory(sizeof(CharValue));
+    obj_value->value = value;
+
+    Object* obj = allocate_memory(sizeof(Object));
+    obj->value = obj_value;
+    obj->type = CHAR;
+
+    return obj;
+}
+
+char get_char_value(Object* obj) {
+    CharValue* obj_value = obj->value;
+    return obj_value->value;
+}
+
+void destroy_char(Object* obj) {
     destroy_simple_object(obj);
 }
