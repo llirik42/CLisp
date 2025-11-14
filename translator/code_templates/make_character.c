@@ -1,1 +1,1 @@
-Object* {{ var }} = make_character({{ value }});
+Object* {{ var }} = make_char({{ value }});
