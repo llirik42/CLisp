@@ -24,9 +24,15 @@ if [ ! -d translator/.venv ]; then
 fi
 
 cd translator
-.venv/bin/python3 -m src.main -f "../$1" -o "../build/out.c"
-cd ..
+if ! .venv/bin/python3 -m src.main -f "../$1" -o "../build/out.c"; then
+  exit 1
+fi
 
+cd ..
 cd build
-gcc -o out out.c -I../runtime -L../lib -lruntime -Wl,-rpath,../lib
+
+if ! gcc -o out out.c -I../runtime -L../lib -lruntime -Wl,-rpath,../lib; then
+  exit 1
+fi
+
 ./out
