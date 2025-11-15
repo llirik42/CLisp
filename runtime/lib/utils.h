@@ -18,7 +18,7 @@ double unwrap_numeric_to_double(Object* numeric);
 
 unsigned char obj_to_boolean(Object* obj);
 
-void destroy_if_evaluable(Object* from, Object* to);
+void destroy_if_evaluable(Object* origin, Object* evaluated);
 
 #define CHECK_FUNC_ARGUMENTS_COUNT(args_count, expected_count, mode) check_func_arguments_count(__func__, args_count, expected_count, mode)
 

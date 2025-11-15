@@ -4,7 +4,6 @@
 
 #include "const.h"
 #include "evaluable.h"
-#include "memory.h"
 #include "utils.h"
 
 void set_int_value(Object* obj, int new_value) {
@@ -113,7 +112,7 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
         }
 
         enum ObjectType type = get_object_type(operand);
-
+        
         // 1 / (+-1) = +- 1
         if ((type == DOUBLE && (get_double_value(operand) == 1 || get_double_value(operand) == -1))
             || (type == INTEGER && (get_int_value(operand) == 1 || get_int_value(operand) == -1))) {
