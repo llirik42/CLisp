@@ -48,6 +48,10 @@ void check_func_argument_type(const char* func_name, enum ObjectType type, enum 
     }
 }
 
+unsigned char is_numeric(enum ObjectType type) {
+    return type == INTEGER || type == DOUBLE;
+}
+
 void check_func_argument_numeric_type(const char* func_name, enum ObjectType type) {
     if (type != INTEGER && type != DOUBLE) {
         char error_str[256];
