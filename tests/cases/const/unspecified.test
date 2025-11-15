@@ -1,10 +1,5 @@
 ******************[TESTING CODE]******************
-(display (and ""))
-(display (and 1))
-(display (and 1.2))
-(display (and #\ ))
+(display (display 0))
 ******************[EXPECTED OUT]******************
-true
-true
-true
-true
+0
+unspecified

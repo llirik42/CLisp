@@ -10,10 +10,6 @@
 (display 0.)
 (display -0.)
 (display 4.)
-(display #t)
-(display #f)
-(display "hello")
-(display (display 0))
 ******************[EXPECTED OUT]******************
 0
 1
@@ -26,8 +22,3 @@
 0
 -0
 4
-true
-false
-hello
-0
-unspecified

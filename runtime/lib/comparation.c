@@ -55,6 +55,14 @@ Object *clisp_equal(CLISP_FUNC_PARAMS) {
     Object* left_term = evaluate(args[0]);
     Object* right_term = evaluate(args[1]);
 
+    if (is_numeric(get_object_type(left_term)) && is_numeric(get_object_type(right_term))) {
+        double left_double_value = unwrap_numeric_to_double(left_term);
+        double right_double_value = unwrap_numeric_to_double(right_term);
+        destroy_if_evaluable(args[0], left_term);
+        destroy_if_evaluable(args[1], right_term);
+        return make_boolean(left_double_value == right_double_value);
+    }
+
     if (get_object_type(left_term) != get_object_type(right_term)) {
         destroy_if_evaluable(args[0], left_term);
         destroy_if_evaluable(args[1], right_term);
@@ -72,6 +80,9 @@ Object *clisp_equal(CLISP_FUNC_PARAMS) {
             break;
         case DOUBLE:
             result = get_double_value(left_term) == get_double_value(right_term);
+            break;
+        case CHAR:
+            result = get_char_value(left_term) == get_char_value(right_term);
             break;
         case STRING:
             if (!strcmp(get_string_value(left_term), get_string_value(right_term))) {

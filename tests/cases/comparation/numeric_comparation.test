@@ -11,6 +11,18 @@
 (display (<= 1 2))
 (display (<= 2 1))
 (display (<= 2 2))
+;;
+(display (> 1.1 2.1))
+(display (>= 1.1 2.1))
+(display (>= 2.1 2.1))
+(display (< 1.1 2.1))
+(display (<= 2.1 2.1))
+;;
+(display (> 2 2.1))
+(display (< 2 2.1))
+;;
+(display (> -2 2))
+(display (> 2 -2))
 ******************[EXPECTED OUT]******************
 false
 true
@@ -20,6 +32,15 @@ true
 true
 true
 false
+false
+true
+false
+true
+false
+false
+true
+true
+true
 false
 true
 false
