@@ -1,11 +1,31 @@
 ******************[TESTING CODE]******************
+(display -0)
 (display 1)
+(display -1)
+(display 0000000001)
+(display 1.2)
+(display -1.2)
+(display .2)
+(display -.2)
+(display 0.)
+(display -0.)
+(display 4.)
 (display #t)
 (display #f)
 (display "hello")
 (display (display 0))
 ******************[EXPECTED OUT]******************
+0
 1
+-1
+1
+1.2
+-1.2
+0.2
+-0.2
+0
+-0
+4
 true
 false
 hello

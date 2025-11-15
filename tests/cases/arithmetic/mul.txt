@@ -1,0 +1,26 @@
+******************[TESTING CODE]******************
+(display (*))
+(display (* 2))
+(display (* -2))
+(display (* 1.2))
+(display (* 1 2))
+(display (* 2 2))
+(display (* -2 -2))
+(display (* 2 -2))
+(display (* -2 2))
+(display (* 1 2 3 4 5))
+(display (* -2 -2 -2 -2 -2 -2 -2 0))
+(display (* 1.5 1.5))
+******************[EXPECTED OUT]******************
+1
+2
+-2
+1.2
+2
+4
+4
+-4
+-4
+120
+0
+2.25

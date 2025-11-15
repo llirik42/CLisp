@@ -17,7 +17,7 @@ Object* clisp_display(CLISP_FUNC_PARAMS) {
             printf("%d\n", get_int_value(to_display));
             break;
         case DOUBLE:
-            printf("%f\n", get_double_value(to_display));
+            printf("%g\n", get_double_value(to_display));
             break;
         case STRING:
             printf("%s\n", get_string_value(to_display));
@@ -38,6 +38,8 @@ Object* clisp_display(CLISP_FUNC_PARAMS) {
         default:
             printf("Undisplayable type\n");
     }
+
+    destroy_if_evaluable(args[0], to_display);
 
     return make_unspecified();
 }

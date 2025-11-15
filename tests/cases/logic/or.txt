@@ -9,6 +9,7 @@
 (display (or #f #f #f #f #t))
 (display (or #t #f #f #f #f))
 (display (or #f #f #f #f #f))
+(display (or #t (/ 1 0)))
 ******************[EXPECTED OUT]******************
 false
 false
@@ -20,3 +21,4 @@ true
 true
 true
 false
+true
