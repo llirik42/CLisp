@@ -2,8 +2,8 @@ from typing import Union
 
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code
-from src.procedure_table import ProcedureTable
+from src.code_rendering import CodeCreator, Code, wrap_code
+from src.function_table import FunctionTable
 from .context import EvaluableMakingContext
 from .exceptions import VisitingException
 from src.variable_manager import VariableManager
@@ -18,36 +18,38 @@ VisitResult = tuple[str, Code]
 class ASTVisitor(LispVisitor):
     def __init__(
         self,
-        procedure_table: ProcedureTable,
+        function_table: FunctionTable,
         code_creator: CodeCreator,
         variable_manager: VariableManager,
     ):
         """
         Class represents a visitor of AST of the Lisp. Result of the visiting - code on C, that can be used in interpretation.
 
-        :param procedure_table: procedure table.
+        :param function_table: function table.
         :param code_creator: code creator.
         :param variable_manager: variable manager.
         """
 
-        self.__procedure_table = procedure_table
+        self.__function_table = function_table
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
         self.__condition_visiting_ctx = EvaluableMakingContext()
 
-    def visitProgram(self, ctx: LispParser.ProgramContext):
+    def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
         final_codes = [self.visit(e)[1] for e in ctx.expression()]
         for c in final_codes:
             c.make_final()
         final_codes_rendered = [c.render() for c in final_codes]
 
-        main_function_code = self.__code_creator.main_function()
-        main_function_code.update_data(code="\n".join(final_codes_rendered))
+        main_function_code = self.__code_creator.main_function(
+            code="\n".join(final_codes_rendered)
+        )
 
         return main_function_code.render()
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> VisitResult:
-        name = "if"
+        identifier = "if"
+        c_function = self.__function_table.get_c_func(identifier)
 
         test = ctx.test()
         consequent = ctx.consequent()
@@ -67,52 +69,64 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(alternate_code)
 
         return self.__visit_function(
-            function_name=self.__procedure_table.get_c_func(name),
+            function_name=c_function,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitAnd(self, ctx: LispParser.AndContext) -> VisitResult:
-        name = str(ctx.getChild(1))
+        identifier = "and"
+        c_function = self.__function_table.get_c_func(identifier)
 
         with self.__condition_visiting_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
 
         return self.__visit_function(
-            function_name=self.__procedure_table.get_c_func(name),
+            function_name=c_function,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitOr(self, ctx: LispParser.OrContext) -> VisitResult:
-        name = str(ctx.getChild(1))
+        identifier = "or"
+        c_function = self.__function_table.get_c_func(identifier)
 
         with self.__condition_visiting_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
 
         return self.__visit_function(
-            function_name=self.__procedure_table.get_c_func(name),
+            function_name=c_function,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitProcedureCall(self, ctx: LispParser.ProcedureCallContext) -> VisitResult:
         lisp_function = ctx.operator().getText()
-        c_function = self.__procedure_table.get_c_func(lisp_function)
 
-        if c_function is None:
+        try:
+            c_function = self.__function_table.get_c_func(lisp_function)
+        except ValueError as e:
             raise VisitingException(
                 message=f'Operator "{lisp_function}" not found!', ctx=ctx
-            )
+            ) from e
 
         operand_names, operand_codes = self.__visit_operands(ctx.operand())
 
-        return self.__visit_function(c_function, operand_names, operand_codes)
+        return self.__visit_function(
+            function_name=c_function,
+            operand_names=operand_names,
+            operand_codes=operand_codes,
+        )
 
     def visitBoolConstant(self, ctx: LispParser.BoolConstantContext) -> VisitResult:
+        c_function = self.__function_table.get_c_func("#boolean#")
+
+        code = self.__code_creator.make_constant(function=c_function)
+        value = 1 if ctx.getText() == "#t" else 0
+
         return self.__visit_constant(
-            code=self.__code_creator.make_boolean(),
-            value=1 if ctx.getText() == "#t" else 0,
+            code=code,
+            value=value,
         )
 
     def visitCharacterConstant(
@@ -123,32 +137,37 @@ class ASTVisitor(LispVisitor):
         if value == "'":
             value = "\\'"  # Escape single quote
 
-        return self.__visit_constant(
-            code=self.__code_creator.make_character(), value=f"'{value}'"
-        )
+        c_function = self.__function_table.get_c_func("#character#")
+        code = self.__code_creator.make_constant(function=c_function)
+
+        return self.__visit_constant(code=code, value=f"'{value}'")
 
     def visitStringConstant(self, ctx: LispParser.StringConstantContext) -> VisitResult:
-        return self.__visit_constant(
-            code=self.__code_creator.make_string(), value=ctx.getText()
-        )
+        c_function = self.__function_table.get_c_func("#string#")
+        code = self.__code_creator.make_constant(function=c_function)
+
+        return self.__visit_constant(code=code, value=ctx.getText())
 
     def visitIntegerConstant(
         self, ctx: LispParser.IntegerConstantContext
     ) -> VisitResult:
-        return self.__visit_constant(
-            code=self.__code_creator.make_int(), value=int(ctx.getText())
-        )
+        c_function = self.__function_table.get_c_func("#integer#")
+        code = self.__code_creator.make_constant(function=c_function)
+
+        return self.__visit_constant(code=code, value=int(ctx.getText()))
 
     def visitFloatConstant(self, ctx: LispParser.FloatConstantContext) -> VisitResult:
-        return self.__visit_constant(
-            code=self.__code_creator.make_float(), value=float(ctx.getText())
-        )
+        c_function = self.__function_table.get_c_func("#float#")
+        code = self.__code_creator.make_constant(function=c_function)
+
+        return self.__visit_constant(code=code, value=float(ctx.getText()))
 
     def __visit_constant(
         self, code: Code, value: Union[str, int, float]
     ) -> VisitResult:
         expr_var_name = self.__variable_manager.create_variable_name()
         code.update_data(var=expr_var_name, value=value)
+
         return expr_var_name, code
 
     def __visit_function(
@@ -163,7 +182,7 @@ class ASTVisitor(LispVisitor):
         expr_code.update_data(
             function=function_name, args=operand_names, var=expr_var_name
         )
-        wrapped_expr_code = self.__wrap_code(
+        wrapped_expr_code = wrap_code(
             start_code=expr_code, wrapping_codes=operand_codes
         )
 
@@ -179,14 +198,3 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(op_template)
 
         return operand_names, operand_codes
-
-    @staticmethod
-    def __wrap_code(start_code: Code, wrapping_codes: list[Code]) -> Code:
-        code = start_code
-
-        for c in wrapping_codes[::-1]:
-            c.add_main_epilog(code.render_main())
-            c.add_secondary_prolog(code.render_secondary())
-            code = c
-
-        return code

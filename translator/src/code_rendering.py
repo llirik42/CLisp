@@ -5,12 +5,15 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 
-__all__ = ["Code", "CodeCreator"]
+__all__ = ["Code", "wrap_code", "CodeCreator"]
 
 
 class Code:
     def __init__(
-        self, template: Template, secondary_template: Optional[Template] = None
+        self,
+        template: Template,
+        secondary_template: Optional[Template] = None,
+        **kwargs,
     ):
         """
         Class represents a template-code that can be rendered with given data.
@@ -25,6 +28,7 @@ class Code:
 
         :param template: main template of code.
         :param secondary_template: template of code that will be inserted after the main one and rendered with it.
+        :param kwargs: initial data.
         """
 
         self.__main_epilog = ""  # Code that will be inserted after the main template
@@ -33,8 +37,8 @@ class Code:
         )
         self.__template = template
         self.__data = (
-            {}
-        )  # Data to be inserted both into the main and secondary templates
+            kwargs  # Data to be inserted both into the main and secondary templates
+        )
         self.__secondary_template = secondary_template
         self.__final = False
 
@@ -113,6 +117,53 @@ class Code:
         return f"{self.render_main()}{self.render_secondary()}"
 
 
+def wrap_code(start_code: Code, wrapping_codes: list[Code]) -> Code:
+    """
+    Function wraps start code into the wrapping ones.
+
+    **Example**
+
+    start code::
+
+        func11()  # main part
+
+        func12()  # secondary part
+
+    wrapping code[0]::
+
+        func21()  # main part
+
+        func22()  # secondary part
+
+    wrapping code[1]::
+
+        func31()  # main part
+
+        func32()  # secondary part
+
+    result::
+
+        # main part
+        func11()
+        func21()
+        func31()
+
+        # secondary part
+        func32()
+        func22()
+        func12()
+    """
+
+    code = start_code
+
+    for c in wrapping_codes[::-1]:
+        c.add_main_epilog(code.render_main())
+        c.add_secondary_prolog(code.render_secondary())
+        code = c
+
+    return code
+
+
 class CodeCreator:
     def __init__(self, templates_folder_path: str):
         """
@@ -128,112 +179,57 @@ class CodeCreator:
             for name in os.listdir(templates_folder_path)
         }
 
-    def make_int(self) -> Code:
+    def make_constant(self, **kwargs) -> Code:
         """
-        Returns code that creates an integer variable.
+        Returns code that creates a constant.
 
+        :param kwargs: initial data in the code.
         :raises KeyError: template-file of the code not found.
         """
 
         return Code(
-            template=self.__get_template("make_integer"),
+            template=self.__get_template("make_constant"),
             secondary_template=self.__get_template("destroy"),
+            **kwargs,
         )
 
-    def make_float(self) -> Code:
-        """
-        Returns code that creates a float variable.
-
-        :raises KeyError: template-file of the code not found.
-        """
-
-        return Code(
-            template=self.__get_template("make_float"),
-            secondary_template=self.__get_template("destroy"),
-        )
-
-    def make_character(self) -> Code:
-        """
-        Returns code that creates a character variable.
-
-        :raises KeyError: template-file of the code not found.
-        """
-
-        return Code(
-            template=self.__get_template("make_character"),
-            secondary_template=self.__get_template("destroy"),
-        )
-
-    def make_string(self) -> Code:
-        """
-        Returns code that creates a string variable.
-
-        :raises KeyError: template-file of the code not found.
-        """
-
-        return Code(
-            template=self.__get_template("make_string"),
-            secondary_template=self.__get_template("destroy"),
-        )
-
-    def make_boolean(self) -> Code:
-        """
-        Returns code that creates a boolean variable.
-
-        :raises KeyError: template-file of the code not found.
-        """
-
-        return Code(
-            template=self.__get_template("make_boolean"),
-            secondary_template=self.__get_template("destroy"),
-        )
-
-    def make_evaluable(self) -> Code:
+    def make_evaluable(self, **kwargs) -> Code:
         """
         Returns code that creates an evaluable variable.
 
+        :param kwargs: initial data in the code.
         :raises KeyError: template-file of the code not found.
         """
 
         return Code(
             template=self.__get_template("make_evaluable"),
             secondary_template=self.__get_template("destroy"),
+            **kwargs,
         )
 
-    def function_call(self) -> Code:
+    def function_call(self, **kwargs) -> Code:
         """
         Returns code that calls a function.
 
+        :param kwargs: initial data in the code.
         :raises KeyError: template-file of the code not found.
         """
 
         return Code(
             template=self.__get_template("function_call"),
             secondary_template=self.__get_template("destroy"),
+            **kwargs,
         )
 
-    def condition(self) -> Code:
-        """
-        Returns code of condition (if).
-
-        :raises KeyError: template-file of the code not found.
-        """
-
-        return Code(
-            template=self.__get_template("condition"),
-            secondary_template=self.__get_template("destroy"),
-        )
-
-    def main_function(self) -> Code:
+    def main_function(self, **kwargs) -> Code:
         """
         Returns code that creates function main().
 
+        :param kwargs: initial data in the code.
         :raises KeyError: template-file of the code not found.
         """
 
-        return Code(
-            template=self.__get_template("main_function"),
-        )
+        return Code(template=self.__get_template("main_function"), **kwargs)
 
     def __get_template(self, name: str) -> Template:
         """

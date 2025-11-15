@@ -3,7 +3,7 @@ import argparse
 
 from .ast_visiting import ASTVisitor
 from .code_rendering import CodeCreator
-from .procedure_table import ProcedureTable
+from .function_table import FunctionTable
 from .ast_reading import read_ast_file, read_ast_stdin
 from .variable_manager import VariableManager
 
@@ -31,16 +31,16 @@ def main():
         "-f", "--input_file", action="store", help="Read Lisp-Code from the file"
     )
     parser.add_argument("-o", "--output-file", default="output.c")
-    parser.add_argument("-p", "--procedure-table", default="procedure_table.json")
+    parser.add_argument("-p", "--procedure-table", default="function_table.json")
     parser.add_argument("-t", "--templates", default="code_templates")
     args = parser.parse_args()
 
     ast = read_ast_stdin() if args.input_stdin else read_ast_file(args.input_file)
 
     code_creator = CodeCreator(args.templates)
-    procedure_table = ProcedureTable(args.procedure_table)
+    function_table = FunctionTable(args.procedure_table)
     visitor = ASTVisitor(
-        procedure_table=procedure_table,
+        function_table=function_table,
         code_creator=code_creator,
         variable_manager=VariableManager(),
     )
