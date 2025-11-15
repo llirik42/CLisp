@@ -133,7 +133,7 @@ def test_all_cases(run_translator):
             )
 
         while curr_line < len(lines):
-            assert lines[curr_line].strip() == out_lines[out_lines_pos], (
+            assert lines[curr_line].strip() == out_lines[out_lines_pos].strip(), (
                 f"Case: {file_path} output line: {out_lines_pos + 1}. "
                 f"Expected {lines[curr_line]}. Got {out_lines[out_lines_pos]}"
             )

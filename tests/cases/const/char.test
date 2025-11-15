@@ -1,0 +1,19 @@
+******************[TESTING CODE]******************
+(display #\A )
+(display #\a )
+(display #\5 )
+(display #\ )
+(display #\\n )
+(display #\" )
+(display #\\\ )
+(display #\' )
+******************[EXPECTED OUT]******************
+A
+a
+5
+ 
+
+
+"
+\
+'
