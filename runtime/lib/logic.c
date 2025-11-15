@@ -33,8 +33,10 @@ Object* clisp_not(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 1, EQUAL);
 
     Object* term = evaluate(args[0]);
+    unsigned char term_value = obj_to_boolean(term);
+    destroy_if_evaluable(args[0], term);
 
-    if (obj_to_boolean(term)) {
+    if (term_value) {
         return make_false();
     }
     return make_true();
@@ -48,16 +50,18 @@ Object* clisp_or(CLISP_FUNC_PARAMS) {
 
     for (unsigned int i = 0; i < count - 1; i++) {
         Object* statement = evaluate(args[i]);
-
+        unsigned char statement_value = obj_to_boolean(statement);
+        destroy_if_evaluable(args[i], statement);
         // 1 v A = 1
-        if (obj_to_boolean(statement)) {
+        if (statement_value) {
             return make_true();
         }
     }
 
     Object* last_statement = evaluate(args[count - 1]);
-
-    if (obj_to_boolean(last_statement)) {
+    unsigned char statement_value = obj_to_boolean(last_statement);
+    destroy_if_evaluable(args[count - 1], last_statement);
+    if (statement_value) {
         return make_true();
     }
 
@@ -72,16 +76,20 @@ Object* clisp_and(CLISP_FUNC_PARAMS) {
 
     for (unsigned int i = 0; i < count - 1; i++) {
         Object* statement = evaluate(args[i]);
+        unsigned char statement_value = obj_to_boolean(statement);
+        destroy_if_evaluable(args[i], statement);
 
         // 0 & A = 1
-        if (!obj_to_boolean(statement)) {
+        if (!statement_value) {
             return make_false();
         }
     }
 
     Object* last_statement = evaluate(args[count - 1]);
+    unsigned char statement_value = obj_to_boolean(last_statement);
+    destroy_if_evaluable(args[count - 1], last_statement);
 
-    if (obj_to_boolean(last_statement)) {
+    if (statement_value) {
         return make_true();
     }
 

@@ -1,6 +1,5 @@
 #include "comparation.h"
 
-#include <stdio.h>
 #include <string.h>
 
 #include "const.h"
@@ -23,11 +22,15 @@ Object* numeric_comparison(CLISP_FUNC_PARAMS, const char* func_name, comparison_
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(left_term));
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(right_term));
 
-    if (compare(unwrap_numeric_to_double(left_term), unwrap_numeric_to_double(right_term))) {
-        return make_true();
-    }
+    unsigned char result = 0;
 
-    return make_false();
+    if (compare(unwrap_numeric_to_double(left_term), unwrap_numeric_to_double(right_term))) {
+        result = 1;
+    }
+    destroy_if_evaluable(args[0], left_term);
+    destroy_if_evaluable(args[1], right_term);
+
+    return make_boolean(result);
 }
 
 Object* clisp_greater(CLISP_FUNC_PARAMS) {
@@ -53,6 +56,8 @@ Object *clisp_equal(CLISP_FUNC_PARAMS) {
     Object* right_term = evaluate(args[1]);
 
     if (get_object_type(left_term) != get_object_type(right_term)) {
+        destroy_if_evaluable(args[0], left_term);
+        destroy_if_evaluable(args[1], right_term);
         return make_false();
     }
 
@@ -78,6 +83,9 @@ Object *clisp_equal(CLISP_FUNC_PARAMS) {
         default:
             print_error_and_exit("Unexpected terminal type in clisp_equal\n", 0);
     }
+
+    destroy_if_evaluable(args[0], left_term);
+    destroy_if_evaluable(args[1], right_term);
 
     return make_boolean(result);
 }
