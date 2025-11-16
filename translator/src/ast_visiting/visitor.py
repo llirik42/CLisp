@@ -4,7 +4,7 @@ from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
 from src.code_rendering import CodeCreator, Code, wrap_codes, nest_codes
 from src.function_table import FunctionTable
-from .context import EvaluableMakingContext
+from .context import EvaluableMakingContext, TopLevelContext
 from .exceptions import VisitingException
 from src.variable_manager import VariableManager
 
@@ -34,12 +34,22 @@ class ASTVisitor(LispVisitor):
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
         self.__condition_visiting_ctx = EvaluableMakingContext()
+        self.__top_level_ctx = TopLevelContext()
         self.__env = {
             "prev": {},
             "var": "global_env", #TODO: Отбить
             "variables": {}
         }
 
+    @staticmethod
+    def __has_variable(env: dict, name: str) -> bool:
+        if name in env["variables"]:
+            return True
+
+        if len(env["prev"]) > 0:
+            return ASTVisitor.__has_variable(env["prev"], name)
+
+        return False
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
         # Visit definitions
@@ -84,15 +94,33 @@ class ASTVisitor(LispVisitor):
 
         return wrap_codes([code, expr_code])
 
+    def visitAssignment(self, ctx:LispParser.AssignmentContext) -> VisitResult:
+        # TODO: копипаста
+
+        variable = ctx.variable().getText()
+        expression = ctx.expression()
+
+        if not self.__has_variable(self.__env, variable):
+            raise VisitingException(message=f"Unexpected variable \"{variable}\"", ctx=ctx)
+
+        expr_name, expr_code = self.visit(expression)
+        self.__env["variables"][variable] = expr_name
+
+        code = self.__code_creator.set_variable_value(
+            env=self.__env["var"],
+            name=f"\"{variable}\"",
+            value=expr_name
+        )
+
+        return expr_name, wrap_codes([code, expr_code])
+
     def visitVariable(self, ctx:LispParser.VariableContext) -> VisitResult:
         variable = ctx.getText()
 
         # TODO: handle situation when variable is a standard-library function (like '+')
 
-        if variable not in self.__env["variables"]:
+        if not self.__has_variable(self.__env, variable):
             raise VisitingException(message=f"Unexpected variable \"{variable}\"", ctx=ctx)
-
-        name = self.__env["variables"][variable]
 
         expr_name = self.__variable_manager.create_variable_name()
         expr_code = self.__code_creator.get_variable_value(var=expr_name, env=self.__env["var"], name=f"\"{variable}\"")

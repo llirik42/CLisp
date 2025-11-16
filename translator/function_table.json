@@ -4,6 +4,7 @@
   "#string#" : "make_string",
   "#integer#" : "make_int",
   "#float#" : "make_double",
+  "#unspecified#": "make_unspecified",
   "display": "clisp_display",
   "+": "clisp_add",
   "-": "clisp_sub",
