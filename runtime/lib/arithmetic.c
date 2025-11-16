@@ -23,7 +23,7 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
     }
 
     if (count == 1) {
-        Object* operand = evaluate(args[0]);
+        Object* operand = unwrap_object(args[0]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
         return operand;
     }
@@ -31,7 +31,7 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
     Object* result = make_int(0);
 
     for (unsigned int i = 0; i < count; i++) {
-        Object* operand = evaluate(args[i]);
+        Object* operand = unwrap_object(args[i]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
         if (get_object_type(operand) == DOUBLE && get_object_type(result) == INTEGER) {
@@ -50,7 +50,7 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
             set_int_value(result, get_int_value(result) + (int)op_value);
         }
 
-        destroy_if_evaluable(args[i], operand);
+        destroy_if_unwrapped(args[i], operand);
     }
 
     return result;
@@ -62,7 +62,7 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
     }
 
     if (count == 1) {
-        Object* operand = evaluate(args[0]);
+        Object* operand = unwrap_object(args[0]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
         return operand;
     }
@@ -70,12 +70,12 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
     Object* result = make_int(1);
 
     for (unsigned int i = 0; i < count; i++) {
-        Object* operand = evaluate(args[i]);
+        Object* operand = unwrap_object(args[i]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
         if (unwrap_numeric_to_double(operand) == 0) {
             destroy(result);
-            destroy_if_evaluable(args[i], operand);
+            destroy_if_unwrapped(args[i], operand);
             return make_int(0);
         }
 
@@ -95,7 +95,7 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
             set_int_value(result, get_int_value(result) * (int)op_value);
         }
 
-        destroy_if_evaluable(args[i], operand);
+        destroy_if_unwrapped(args[i], operand);
     }
 
     return result;
@@ -105,7 +105,7 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 0, GREATER);
 
     if (count == 1) {
-        Object* operand = evaluate(args[0]);
+        Object* operand = unwrap_object(args[0]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
         if (unwrap_numeric_to_double(operand) == 0) {
@@ -121,12 +121,12 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
         }
 
         Object* result = make_double(1 / unwrap_numeric_to_double(operand));
-        destroy_if_evaluable(args[0], operand);
+        destroy_if_unwrapped(args[0], operand);
         return result;
     }
 
-    Object* operand1 = evaluate(args[0]);
-    Object* operand2 = evaluate(args[1]);
+    Object* operand1 = unwrap_object(args[0]);
+    Object* operand2 = unwrap_object(args[1]);
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand1));
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand2));
 
@@ -146,8 +146,8 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
         }
     }
 
-    destroy_if_evaluable(args[0], operand1);
-    destroy_if_evaluable(args[1], operand2);
+    destroy_if_unwrapped(args[0], operand1);
+    destroy_if_unwrapped(args[1], operand2);
 
     return result;
 }
@@ -156,7 +156,7 @@ Object* clisp_sub(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 0, GREATER);
 
     if (count == 1) {
-        Object* operand = evaluate(args[0]);
+        Object* operand = unwrap_object(args[0]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
         enum ObjectType type = get_object_type(operand);
@@ -169,8 +169,8 @@ Object* clisp_sub(CLISP_FUNC_PARAMS) {
         return operand;
     }
 
-    Object* operand1 = evaluate(args[0]);
-    Object* operand2 = evaluate(args[1]);
+    Object* operand1 = unwrap_object(args[0]);
+    Object* operand2 = unwrap_object(args[1]);
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand1));
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand2));
 
@@ -182,8 +182,8 @@ Object* clisp_sub(CLISP_FUNC_PARAMS) {
         result = make_int(get_int_value(operand1) - get_int_value(operand2));
     }
 
-    destroy_if_evaluable(args[0], operand1);
-    destroy_if_evaluable(args[1], operand2);
+    destroy_if_unwrapped(args[0], operand1);
+    destroy_if_unwrapped(args[1], operand2);
 
     return result;
 }

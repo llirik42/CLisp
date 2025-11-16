@@ -1,10 +1,8 @@
 #include "logic.h"
 
 #include <stdio.h>
-#include <string.h>
 
 #include "const.h"
-#include "evaluable.h"
 #include "utils.h"
 
 Object* clisp_if(CLISP_FUNC_PARAMS) {
@@ -19,22 +17,22 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
     Object* alternative = args[2];
 
     if (test_value) {
-        return evaluate(consequent);
+        return unwrap_object(consequent);
     }
 
     if (count == 2) {
         return make_unspecified();
     }
 
-    return evaluate(alternative);
+    return unwrap_object(alternative);
 }
 
 Object* clisp_not(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 1, EQUAL);
 
-    Object* term = evaluate(args[0]);
+    Object* term = unwrap_object(args[0]);
     unsigned char term_value = obj_to_boolean(term);
-    destroy_if_evaluable(args[0], term);
+    destroy_if_unwrapped(args[0], term);
 
     if (term_value) {
         return make_false();
@@ -49,18 +47,18 @@ Object* clisp_or(CLISP_FUNC_PARAMS) {
     }
 
     for (unsigned int i = 0; i < count - 1; i++) {
-        Object* statement = evaluate(args[i]);
+        Object* statement = unwrap_object(args[i]);
         unsigned char statement_value = obj_to_boolean(statement);
-        destroy_if_evaluable(args[i], statement);
+        destroy_if_unwrapped(args[i], statement);
         // 1 v A = 1
         if (statement_value) {
             return make_true();
         }
     }
 
-    Object* last_statement = evaluate(args[count - 1]);
+    Object* last_statement = unwrap_object(args[count - 1]);
     unsigned char statement_value = obj_to_boolean(last_statement);
-    destroy_if_evaluable(args[count - 1], last_statement);
+    destroy_if_unwrapped(args[count - 1], last_statement);
     if (statement_value) {
         return make_true();
     }
@@ -75,9 +73,9 @@ Object* clisp_and(CLISP_FUNC_PARAMS) {
     }
 
     for (unsigned int i = 0; i < count - 1; i++) {
-        Object* statement = evaluate(args[i]);
+        Object* statement = unwrap_object(args[i]);
         unsigned char statement_value = obj_to_boolean(statement);
-        destroy_if_evaluable(args[i], statement);
+        destroy_if_unwrapped(args[i], statement);
 
         // 0 & A = 1
         if (!statement_value) {
@@ -85,9 +83,9 @@ Object* clisp_and(CLISP_FUNC_PARAMS) {
         }
     }
 
-    Object* last_statement = evaluate(args[count - 1]);
+    Object* last_statement = unwrap_object(args[count - 1]);
     unsigned char statement_value = obj_to_boolean(last_statement);
-    destroy_if_evaluable(args[count - 1], last_statement);
+    destroy_if_unwrapped(args[count - 1], last_statement);
 
     if (statement_value) {
         return make_true();

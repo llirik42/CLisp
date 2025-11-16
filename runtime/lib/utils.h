@@ -20,7 +20,9 @@ double unwrap_numeric_to_double(Object* numeric);
 
 unsigned char obj_to_boolean(Object* obj);
 
-void destroy_if_evaluable(Object* origin, Object* evaluated);
+Object* unwrap_object(Object* obj);
+
+void destroy_if_unwrapped(Object* origin, Object* unwrapped);
 
 #define CHECK_FUNC_ARGUMENTS_COUNT(args_count, expected_count, mode) check_func_arguments_count(__func__, args_count, expected_count, mode)
 
