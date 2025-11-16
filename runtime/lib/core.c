@@ -10,7 +10,7 @@ Object* make_unspecified() {
     return obj;
 }
 
-void destroy_unspecified(Object* obj) {
+static void destroy_unspecified(Object* obj) {
     free_memory(obj);
 }
 
@@ -43,7 +43,6 @@ void destroy(Object* obj) {
         default: ;
     }
 }
-
 
 char* get_object_type_name(enum ObjectType type) {
     switch(type) {
