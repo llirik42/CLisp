@@ -5,15 +5,16 @@
 #include "const.h"
 #include "evaluable.h"
 #include "utils.h"
+#include "const_types.h"
 
 void set_int_value(Object* obj, int new_value) {
-    IntValue* value = obj->value;
-    value->value = new_value;
+    IntValue* obj_value = (IntValue*)obj;
+    obj_value->value = new_value;
 }
 
 void set_double_value(Object* obj, double new_value) {
-    DoubleValue* value = obj->value;
-    value->value = new_value;
+    DoubleValue* obj_value = (DoubleValue*)obj;
+    obj_value->value = new_value;
 }
 
 Object* clisp_add(CLISP_FUNC_PARAMS) {
