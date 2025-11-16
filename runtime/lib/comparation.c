@@ -3,15 +3,14 @@
 #include <string.h>
 
 #include "const.h"
-#include "evaluable.h"
 #include "utils.h"
 
 typedef unsigned int (*comparison_fn)(double, double);
 
-unsigned int greater_than(double a, double b) { return a > b; }
-unsigned int greater_or_equal_than(double a, double b) { return a >= b; }
-unsigned int less_than(double a, double b) { return a < b; }
-unsigned int less_or_equal_than(double a, double b) { return a <= b; }
+static unsigned int greater_than(double a, double b) { return a > b; }
+static unsigned int greater_or_equal_than(double a, double b) { return a >= b; }
+static unsigned int less_than(double a, double b) { return a < b; }
+static unsigned int less_or_equal_than(double a, double b) { return a <= b; }
 
 Object* numeric_comparison(CLISP_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
     check_func_arguments_count(func_name, count, 2, EQUAL);

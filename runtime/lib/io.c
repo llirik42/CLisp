@@ -4,7 +4,6 @@
 
 #include "const.h"
 #include "core.h"
-#include "evaluable.h"
 #include "utils.h"
 
 Object* clisp_display(CLISP_FUNC_PARAMS) {

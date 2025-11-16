@@ -24,3 +24,4 @@ set_target_properties(runtime PROPERTIES
 )
 
 add_executable(sandbox ${SOURCE_FILES} sandbox/main.c)
+target_include_directories(sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})

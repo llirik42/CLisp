@@ -6,14 +6,13 @@
 #include "utils.h"
 #include "const_types.h"
 
-void destroy_simple_object(Object* obj) {
+static void destroy_simple_object(Object* obj) {
     free_memory(obj);
 }
 
 Object* make_int(int value) {
     IntValue* obj_value = allocate_memory(sizeof(IntValue));
     obj_value->value = value;
-
     obj_value->type = INTEGER;
 
     return (Object*)obj_value;
