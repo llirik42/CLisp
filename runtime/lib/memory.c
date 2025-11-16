@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void check_allocated(void* ptr) {
+static void check_allocated(void* ptr) {
     if (!ptr) {
         perror("malloc");
         exit(EXIT_FAILURE);

@@ -4,13 +4,12 @@
 
 #include "const.h"
 #include "core.h"
-#include "evaluable.h"
 #include "utils.h"
 
 Object* clisp_display(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENTS_COUNT(count, 1, EQUAL);
 
-    Object* to_display = evaluate(args[0]);
+    Object* to_display = unwrap_object(args[0]);
 
     switch (get_object_type(to_display)) {
         case INTEGER:
@@ -39,7 +38,7 @@ Object* clisp_display(CLISP_FUNC_PARAMS) {
             printf("Undisplayable type\n");
     }
 
-    destroy_if_evaluable(args[0], to_display);
+    destroy_if_unwrapped(args[0], to_display);
 
     return make_unspecified();
 }

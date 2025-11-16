@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef RUNTIME
-#define RUNTIME
-
 #include "lib/core.h"
 #include "lib/arithmetic.h"
 #include "lib/io.h"
@@ -10,5 +7,3 @@
 #include "lib/evaluable.h"
 #include "lib/logic.h"
 #include "lib/comparation.h"
-
-#endif
