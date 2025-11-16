@@ -2,7 +2,7 @@ from typing import Union
 
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code, wrap_code
+from src.code_rendering import CodeCreator, Code, wrap_codes, nest_codes
 from src.function_table import FunctionTable
 from .context import EvaluableMakingContext
 from .exceptions import VisitingException
@@ -34,18 +34,54 @@ class ASTVisitor(LispVisitor):
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
         self.__condition_visiting_ctx = EvaluableMakingContext()
+        self.__env = {
+            "prev": {},
+            "var": "global_env", #TODO: Отбить
+            "variables": []
+        }
+
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
+        # Visit definitions
+
+        definitions_codes = []
+        for d in ctx.definition():
+            definitions_codes.append(self.visit(d))
+
+        global_env_name = "global_env" # TODO: отбить через manager
+        global_env_code = self.__code_creator.make_environment(var=global_env_name, parentEnv="NULL") # TODO: вынести NULL (а лучше прямо в шаблоне это сделать)
+        t = nest_codes([global_env_code] + definitions_codes)
+        t.make_final()
+
         final_codes = [self.visit(e)[1] for e in ctx.expression()]
         for c in final_codes:
             c.make_final()
         final_codes_rendered = [c.render() for c in final_codes]
 
+        t.add_main_epilog("\n" + "\n".join(final_codes_rendered) + "\n")
+
         main_function_code = self.__code_creator.main_function(
-            code="\n".join(final_codes_rendered)
+            code=t.render()
         )
 
         return main_function_code.render()
+
+    def visitDefinition(self, ctx:LispParser.DefinitionContext) -> Code:
+        variable = ctx.variable()
+        # TODO: проверить, что нет коллизии с названием функций (variable)
+
+        expression = ctx.expression()
+
+        expr_name, expr_code = self.visit(expression)
+
+        code = self.__code_creator.set_variable_value(
+            env=self.__env["var"],
+            name=f"\"{variable.getText()}\"",
+            value=expr_name
+        )
+
+        return wrap_codes([code, expr_code])
+
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> VisitResult:
         identifier = "if"
@@ -182,9 +218,7 @@ class ASTVisitor(LispVisitor):
         expr_code.update_data(
             function=function_name, args=operand_names, var=expr_var_name
         )
-        wrapped_expr_code = wrap_code(
-            start_code=expr_code, wrapping_codes=operand_codes
-        )
+        wrapped_expr_code = wrap_codes([expr_code] + operand_codes)
 
         return expr_var_name, wrapped_expr_code
 

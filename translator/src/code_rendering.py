@@ -5,7 +5,7 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 
-__all__ = ["Code", "wrap_code", "CodeCreator"]
+__all__ = ["Code", "wrap_codes", "CodeCreator"]
 
 
 class Code:
@@ -116,8 +116,12 @@ class Code:
 
         return f"{self.render_main()}{self.render_secondary()}"
 
+    def __repr__(self) -> str:
+        # TODO: remove
+        return f"({repr(self.__template)}, {repr(self.__data)})"
 
-def wrap_code(start_code: Code, wrapping_codes: list[Code]) -> Code:
+# TODO: сделать лишь один параметр - список кодов (изменить документацию)
+def wrap_codes(codes: list[Code]) -> Code:
     """
     Function wraps start code into the wrapping ones.
 
@@ -154,9 +158,22 @@ def wrap_code(start_code: Code, wrapping_codes: list[Code]) -> Code:
         func12()
     """
 
-    code = start_code
+    code = codes[0]
 
-    for c in wrapping_codes[::-1]:
+    for c in codes[:0:-1]:
+        c.add_main_epilog(code.render_main())
+        c.add_secondary_prolog(code.render_secondary())
+        code = c
+
+    return code
+
+def nest_codes(codes: list[Code]) -> Code:
+    # TODO: add pydoc
+
+    reversed_codes = codes[::-1]
+
+    code = reversed_codes[0]
+    for c in reversed_codes[1:]:
         c.add_main_epilog(code.render_main())
         c.add_secondary_prolog(code.render_secondary())
         code = c
@@ -174,10 +191,7 @@ class CodeCreator:
         """
 
         self.__env = Environment(loader=FileSystemLoader(templates_folder_path))
-        self.__templates = {
-            Path(name).stem: self.__env.get_template(name)
-            for name in os.listdir(templates_folder_path)
-        }
+        self.__load_templates(templates_folder_path)
 
     def make_constant(self, **kwargs) -> Code:
         """
@@ -189,7 +203,7 @@ class CodeCreator:
 
         return Code(
             template=self.__get_template("make_constant"),
-            secondary_template=self.__get_template("destroy"),
+            secondary_template=self.__get_template("destroy_object"),
             **kwargs,
         )
 
@@ -203,7 +217,7 @@ class CodeCreator:
 
         return Code(
             template=self.__get_template("make_evaluable"),
-            secondary_template=self.__get_template("destroy"),
+            secondary_template=self.__get_template("destroy_object"),
             **kwargs,
         )
 
@@ -217,7 +231,7 @@ class CodeCreator:
 
         return Code(
             template=self.__get_template("function_call"),
-            secondary_template=self.__get_template("destroy"),
+            secondary_template=self.__get_template("destroy_object"),
             **kwargs,
         )
 
@@ -231,6 +245,36 @@ class CodeCreator:
 
         return Code(template=self.__get_template("main_function"), **kwargs)
 
+    def get_variable_value(self, **kwargs) -> Code:
+        """
+        Returns code that obtains value of the variable.
+
+        :param kwargs: initial data in the code.
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(template=self.__get_template("get_variable_value"), **kwargs)
+
+    def set_variable_value(self, **kwargs) -> Code:
+        """
+        Returns code that changes value of the variable.
+
+        :param kwargs: initial data in the code.
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(template=self.__get_template("set_variable_value"), **kwargs)
+
+    def make_environment(self, **kwargs) -> Code:
+        """
+        Returns code that creates an environment.
+
+        :param kwargs: initial data in the code.
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(template=self.__get_template("make_environment"), secondary_template=self.__get_template("destroy_environment"), **kwargs)
+
     def __get_template(self, name: str) -> Template:
         """
         Returns template by the given name.
@@ -239,3 +283,16 @@ class CodeCreator:
         """
 
         return self.__templates[name]
+
+    def __load_templates(self, templates_folder_path: str) -> None:
+        """
+        Loads all templates from the given folder.
+
+        :param templates_folder_path: path to the directory with templates for code.
+        :raises FileNotFoundError: the directory not found.
+        """
+
+        self.__templates = {
+            Path(name).stem: self.__env.get_template(name)
+            for name in os.listdir(templates_folder_path)
+        }

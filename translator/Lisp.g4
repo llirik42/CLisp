@@ -1,10 +1,10 @@
 grammar Lisp;
 
-program
-    : expression* EOF
-    ;
+program : (expression | definition)* EOF ;
 
 body : expression+ ;
+
+definition : LBRACKET DEFINE variable expression RBRACKET ;
 
 expression
     : literal
@@ -66,8 +66,9 @@ LAMBDA : 'lambda' ;
 PERIOD : '.' ;
 IF : 'if' ;
 AND : 'and' ;
-OR : 'or' ;
-SET : 'set!';
+OR : 'or'  ;
+SET : 'set!' ;
+DEFINE : 'define' ;
 INTEGER : SIGN? DIGIT+ ;
 FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
