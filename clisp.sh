@@ -3,6 +3,20 @@
 RED='\033[0;31m'
 NC='\033[0m'
 
+if [ $# -eq 0 ]; then
+    echo -e "${RED}Error: no input file!${NC}"
+    exit 1
+fi
+
+INPUT_FILE="$(pwd)/$1"
+
+if [ ! -e "$INPUT_FILE" ]; then
+    echo -e "${RED}Error: file $INPUT_FILE doesn't exist!${NC}"
+    exit 1
+fi
+
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
 if [ ! -d build ]; then
     mkdir build
 fi
@@ -24,7 +38,7 @@ if [ ! -d translator/.venv ]; then
 fi
 
 cd translator
-if ! .venv/bin/python3 -m src.main -f "../$1" -o "../build/out.c"; then
+if ! .venv/bin/python3 -m src.main -f ${INPUT_FILE} -o "../build/out.c"; then
   exit 1
 fi
 
