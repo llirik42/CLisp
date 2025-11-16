@@ -3,6 +3,8 @@
 RED='\033[0;31m'
 NC='\033[0m'
 
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
 if [ ! -d .venv ]; then
     uv venv
     source .venv/bin/activate

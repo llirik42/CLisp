@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
 if [ ! -d translator/.venv ]; then
     cd translator/
     uv venv
