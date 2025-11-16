@@ -37,7 +37,7 @@ class ASTVisitor(LispVisitor):
         self.__env = {
             "prev": {},
             "var": "global_env", #TODO: Отбить
-            "variables": []
+            "variables": {}
         }
 
 
@@ -74,6 +74,8 @@ class ASTVisitor(LispVisitor):
 
         expr_name, expr_code = self.visit(expression)
 
+        self.__env["variables"][variable.getText()] = expr_name
+
         code = self.__code_creator.set_variable_value(
             env=self.__env["var"],
             name=f"\"{variable.getText()}\"",
@@ -82,6 +84,20 @@ class ASTVisitor(LispVisitor):
 
         return wrap_codes([code, expr_code])
 
+    def visitVariable(self, ctx:LispParser.VariableContext) -> VisitResult:
+        variable = ctx.getText()
+
+        # TODO: handle situation when variable is a standard-library function (like '+')
+
+        if variable not in self.__env["variables"]:
+            raise VisitingException(message=f"Unexpected variable \"{variable}\"", ctx=ctx)
+
+        name = self.__env["variables"][variable]
+
+        expr_name = self.__variable_manager.create_variable_name()
+        expr_code = self.__code_creator.get_variable_value(var=expr_name, env=self.__env["var"], name=f"\"{variable}\"")
+
+        return expr_name, expr_code
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> VisitResult:
         identifier = "if"

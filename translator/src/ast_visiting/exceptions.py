@@ -10,7 +10,7 @@ class VisitingException(Exception):
         :param ctx: context of the visiting.
         """
 
-        super().__init__(f"{message} [{ctx.getText()}]")
+        super().__init__(f"{message} on line {ctx.start.line}")
         self.__ctx = ctx
 
     @property
