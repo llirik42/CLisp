@@ -2,6 +2,7 @@
 #include "core.h"
 
 typedef struct {
+    enum ObjectType type;
     Object* (*function)(unsigned int, Object**);
     Object **args;
     unsigned int args_count;

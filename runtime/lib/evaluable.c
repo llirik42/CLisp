@@ -8,16 +8,12 @@ Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAM
     wrapper->args_count = count;
     wrapper->function = func;
     wrapper->args = args;
+    wrapper->type = EVALUABLE;
 
-    Object* obj = allocate_memory(sizeof(Object));
-
-    obj->type = EVALUABLE;
-    obj->value = wrapper;
-    return obj;
+    return (Object*)wrapper;
 }
 
 void destroy_evaluable(Object* obj) {
-    free_memory(obj->value);
     free_memory(obj);
 }
 
@@ -26,7 +22,7 @@ Object* evaluate(Object* obj) {
         return obj;
     }
 
-    const FunctionWrapper* wrapper = obj->value;
+    const FunctionWrapper* wrapper = (FunctionWrapper*)obj;
 
     return wrapper->function(wrapper->args_count, wrapper->args);
 }
