@@ -21,6 +21,7 @@ class EvaluableMakingContext:
 
         return self.__counter > 0
 
+
 class TopLevelContext:
     # TODO: add pydoc
 

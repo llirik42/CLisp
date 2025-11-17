@@ -116,9 +116,14 @@ class Code:
 
         return f"{self.render_main()}{self.render_secondary()}"
 
+    def clear_secondary(self) -> None:
+        self.__secondary_prolog = ""
+        self.__secondary_template = None
+
     def __repr__(self) -> str:
         # TODO: remove
         return f"({repr(self.__template)}, {repr(self.__data)})"
+
 
 # TODO: сделать лишь один параметр - список кодов (изменить документацию)
 def wrap_codes(codes: list[Code]) -> Code:
@@ -166,6 +171,7 @@ def wrap_codes(codes: list[Code]) -> Code:
         code = c
 
     return code
+
 
 def nest_codes(codes: list[Code]) -> Code:
     # TODO: add pydoc
@@ -255,6 +261,16 @@ class CodeCreator:
 
         return Code(template=self.__get_template("get_variable_value"), **kwargs)
 
+    def define_variable_value(self, **kwargs) -> Code:
+        """
+        Returns code that defines a variable with the value.
+
+        :param kwargs: initial data in the code.
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(template=self.__get_template("define_variable"), **kwargs)
+
     def set_variable_value(self, **kwargs) -> Code:
         """
         Returns code that changes value of the variable.
@@ -263,7 +279,11 @@ class CodeCreator:
         :raises KeyError: template-file of the code not found.
         """
 
-        return Code(template=self.__get_template("set_variable_value"), **kwargs)
+        return Code(
+            template=self.__get_template("set_variable_value"),
+            secondary_template=self.__get_template("destroy_object"),
+            **kwargs,
+        )
 
     def make_environment(self, **kwargs) -> Code:
         """
@@ -273,7 +293,11 @@ class CodeCreator:
         :raises KeyError: template-file of the code not found.
         """
 
-        return Code(template=self.__get_template("make_environment"), secondary_template=self.__get_template("destroy_environment"), **kwargs)
+        return Code(
+            template=self.__get_template("make_environment"),
+            secondary_template=self.__get_template("destroy_environment"),
+            **kwargs,
+        )
 
     def __get_template(self, name: str) -> Template:
         """

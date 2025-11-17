@@ -37,9 +37,9 @@ class ASTVisitor(LispVisitor):
         self.__top_level_ctx = TopLevelContext()
         self.__env = {
             "prev": {},
-            "var": "global_env", #TODO: Отбить
+            "var": "global_env",
             "variables": {}
-        }
+        }  # TODO: Отбить
 
     @staticmethod
     def __has_variable(env: dict, name: str) -> bool:
@@ -54,29 +54,26 @@ class ASTVisitor(LispVisitor):
     def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
         # Visit definitions
 
-        definitions_codes = []
-        for d in ctx.definition():
-            definitions_codes.append(self.visit(d))
-
-        global_env_name = "global_env" # TODO: отбить через manager
-        global_env_code = self.__code_creator.make_environment(var=global_env_name, parentEnv="NULL") # TODO: вынести NULL (а лучше прямо в шаблоне это сделать)
-        t = nest_codes([global_env_code] + definitions_codes)
-        t.make_final()
-
-        final_codes = [self.visit(e)[1] for e in ctx.expression()]
-        for c in final_codes:
-            c.make_final()
-        final_codes_rendered = [c.render() for c in final_codes]
-
-        t.add_main_epilog("\n" + "\n".join(final_codes_rendered) + "\n")
-
-        main_function_code = self.__code_creator.main_function(
-            code=t.render()
+        global_env_name = "global_env"  # TODO: отбить через manager
+        global_env_code = self.__code_creator.make_environment(
+            var=global_env_name, parentEnv="NULL"
         )
+
+        self.__env["code"] = global_env_code
+
+        codes = [self.visit(e)[1] for e in ctx.programElement()]
+        for c in codes:
+            pass
+            #c.make_final()
+
+        result_code = nest_codes([global_env_code] + codes)
+        result_code.make_final()
+
+        main_function_code = self.__code_creator.main_function(code=result_code.render())
 
         return main_function_code.render()
 
-    def visitDefinition(self, ctx:LispParser.DefinitionContext) -> Code:
+    def visitDefinition(self, ctx: LispParser.DefinitionContext) -> VisitResult:
         variable = ctx.variable()
         # TODO: проверить, что нет коллизии с названием функций (variable)
 
@@ -84,46 +81,62 @@ class ASTVisitor(LispVisitor):
 
         expr_name, expr_code = self.visit(expression)
 
-        self.__env["variables"][variable.getText()] = expr_name
+        self.__env["code"].add_secondary_prolog(expr_code.render_secondary())
+        expr_code.clear_secondary()
 
-        code = self.__code_creator.set_variable_value(
-            env=self.__env["var"],
-            name=f"\"{variable.getText()}\"",
-            value=expr_name
+        if not self.__env["variables"].get(variable.getText(), None):
+            self.__env["variables"][variable.getText()] = [expr_name]
+        else:
+            self.__env["variables"][variable.getText()].append(expr_name)
+
+        code = self.__code_creator.define_variable_value(
+            env=self.__env["var"], name=f'"{variable.getText()}"', value=expr_name
         )
 
-        return wrap_codes([code, expr_code])
+        return "", wrap_codes([code, expr_code])  # TODO
 
-    def visitAssignment(self, ctx:LispParser.AssignmentContext) -> VisitResult:
+    def visitAssignment(self, ctx: LispParser.AssignmentContext) -> VisitResult:
         # TODO: копипаста
 
         variable = ctx.variable().getText()
         expression = ctx.expression()
 
         if not self.__has_variable(self.__env, variable):
-            raise VisitingException(message=f"Unexpected variable \"{variable}\"", ctx=ctx)
+            raise VisitingException(
+                message=f'Unexpected variable "{variable}"', ctx=ctx
+            )
 
         expr_name, expr_code = self.visit(expression)
-        self.__env["variables"][variable] = expr_name
+        self.__env["code"].add_secondary_prolog(expr_code.render_secondary())
+        expr_code.clear_secondary()
 
-        code = self.__code_creator.set_variable_value(
+        self.__env["variables"][variable].append(expr_name)
+
+        assignment_name = self.__variable_manager.create_variable_name()
+
+        assignment_code = self.__code_creator.set_variable_value(
+            var=assignment_name,
             env=self.__env["var"],
-            name=f"\"{variable}\"",
-            value=expr_name
+            name=f'"{variable}"',
+            value=expr_name,
         )
 
-        return expr_name, wrap_codes([code, expr_code])
+        return expr_name, wrap_codes([assignment_code, expr_code])
 
-    def visitVariable(self, ctx:LispParser.VariableContext) -> VisitResult:
+    def visitVariable(self, ctx: LispParser.VariableContext) -> VisitResult:
         variable = ctx.getText()
 
         # TODO: handle situation when variable is a standard-library function (like '+')
 
         if not self.__has_variable(self.__env, variable):
-            raise VisitingException(message=f"Unexpected variable \"{variable}\"", ctx=ctx)
+            raise VisitingException(
+                message=f'Unexpected variable "{variable}"', ctx=ctx
+            )
 
         expr_name = self.__variable_manager.create_variable_name()
-        expr_code = self.__code_creator.get_variable_value(var=expr_name, env=self.__env["var"], name=f"\"{variable}\"")
+        expr_code = self.__code_creator.get_variable_value(
+            var=expr_name, env=self.__env["var"], name=f'"{variable}"'
+        )
 
         return expr_name, expr_code
 

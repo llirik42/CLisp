@@ -1,6 +1,10 @@
 grammar Lisp;
 
-program : (expression | definition)* EOF ;
+program : programElement* EOF ;
+
+programElement
+    : expression
+    | definition ;
 
 body : expression+ ;
 
