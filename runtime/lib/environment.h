@@ -2,12 +2,19 @@
 #include "core.h"
 #include "data_objects/dynamic_array.h"
 
+typedef struct {
+    char* key;
+    Object* val;
+} Variable;
+
 typedef struct Environment {
     struct Environment* parent;
-    DynamicArray* variables;
+    Variable* variables;
+    size_t variables_count;
+    size_t capacity;
 } Environment;
 
-Environment* make_environment(Environment* parent);
+Environment* make_environment(Environment* parent, size_t capacity);
 
 void destroy_environment(Environment* env);
 

@@ -17,7 +17,7 @@ DynamicArray* da_create() {
 
 void da_push_back(DynamicArray *da, void *element) {
     if (da->size >= da->capacity) {
-        da->capacity = (int)round((double)da->capacity * 1.5);
+        da->capacity = (int)ceil((double)da->capacity * 1.5);
         da->data = reallocate_memory(da->data, sizeof(void*) * da->capacity);
     }
 
