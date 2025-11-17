@@ -113,11 +113,20 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
         }
 
         enum ObjectType type = get_object_type(operand);
-        
+
         // 1 / (+-1) = +- 1
-        if ((type == DOUBLE && (get_double_value(operand) == 1 || get_double_value(operand) == -1))
-            || (type == INTEGER && (get_int_value(operand) == 1 || get_int_value(operand) == -1))) {
-            return operand;
+        if (type == DOUBLE) {
+            double double_value = get_double_value(operand);
+            if (double_value == 1 || double_value == -1) {
+                return operand;
+            }
+        }
+
+        if (type == INTEGER) {
+            double int_value = get_int_value(operand);
+            if (int_value == 1 || int_value == -1) {
+                return operand;
+            }
         }
 
         Object* result = make_double(1 / unwrap_numeric_to_double(operand));

@@ -13,7 +13,7 @@ void print_error_and_exit(char* message, unsigned char use_perror) {
     } else {
         perror(message);
     }
-    exit(EXIT_FAILURE);
+    abort();
 }
 
 void check_func_arguments_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CountCheckingMode mode) {
@@ -72,7 +72,7 @@ double unwrap_numeric_to_double(Object* numeric) {
         }
         default:
             print_error_and_exit("Failed to unwrap numeric value. Invalid type.\n", 0);
-            return 0.0;
+            __builtin_unreachable();
     }
 }
 
