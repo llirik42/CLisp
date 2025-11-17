@@ -33,17 +33,21 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
         Object* operand = unwrap_object(args[i]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
-        if (get_object_type(operand) == DOUBLE && get_object_type(result) == INTEGER) {
+        enum ObjectType operand_type = get_object_type(operand);
+        enum ObjectType result_type = get_object_type(result);
+
+        if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
             destroy(result);
             result = make_double(prev_value);
+            result_type = get_object_type(result);
         }
 
-        double op_value = get_object_type(operand) == INTEGER
+        double op_value = operand_type == INTEGER
                          ? get_int_value(operand)
                          : get_double_value(operand);
 
-        if (get_object_type(result) == DOUBLE) {
+        if (result_type == DOUBLE) {
             set_double_value(result, get_double_value(result) + op_value);
         } else {
             set_int_value(result, get_int_value(result) + (int)op_value);
@@ -72,23 +76,27 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
         Object* operand = unwrap_object(args[i]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
+        enum ObjectType operand_type = get_object_type(operand);
+        enum ObjectType result_type = get_object_type(result);
+
         if (unwrap_numeric_to_double(operand) == 0) {
             destroy(result);
             destroy_if_unwrapped(args[i], operand);
             return make_int(0);
         }
 
-        if (get_object_type(operand) == DOUBLE && get_object_type(result) == INTEGER) {
+        if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
             destroy(result);
             result = make_double(prev_value);
+            result_type = get_object_type(result);
         }
 
-        double op_value = get_object_type(operand) == INTEGER
+        double op_value = operand_type == INTEGER
                          ? get_int_value(operand)
                          : get_double_value(operand);
 
-        if (get_object_type(result) == DOUBLE) {
+        if (result_type == DOUBLE) {
             set_double_value(result, get_double_value(result) * op_value);
         } else {
             set_int_value(result, get_int_value(result) * (int)op_value);

@@ -14,8 +14,6 @@ void check_func_argument_type(const char* func_name, enum ObjectType type, enum 
 
 void check_func_argument_numeric_type(const char* func_name, enum ObjectType type);
 
-unsigned char is_numeric(enum ObjectType type);
-
 double unwrap_numeric_to_double(Object* numeric);
 
 unsigned char obj_to_boolean(Object* obj);

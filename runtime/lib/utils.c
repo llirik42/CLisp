@@ -49,12 +49,8 @@ void check_func_argument_type(const char* func_name, enum ObjectType type, enum 
     }
 }
 
-unsigned char is_numeric(enum ObjectType type) {
-    return type == INTEGER || type == DOUBLE;
-}
-
 void check_func_argument_numeric_type(const char* func_name, enum ObjectType type) {
-    if (type != INTEGER && type != DOUBLE) {
+    if (!is_numeric(type)) {
         char error_str[256];
         snprintf(error_str, sizeof(error_str), "Wrong argument type in %s! Must be numeric. Got %s.\n",
             func_name, get_object_type_name(type));

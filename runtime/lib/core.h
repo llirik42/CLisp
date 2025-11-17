@@ -24,3 +24,5 @@ enum ObjectType get_object_type(Object* obj);
 Object* make_unspecified();
 
 void destroy(Object* obj);
+
+unsigned char is_numeric(enum ObjectType type);
