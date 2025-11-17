@@ -67,3 +67,7 @@ char* get_object_type_name(enum ObjectType type) {
 enum ObjectType get_object_type(Object* obj) {
     return obj->type;
 }
+
+unsigned char is_numeric(enum ObjectType type) {
+    return type == INTEGER || type == DOUBLE;
+}
