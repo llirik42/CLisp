@@ -5,25 +5,25 @@
 typedef struct {
     enum ObjectType type;
     int value;
-} IntValue;
+} IntObject;
 
 typedef struct {
     enum ObjectType type;
     double value;
-} DoubleValue;
+} DoubleObject;
 
 typedef struct {
     enum ObjectType type;
     unsigned char value;
-} BooleanValue;
+} BooleanObject;
 
 typedef struct {
     enum ObjectType type;
     char* value;
     unsigned int length;
-} StringValue;
+} StringObject;
 
 typedef struct {
     enum ObjectType type;
     char value;
-} CharValue;
+} CharObject;

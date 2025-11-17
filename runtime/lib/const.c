@@ -11,7 +11,7 @@ static void destroy_simple_object(Object* obj) {
 }
 
 Object* make_int(int value) {
-    IntValue* obj_value = allocate_memory(sizeof(IntValue));
+    IntObject* obj_value = allocate_memory(sizeof(IntObject));
     obj_value->value = value;
     obj_value->type = INTEGER;
 
@@ -19,7 +19,7 @@ Object* make_int(int value) {
 }
 
 int get_int_value(Object* obj) {
-    IntValue* obj_value = (IntValue*)obj;
+    IntObject* obj_value = (IntObject*)obj;
     return obj_value->value;
 }
 
@@ -28,7 +28,7 @@ void destroy_int(Object* obj) {
 }
 
 Object* make_double(double value) {
-    DoubleValue* obj_value = allocate_memory(sizeof(DoubleValue));
+    DoubleObject* obj_value = allocate_memory(sizeof(DoubleObject));
     obj_value->value = value;
     obj_value->type = DOUBLE;
 
@@ -36,7 +36,7 @@ Object* make_double(double value) {
 }
 
 double get_double_value(Object* obj) {
-    DoubleValue* obj_value = (DoubleValue*)obj;
+    DoubleObject* obj_value = (DoubleObject*)obj;
     return obj_value->value;
 }
 
@@ -49,7 +49,7 @@ Object* make_boolean(unsigned char value) {
         print_error_and_exit("Boolean value must be 0 or 1!\n", 0);
     }
 
-    BooleanValue* obj_value = allocate_memory(sizeof(BooleanValue));
+    BooleanObject* obj_value = allocate_memory(sizeof(BooleanObject));
     obj_value->value = value;
     obj_value->type = BOOLEAN;
 
@@ -65,7 +65,7 @@ Object* make_false() {
 }
 
 unsigned char get_boolean_value(Object* obj) {
-    BooleanValue* obj_value = (BooleanValue*)obj;
+    BooleanObject* obj_value = (BooleanObject*)obj;
     return obj_value->value;
 }
 
@@ -74,7 +74,7 @@ void destroy_boolean(Object* obj) {
 }
 
 Object* make_string(char* value) {
-    StringValue* obj_value = allocate_memory(sizeof(StringValue));
+    StringObject* obj_value = allocate_memory(sizeof(StringObject));
     obj_value->length = strlen(value);
 
     char* container = allocate_memory(sizeof(char) * (obj_value->length + 1));
@@ -86,12 +86,12 @@ Object* make_string(char* value) {
 }
 
 char* get_string_value(Object* obj) {
-    StringValue* obj_value = (StringValue*)obj;
+    StringObject* obj_value = (StringObject*)obj;
     return obj_value->value;
 }
 
 unsigned int get_string_length(Object* obj) {
-    StringValue* obj_value = (StringValue*)obj;
+    StringObject* obj_value = (StringObject*)obj;
     return obj_value->length;
 }
 
@@ -102,7 +102,7 @@ void destroy_string(Object* obj) {
 }
 
 Object* make_char(char value) {
-    CharValue* obj_value = allocate_memory(sizeof(CharValue));
+    CharObject* obj_value = allocate_memory(sizeof(CharObject));
     obj_value->value = value;
     obj_value->type = CHAR;
 
@@ -110,7 +110,7 @@ Object* make_char(char value) {
 }
 
 char get_char_value(Object* obj) {
-    CharValue* obj_value = (CharValue*)obj;
+    CharObject* obj_value = (CharObject*)obj;
     return obj_value->value;
 }
 
