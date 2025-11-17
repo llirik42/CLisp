@@ -8,12 +8,12 @@
 #include "const_types.h"
 
 static void set_int_value(Object* obj, int new_value) {
-    IntValue* obj_value = (IntValue*)obj;
+    IntObject* obj_value = (IntObject*)obj;
     obj_value->value = new_value;
 }
 
 static void set_double_value(Object* obj, double new_value) {
-    DoubleValue* obj_value = (DoubleValue*)obj;
+    DoubleObject* obj_value = (DoubleObject*)obj;
     obj_value->value = new_value;
 }
 
