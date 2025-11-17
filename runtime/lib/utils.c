@@ -77,7 +77,6 @@ double unwrap_numeric_to_double(Object* numeric) {
 }
 
 unsigned char obj_to_boolean(Object* obj) {
-
     assert(get_object_type(obj) != EVALUABLE);
 
     if (get_object_type(obj) == BOOLEAN) {
@@ -90,7 +89,6 @@ unsigned char obj_to_boolean(Object* obj) {
 // Unwrap non-constant type. If evaluable - returns evaluated. If lambda - returns evaluated lambda.
 Object* unwrap_object(Object* obj) {
     // TODO: Add lambda evaluation
-
     return evaluate(obj);
 }
 
