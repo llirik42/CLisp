@@ -89,7 +89,7 @@ class ASTVisitor(LispVisitor):
         else:
             self.__env["variables"][variable.getText()].append(expr_name)
 
-        code = self.__code_creator.define_variable_value(
+        code = self.__code_creator.set_variable_value(
             env=self.__env["var"], name=f'"{variable.getText()}"', value=expr_name
         )
 
@@ -114,7 +114,7 @@ class ASTVisitor(LispVisitor):
 
         assignment_name = self.__variable_manager.create_variable_name()
 
-        assignment_code = self.__code_creator.set_variable_value(
+        assignment_code = self.__code_creator.update_variable_value(
             var=assignment_name,
             env=self.__env["var"],
             name=f'"{variable}"',

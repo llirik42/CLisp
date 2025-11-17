@@ -261,7 +261,7 @@ class CodeCreator:
 
         return Code(template=self.__get_template("get_variable_value"), **kwargs)
 
-    def define_variable_value(self, **kwargs) -> Code:
+    def set_variable_value(self, **kwargs) -> Code:
         """
         Returns code that defines a variable with the value.
 
@@ -269,9 +269,9 @@ class CodeCreator:
         :raises KeyError: template-file of the code not found.
         """
 
-        return Code(template=self.__get_template("define_variable"), **kwargs)
+        return Code(template=self.__get_template("set_variable_value"), **kwargs)
 
-    def set_variable_value(self, **kwargs) -> Code:
+    def update_variable_value(self, **kwargs) -> Code:
         """
         Returns code that changes value of the variable.
 
@@ -280,7 +280,7 @@ class CodeCreator:
         """
 
         return Code(
-            template=self.__get_template("set_variable_value"),
+            template=self.__get_template("update_variable_value"),
             secondary_template=self.__get_template("destroy_object"),
             **kwargs,
         )
