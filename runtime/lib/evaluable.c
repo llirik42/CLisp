@@ -3,14 +3,14 @@
 #include "memory.h"
 
 Object* make_evaluable(postponed_func func, CLISP_FUNC_PARAMS) {
-    EvaluableObject* wrapper = allocate_memory(sizeof(EvaluableObject));
+    EvaluableObject* evaluable_object = allocate_memory(sizeof(EvaluableObject));
 
-    wrapper->args_count = count;
-    wrapper->function = func;
-    wrapper->args = args;
-    wrapper->type = EVALUABLE;
+    evaluable_object->args_count = count;
+    evaluable_object->function = func;
+    evaluable_object->args = args;
+    evaluable_object->type = EVALUABLE;
 
-    return (Object*)wrapper;
+    return (Object*)evaluable_object;
 }
 
 void destroy_evaluable(Object* obj) {
@@ -22,7 +22,7 @@ Object* evaluate(Object* obj) {
         return obj;
     }
 
-    const EvaluableObject* wrapper = (EvaluableObject*)obj;
+    const EvaluableObject* evaluable_object = (EvaluableObject*)obj;
 
-    return wrapper->function(wrapper->args_count, wrapper->args);
+    return evaluable_object->function(evaluable_object->args_count, evaluable_object->args);
 }
