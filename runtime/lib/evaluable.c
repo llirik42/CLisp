@@ -2,7 +2,7 @@
 
 #include "memory.h"
 
-Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAMS) {
+Object* make_evaluable(postponed_func func, CLISP_FUNC_PARAMS) {
     FunctionWrapper* wrapper = allocate_memory(sizeof(FunctionWrapper));
 
     wrapper->args_count = count;
