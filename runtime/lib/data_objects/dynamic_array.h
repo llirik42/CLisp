@@ -5,7 +5,6 @@ typedef struct {
     void **data;
     size_t size;
     size_t capacity;
-    size_t elem_size;
 } DynamicArray;
 
 DynamicArray* da_create();
