@@ -3,7 +3,7 @@
 #include "memory.h"
 
 Object* make_evaluable(postponed_func func, CLISP_FUNC_PARAMS) {
-    FunctionWrapper* wrapper = allocate_memory(sizeof(FunctionWrapper));
+    EvaluableObject* wrapper = allocate_memory(sizeof(EvaluableObject));
 
     wrapper->args_count = count;
     wrapper->function = func;
@@ -22,7 +22,7 @@ Object* evaluate(Object* obj) {
         return obj;
     }
 
-    const FunctionWrapper* wrapper = (FunctionWrapper*)obj;
+    const EvaluableObject* wrapper = (EvaluableObject*)obj;
 
     return wrapper->function(wrapper->args_count, wrapper->args);
 }

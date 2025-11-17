@@ -8,7 +8,7 @@ typedef struct {
     postponed_func function;
     Object **args;
     unsigned int args_count;
-} FunctionWrapper;
+} EvaluableObject;
 
 Object* make_evaluable(postponed_func func, CLISP_FUNC_PARAMS);
 
