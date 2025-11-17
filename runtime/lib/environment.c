@@ -1,36 +1,40 @@
 #include "environment.h"
 
+#include <math.h>
 #include <string.h>
 
 #include "core.h"
 #include "memory.h"
 #include "utils.h"
 
-typedef struct {
-    char* key;
-    Object* val;
-} Variable;
+#define BASIC_CAPACITY 4
 
-Environment* make_environment(Environment* parent) {
+Environment* make_environment(Environment* parent, size_t capacity) {
+    if (!capacity) {
+        capacity = BASIC_CAPACITY;
+    }
+
     Environment* env = allocate_memory(sizeof(Environment));
     env->parent = parent;
-    env->variables = da_create();
+    env->capacity = capacity;
+    env->variables_count = 0;
+    env->variables = allocate_memory(sizeof(Variable) * capacity);
     return env;
 }
 
 void destroy_environment(Environment* env) {
-    for (size_t i = 0; i < da_size(env->variables); i++) {
-        free_memory(da_get(env->variables, i));
-    }
-    da_destroy(env->variables);
+    free_memory(env->variables);
     free_memory(env);
 }
 
 void set_variable_value(Environment* env, char* name, Object* value) {
-    Variable* var = allocate_memory(sizeof(Variable));
-    var->key = name;
-    var->val = value;
-    da_push_back(env->variables, var);
+    if (env->variables_count >= env->capacity) {
+        env->capacity = (int)ceil((double)env->capacity * 1.5);
+        env->variables = reallocate_memory(env->variables, sizeof(Variable) * env->capacity);
+    }
+
+    Variable var = {name, value};
+    env->variables[env->variables_count++] = var;
 }
 
 Object* update_variable_value(Environment* env, char* name, Object* value) {
@@ -39,10 +43,9 @@ Object* update_variable_value(Environment* env, char* name, Object* value) {
         __builtin_unreachable();
     }
 
-    for (size_t i = 0; i < da_size(env->variables); i++) {
-        Variable* var = da_get(env->variables, i);
-        if (!strcmp(name, var->key)) {
-            var->val = value;
+    for (size_t i = 0; i < env->variables_count; i++) {
+        if (!strcmp(name, env->variables[i].key)) {
+            env->variables[i].val = value;
             return make_unspecified();
         }
     }
@@ -55,10 +58,10 @@ Object* get_variable_value(Environment* env, char* name) {
         __builtin_unreachable();
     }
 
-    for (size_t i = 0; i < da_size(env->variables); i++) {
-        Variable* var = da_get(env->variables, i);
-        if (!strcmp(name, var->key)) {
-            return var->val;
+    for (size_t i = 0; i < env->variables_count; i++) {
+        Variable var = env->variables[i];
+        if (!strcmp(name, var.key)) {
+            return var.val;
         }
     }
     return get_variable_value(env->parent, name);
