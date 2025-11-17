@@ -1,14 +1,16 @@
 #pragma once
 #include "core.h"
 
+typedef Object*(*postponed_func)(CLISP_FUNC_PARAMS);
+
 typedef struct {
     enum ObjectType type;
-    Object* (*function)(unsigned int, Object**);
+    postponed_func function;
     Object **args;
     unsigned int args_count;
-} FunctionWrapper;
+} EvaluableObject;
 
-Object* make_evaluable(Object* (*func)(unsigned int, Object**), CLISP_FUNC_PARAMS);
+Object* make_evaluable(postponed_func func, CLISP_FUNC_PARAMS);
 
 void destroy_evaluable(Object* obj);
 

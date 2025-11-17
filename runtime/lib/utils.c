@@ -13,7 +13,7 @@ void print_error_and_exit(char* message, unsigned char use_perror) {
     } else {
         perror(message);
     }
-    exit(EXIT_FAILURE);
+    abort();
 }
 
 void check_func_arguments_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CountCheckingMode mode) {
@@ -49,12 +49,8 @@ void check_func_argument_type(const char* func_name, enum ObjectType type, enum 
     }
 }
 
-unsigned char is_numeric(enum ObjectType type) {
-    return type == INTEGER || type == DOUBLE;
-}
-
 void check_func_argument_numeric_type(const char* func_name, enum ObjectType type) {
-    if (type != INTEGER && type != DOUBLE) {
+    if (!is_numeric(type)) {
         char error_str[256];
         snprintf(error_str, sizeof(error_str), "Wrong argument type in %s! Must be numeric. Got %s.\n",
             func_name, get_object_type_name(type));
@@ -72,12 +68,11 @@ double unwrap_numeric_to_double(Object* numeric) {
         }
         default:
             print_error_and_exit("Failed to unwrap numeric value. Invalid type.\n", 0);
-            return 0.0;
+            __builtin_unreachable();
     }
 }
 
 unsigned char obj_to_boolean(Object* obj) {
-
     assert(get_object_type(obj) != EVALUABLE);
 
     if (get_object_type(obj) == BOOLEAN) {
@@ -90,7 +85,6 @@ unsigned char obj_to_boolean(Object* obj) {
 // Unwrap non-constant type. If evaluable - returns evaluated. If lambda - returns evaluated lambda.
 Object* unwrap_object(Object* obj) {
     // TODO: Add lambda evaluation
-
     return evaluate(obj);
 }
 

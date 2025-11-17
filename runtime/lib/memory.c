@@ -1,19 +1,17 @@
 #include "memory.h"
+#include "utils.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 static void check_allocated(void* ptr) {
     if (!ptr) {
-        perror("malloc");
-        exit(EXIT_FAILURE);
+        print_error_and_exit("malloc", 1);
     }
 }
 
 void* allocate_memory(size_t size) {
     if (!size) {
-        fprintf(stderr, "Memory allocation: no memory block size!");
-        exit(EXIT_FAILURE);
+        print_error_and_exit("Memory allocation: no memory block size!\n", 0);
     }
 
     void* ptr = malloc(size);

@@ -41,7 +41,6 @@ Object* clisp_not(CLISP_FUNC_PARAMS) {
 }
 
 Object* clisp_or(CLISP_FUNC_PARAMS) {
-
     if (count == 0) {
         return make_false();
     }
@@ -67,7 +66,6 @@ Object* clisp_or(CLISP_FUNC_PARAMS) {
 }
 
 Object* clisp_and(CLISP_FUNC_PARAMS) {
-
     if (count == 0) {
         return make_true();
     }

@@ -3,18 +3,17 @@
 #include <stddef.h>
 
 #include "const.h"
-#include "evaluable.h"
 #include "utils.h"
 #include "const_types.h"
 
 static void set_int_value(Object* obj, int new_value) {
-    IntValue* obj_value = (IntValue*)obj;
-    obj_value->value = new_value;
+    IntObject* int_object = (IntObject*)obj;
+    int_object->value = new_value;
 }
 
 static void set_double_value(Object* obj, double new_value) {
-    DoubleValue* obj_value = (DoubleValue*)obj;
-    obj_value->value = new_value;
+    DoubleObject* double_object = (DoubleObject*)obj;
+    double_object->value = new_value;
 }
 
 Object* clisp_add(CLISP_FUNC_PARAMS) {
@@ -34,17 +33,21 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
         Object* operand = unwrap_object(args[i]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
-        if (get_object_type(operand) == DOUBLE && get_object_type(result) == INTEGER) {
+        enum ObjectType operand_type = get_object_type(operand);
+        enum ObjectType result_type = get_object_type(result);
+
+        if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
             destroy(result);
             result = make_double(prev_value);
+            result_type = get_object_type(result);
         }
 
-        double op_value = get_object_type(operand) == INTEGER
+        double op_value = operand_type == INTEGER
                          ? get_int_value(operand)
                          : get_double_value(operand);
 
-        if (get_object_type(result) == DOUBLE) {
+        if (result_type == DOUBLE) {
             set_double_value(result, get_double_value(result) + op_value);
         } else {
             set_int_value(result, get_int_value(result) + (int)op_value);
@@ -73,23 +76,27 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
         Object* operand = unwrap_object(args[i]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
+        enum ObjectType operand_type = get_object_type(operand);
+        enum ObjectType result_type = get_object_type(result);
+
         if (unwrap_numeric_to_double(operand) == 0) {
             destroy(result);
             destroy_if_unwrapped(args[i], operand);
             return make_int(0);
         }
 
-        if (get_object_type(operand) == DOUBLE && get_object_type(result) == INTEGER) {
+        if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
             destroy(result);
             result = make_double(prev_value);
+            result_type = get_object_type(result);
         }
 
-        double op_value = get_object_type(operand) == INTEGER
+        double op_value = operand_type == INTEGER
                          ? get_int_value(operand)
                          : get_double_value(operand);
 
-        if (get_object_type(result) == DOUBLE) {
+        if (result_type == DOUBLE) {
             set_double_value(result, get_double_value(result) * op_value);
         } else {
             set_int_value(result, get_int_value(result) * (int)op_value);
@@ -113,11 +120,20 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
         }
 
         enum ObjectType type = get_object_type(operand);
-        
+
         // 1 / (+-1) = +- 1
-        if ((type == DOUBLE && (get_double_value(operand) == 1 || get_double_value(operand) == -1))
-            || (type == INTEGER && (get_int_value(operand) == 1 || get_int_value(operand) == -1))) {
-            return operand;
+        if (type == DOUBLE) {
+            double double_value = get_double_value(operand);
+            if (double_value == 1 || double_value == -1) {
+                return operand;
+            }
+        }
+
+        if (type == INTEGER) {
+            double int_value = get_int_value(operand);
+            if (int_value == 1 || int_value == -1) {
+                return operand;
+            }
         }
 
         Object* result = make_double(1 / unwrap_numeric_to_double(operand));

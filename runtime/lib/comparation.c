@@ -12,7 +12,7 @@ static unsigned int greater_or_equal_than(double a, double b) { return a >= b; }
 static unsigned int less_than(double a, double b) { return a < b; }
 static unsigned int less_or_equal_than(double a, double b) { return a <= b; }
 
-Object* numeric_comparison(CLISP_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
+static Object* numeric_comparison(CLISP_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
     check_func_arguments_count(func_name, count, 2, EQUAL);
 
     Object* left_term = unwrap_object(args[0]);
