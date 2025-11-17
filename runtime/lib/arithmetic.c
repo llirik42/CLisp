@@ -8,13 +8,13 @@
 #include "const_types.h"
 
 static void set_int_value(Object* obj, int new_value) {
-    IntObject* obj_value = (IntObject*)obj;
-    obj_value->value = new_value;
+    IntObject* int_object = (IntObject*)obj;
+    int_object->value = new_value;
 }
 
 static void set_double_value(Object* obj, double new_value) {
-    DoubleObject* obj_value = (DoubleObject*)obj;
-    obj_value->value = new_value;
+    DoubleObject* double_object = (DoubleObject*)obj;
+    double_object->value = new_value;
 }
 
 Object* clisp_add(CLISP_FUNC_PARAMS) {
