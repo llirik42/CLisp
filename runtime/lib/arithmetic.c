@@ -3,7 +3,6 @@
 #include <stddef.h>
 
 #include "const.h"
-#include "evaluable.h"
 #include "utils.h"
 #include "const_types.h"
 

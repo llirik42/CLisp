@@ -1,9 +1,7 @@
 #include "memory.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "utils.h"
+
+#include <stdlib.h>
 
 static void check_allocated(void* ptr) {
     if (!ptr) {
