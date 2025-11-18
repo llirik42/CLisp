@@ -2,10 +2,10 @@ import argparse
 
 from src.environment import EnvironmentContext
 from src.evaluable_context import EvaluableContext
-from src.ast_visiting import ASTVisitor
-from src.code_rendering import CodeCreator
-from src.function_table import FunctionTable
-from src.ast_reading import read_ast_file, read_ast_stdin
+from .ast_visiting import ASTVisitor
+from .code_rendering import CodeCreator
+from .function_table import FunctionTable
+from .ast_reading import read_ast_file
 from src.variable_manager import VariableManager
 
 
@@ -36,20 +36,45 @@ def main():
     parser.add_argument("-t", "--templates", default="code_templates")
     args = parser.parse_args()
 
-    ast = read_ast_stdin() if args.input_stdin else read_ast_file(args.input_file)
-
     code_creator = CodeCreator(args.templates)
     function_table = FunctionTable(args.procedure_table)
-    visitor = ASTVisitor(
-        function_table=function_table,
-        code_creator=code_creator,
-        variable_manager=VariableManager(),
-        evaluable_context=EvaluableContext(),
-        environment_context=EnvironmentContext(),
-    )
 
-    output_code = visitor.visit(ast)
-    write_generated_code(args.output_file, output_code)
+    l1 = ["1.scm", "2.scm"]
+    l2 = ["1_actual.c", "2_actual.c"]
+
+    assert len(l1) == len(l2)
+
+    for i in range(len(l1)):
+        visitor = ASTVisitor(
+            function_table=function_table,
+            code_creator=code_creator,
+            variable_manager=VariableManager(),
+            evaluable_context=EvaluableContext(),
+            environment_context=EnvironmentContext(),
+        )
+
+        f_in = l1[i]
+        ast = read_ast_file(f_in)
+        output_code = visitor.visit(ast)
+        write_generated_code(l2[i], output_code)
+
+        output_code = output_code.split("\n")
+
+        with open(f"{i+1}.c", "r") as f:
+            expected_code = f.read().split("\n")
+
+        line = 0
+        while True:
+            if output_code[line].strip() != expected_code[line].strip():
+                print(f"File {i+1}, line {line + 1} !!!")
+                break
+
+            line += 1
+
+            if line >= max(len(expected_code), len(output_code)):
+                print(f"{i+1}.scm is OK!")
+
+                break
 
 
 if __name__ == "__main__":

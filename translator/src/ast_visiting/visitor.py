@@ -2,15 +2,19 @@ from typing import Union
 
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code, wrap_codes, join_codes, transfer_secondary
+from src.code_rendering import (
+    CodeCreator,
+    Code,
+    wrap_codes,
+    join_codes,
+    transfer_secondary,
+)
 from src.function_table import FunctionTable
 from src.variable_manager import VariableManager
-from .environment import EnvironmentContext
-from .evaluable_context import EvaluableContext
 from .exceptions import VisitingException
 
-__all__ = ["ASTVisitor"]
-
+from src.evaluable_context import EvaluableContext
+from src.environment import EnvironmentContext
 
 VisitResult = tuple[str, Code]
 
@@ -21,6 +25,8 @@ class ASTVisitor(LispVisitor):
         function_table: FunctionTable,
         code_creator: CodeCreator,
         variable_manager: VariableManager,
+        evaluable_context: EvaluableContext,
+        environment_context: EnvironmentContext,
     ):
         """
         Class represents a visitor of AST of the Lisp. Result of the visiting - code on C, that can be used in interpretation.
@@ -33,10 +39,14 @@ class ASTVisitor(LispVisitor):
         self.__function_table = function_table
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
-        self.__evaluable_ctx = EvaluableContext()
-        self.__environment_ctx = EnvironmentContext()
+        self.__evaluable_ctx = evaluable_context
+        self.__environment_ctx = environment_context
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
+        """
+        Returns final code.
+        """
+
         global_env_var_name = self.__variable_manager.create_environment_name()
 
         global_env_code = self.__code_creator.make_environment(
@@ -45,7 +55,7 @@ class ASTVisitor(LispVisitor):
 
         with self.__environment_ctx:
             self.__environment_ctx.init(code=global_env_code, name=global_env_var_name)
-            
+
             codes = [self.visit(e)[1] for e in ctx.programElement()]
 
             global_env_code.update_data(varCount=self.__environment_ctx.variable_count)
@@ -75,9 +85,12 @@ class ASTVisitor(LispVisitor):
         self.__environment_ctx.update_variable(variable.getText(), expr_name)
 
         code = self.__code_creator.set_variable_value(
-            env=self.__environment_ctx.name, name=f'"{variable.getText()}"', value=expr_name
+            env=self.__environment_ctx.name,
+            name=f'"{variable.getText()}"',
+            value=expr_name,
         )
 
+        # "" - для удобства унификации обработки результатов в visitProgram()
         return "", wrap_codes([code, expr_code])  # TODO
 
     def visitAssignment(self, ctx: LispParser.AssignmentContext) -> VisitResult:
@@ -119,7 +132,7 @@ class ASTVisitor(LispVisitor):
 
         with self.__environment_ctx:
             self.__environment_ctx.init(code=new_env_code, name=new_env_name)
-            codes = [r[1] for r in self.visit(binding_list)]
+            codes = [r for r in self.visit(binding_list)]
             body_name, body_code_text = self.visitBody(ctx.body())
 
             code = self.__environment_ctx.code
@@ -131,10 +144,10 @@ class ASTVisitor(LispVisitor):
 
         return body_name, new_env_code
 
-    def visitBindingList(self, ctx: LispParser.BindingListContext) -> list[VisitResult]:
+    def visitBindingList(self, ctx: LispParser.BindingListContext) -> list[Code]:
         return [self.visit(b) for b in ctx.binding()]
 
-    def visitBinding(self, ctx: LispParser.BindingContext):
+    def visitBinding(self, ctx: LispParser.BindingContext) -> Code:
         variable = ctx.variable()
 
         expression = ctx.expression()
@@ -151,10 +164,12 @@ class ASTVisitor(LispVisitor):
         self.__environment_ctx.update_variable(variable.getText(), expr_name)
 
         code = self.__code_creator.set_variable_value(
-            env=self.__environment_ctx.name, name=f'"{variable.getText()}"', value=expr_name
+            env=self.__environment_ctx.name,
+            name=f'"{variable.getText()}"',
+            value=expr_name,
         )
 
-        return "", wrap_codes([code, expr_code])  # TODO
+        return wrap_codes([code, expr_code])
 
     def visitBody(self, ctx: LispParser.BodyContext) -> tuple[str, str]:
         expressions = ctx.expression()

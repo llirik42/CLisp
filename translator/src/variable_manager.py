@@ -1,3 +1,5 @@
+__all__ = ["VariableManager"]
+
 class VariableManager:
     def __init__(self):
         """
