@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "const.h"
+#include "primitive.h"
 #include "evaluable.h"
 
 void print_error_and_exit(char* message, unsigned char use_perror) {

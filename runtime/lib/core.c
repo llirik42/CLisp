@@ -1,6 +1,6 @@
 #include "core.h"
 
-#include "const.h"
+#include "primitive.h"
 #include "evaluable.h"
 #include "memory.h"
 

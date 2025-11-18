@@ -1,4 +1,4 @@
-#include "const.h"
+#include "primitive.h"
 
 #include <string.h>
 

@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "const.h"
+#include "primitive.h"
 #include "utils.h"
 
 Object* clisp_if(CLISP_FUNC_PARAMS) {
