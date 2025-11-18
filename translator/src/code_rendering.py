@@ -74,6 +74,8 @@ class Code:
         self.__main_epilog += text
 
     def add_secondary_prolog(self, text: str):
+        # TODO: переименовать в secondary
+
         """
         Inserts text to the beginning of the secondary prolog.
 
@@ -190,6 +192,12 @@ def nest_codes(codes: list[Code]) -> Code:
 def join_codes(codes: list[Code]) -> str:
     rendered = [c.render() for c in codes]
     return "\n".join(rendered)
+
+
+def transfer_secondary(from_: Code, to_: Code) -> None:
+    to_.add_secondary_prolog(from_.render_secondary())
+    from_.clear_secondary()
+
 
 
 class CodeCreator:

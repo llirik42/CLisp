@@ -1,4 +1,4 @@
-class EvaluableMakingContext:
+class EvaluableContext:
     """
     Class indicates whether "evaluable objects" should be made instead of a regular function call or not. For example, while visiting an expression "condition" procedure calls become deferred. It means that generated code should contain not a regular procedure call, but an "evaluable object" which will be the wrapper for the procedure call.
     """
