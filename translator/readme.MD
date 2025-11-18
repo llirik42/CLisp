@@ -6,7 +6,7 @@
 2. Generate python-code by ANTLR4
 
 ```bash
-antlr4 -Dlanguage=Python3 -visitor Lisp.g4
+antlr4 -Dlanguage=Python3 -visitor -o src Lisp.g4
 ```
 
 > This should be done in activated python-environment with all dependencies installed

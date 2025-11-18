@@ -1,4 +1,7 @@
-class EvaluableMakingContext:
+__all__ = ["EvaluableContext"]
+
+
+class EvaluableContext:
     """
     Class indicates whether "evaluable objects" should be made instead of a regular function call or not. For example, while visiting an expression "condition" procedure calls become deferred. It means that generated code should contain not a regular procedure call, but an "evaluable object" which will be the wrapper for the procedure call.
     """
@@ -14,7 +17,7 @@ class EvaluableMakingContext:
         self.__counter -= 1
 
     @property
-    def should_make_evaluable(self):
+    def should_make_evaluable(self) -> bool:
         """
         Whether should "evaluable" be made instead of a regular function call or not.
         """

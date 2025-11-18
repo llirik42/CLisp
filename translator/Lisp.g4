@@ -1,10 +1,14 @@
 grammar Lisp;
 
-program
-    : expression* EOF
-    ;
+program : programElement* EOF ;
+
+programElement
+    : expression
+    | definition ;
 
 body : expression+ ;
+
+definition : LBRACKET DEFINE variable expression RBRACKET ;
 
 expression
     : literal
@@ -15,11 +19,12 @@ expression
     | procedureCall
     | procedure
     | assignment
+    | let
+    | letAsterisk
+    | letRec
     ;
 
-literal
-    : constant
-    ;
+literal : constant ;
 
 variable : IDENTIFIER ;
 
@@ -47,6 +52,12 @@ periodFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
 
 assignment : LBRACKET SET variable expression RBRACKET ;
 
+let : LBRACKET LET bindingList body RBRACKET ;
+letAsterisk : LBRACKET LET_ASTERISK bindingList body RBRACKET ;
+letRec : LBRACKET LET_REC bindingList body RBRACKET ;
+bindingList : LBRACKET binding* RBRACKET ;
+binding : LBRACKET variable expression RBRACKET ;
+
 constant
     : boolConstant
     | characterConstant
@@ -66,8 +77,12 @@ LAMBDA : 'lambda' ;
 PERIOD : '.' ;
 IF : 'if' ;
 AND : 'and' ;
-OR : 'or' ;
-SET : 'set!';
+OR : 'or'  ;
+SET : 'set!' ;
+DEFINE : 'define' ;
+LET : 'let' ;
+LET_ASTERISK : 'let*' ;
+LET_REC : 'letrec' ;
 INTEGER : SIGN? DIGIT+ ;
 FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
