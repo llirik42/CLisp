@@ -2,7 +2,7 @@ from typing import Union
 
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code, wrap_codes, nest_codes
+from src.code_rendering import CodeCreator, Code, wrap_codes, nest_codes, join_codes
 from src.function_table import FunctionTable
 from .context import EvaluableMakingContext, TopLevelContext
 from .exceptions import VisitingException
@@ -63,13 +63,13 @@ class ASTVisitor(LispVisitor):
 
         codes = [self.visit(e)[1] for e in ctx.programElement()]
         for c in codes:
-            pass
-            #c.make_final()
+            c.make_final()
 
-        result_code = nest_codes([global_env_code] + codes)
-        result_code.make_final()
 
-        main_function_code = self.__code_creator.main_function(code=result_code.render())
+
+        global_env_code.add_main_epilog(join_codes(codes))
+
+        main_function_code = self.__code_creator.main_function(code=global_env_code.render())
 
         return main_function_code.render()
 
@@ -122,6 +122,13 @@ class ASTVisitor(LispVisitor):
         )
 
         return expr_name, wrap_codes([assignment_code, expr_code])
+
+    def visitLet(self, ctx:LispParser.LetContext):
+        # Создаём новое окружение
+        # Пихаем в окружение переменные
+        # Об
+
+        pass
 
     def visitVariable(self, ctx: LispParser.VariableContext) -> VisitResult:
         variable = ctx.getText()

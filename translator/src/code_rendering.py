@@ -187,6 +187,10 @@ def nest_codes(codes: list[Code]) -> Code:
     return code
 
 
+def join_codes(codes: list[Code]) -> str:
+    rendered = [c.render() for c in codes]
+    return "\n".join(rendered)
+
 class CodeCreator:
     def __init__(self, templates_folder_path: str):
         """
