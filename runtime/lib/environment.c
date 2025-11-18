@@ -28,7 +28,7 @@ void clisp_destroy_environment(Environment* env) {
     free_memory(env);
 }
 
-void set_variable_value(Environment* env, char* name, Object* value) {
+void clisp_set_variable_value(Environment* env, char* name, Object* value) {
     for (size_t i = 0; i < env->variables_count; i++) {
         if (!strcmp(name, env->variables[i].key)) {
             env->variables[i].val = value;
@@ -45,7 +45,7 @@ void set_variable_value(Environment* env, char* name, Object* value) {
     env->variables[env->variables_count++] = var;
 }
 
-Object* update_variable_value(Environment* env, char* name, Object* value) {
+Object* clisp_update_variable_value(Environment* env, char* name, Object* value) {
     if (!env) {
         print_error_and_exit("No variable in environment!\n", 0);
         __builtin_unreachable();
@@ -57,10 +57,10 @@ Object* update_variable_value(Environment* env, char* name, Object* value) {
             return clisp_make_unspecified();
         }
     }
-    return update_variable_value(env->parent, name, value);
+    return clisp_update_variable_value(env->parent, name, value);
 }
 
-Object* get_variable_value(Environment* env, char* name) {
+Object* clisp_get_variable_value(Environment* env, char* name) {
     if (!env) {
         print_error_and_exit("No variable in environment!\n", 0);
         __builtin_unreachable();
@@ -72,5 +72,5 @@ Object* get_variable_value(Environment* env, char* name) {
             return var.val;
         }
     }
-    return get_variable_value(env->parent, name);
+    return clisp_get_variable_value(env->parent, name);
 }

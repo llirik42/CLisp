@@ -11,7 +11,7 @@ typedef struct {
     unsigned int args_count;
 } EvaluableObject;
 
-Object* make_evaluable(postponed_func func, CLISP_FUNC_PARAMS);
+Object* clisp_make_evaluable(postponed_func func, CLISP_FUNC_PARAMS);
 
 void destroy_evaluable(Object* obj);
 
