@@ -4,7 +4,7 @@
 
 #include "primitive.h"
 #include "utils.h"
-#include "const_types.h"
+#include "primitive_types.h"
 
 static void set_int_value(Object* obj, int new_value) {
     IntObject* int_object = (IntObject*)obj;
@@ -24,9 +24,10 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
     if (count == 1) {
         Object* operand = unwrap_object(args[0]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
-        Object* result = clone_if_primitive(operand);
-        destroy_if_unwrapped(args[0], operand);
-        return result;
+        if (operand == args[0]) {
+            increase_refs_count(operand);
+        }
+        return operand;
     }
 
     Object* result = make_int(0);
@@ -69,9 +70,10 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
     if (count == 1) {
         Object* operand = unwrap_object(args[0]);
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
-        Object* result = clone_if_primitive(operand);
-        destroy_if_unwrapped(args[0], operand);
-        return result;
+        if (operand == args[0]) {
+            increase_refs_count(operand);
+        }
+        return operand;
     }
 
     Object* result = make_int(1);
@@ -129,18 +131,20 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
         if (type == DOUBLE) {
             double double_value = get_double_value(operand);
             if (double_value == 1 || double_value == -1) {
-                Object* result = clone_if_primitive(operand);
-                destroy_if_unwrapped(args[0], operand);
-                return result;
+                if (operand == args[0]) {
+                    increase_refs_count(operand);
+                }
+                return operand;
             }
         }
 
         if (type == INTEGER) {
             double int_value = get_int_value(operand);
             if (int_value == 1 || int_value == -1) {
-                Object* result = clone_if_primitive(operand);
-                destroy_if_unwrapped(args[0], operand);
-                return result;
+                if (operand == args[0]) {
+                    increase_refs_count(operand);
+                }
+                return operand;
             }
         }
 
@@ -190,9 +194,10 @@ Object* clisp_sub(CLISP_FUNC_PARAMS) {
         } else {
             set_double_value(operand, -1 * get_double_value(operand));
         }
-        Object* result = clone_if_primitive(operand);
-        destroy_if_unwrapped(args[0], operand);
-        return result;
+        if (operand == args[0]) {
+            increase_refs_count(operand);
+        }
+        return operand;
     }
 
     Object* operand1 = unwrap_object(args[0]);

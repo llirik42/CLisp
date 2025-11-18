@@ -6,8 +6,17 @@
 
 Object* make_unspecified() {
     Object* obj = allocate_memory(sizeof(Object));
-    obj->type = UNSPECIFIED;
+    init_object(obj, UNSPECIFIED);
     return obj;
+}
+
+void init_object(Object* obj, enum ObjectType type) {
+    obj->type = type;
+    obj->ref_count = 1;
+}
+
+void increase_refs_count(Object* obj) {
+    obj->ref_count++;
 }
 
 static void destroy_unspecified(Object* obj) {
@@ -15,7 +24,11 @@ static void destroy_unspecified(Object* obj) {
 }
 
 void destroy(Object* obj) {
-    if (!obj) {
+    if (!obj || !obj->ref_count) {
+        return;
+    }
+
+    if (--obj->ref_count > 0) {
         return;
     }
 

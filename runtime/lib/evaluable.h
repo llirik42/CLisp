@@ -5,6 +5,7 @@ typedef Object*(*postponed_func)(CLISP_FUNC_PARAMS);
 
 typedef struct {
     enum ObjectType type;
+    unsigned short ref_count;
     postponed_func function;
     Object **args;
     unsigned int args_count;

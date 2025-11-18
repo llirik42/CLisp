@@ -13,12 +13,13 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
     }
 
     unsigned char test_value = obj_to_boolean(args[0]);
-    Object* result = NULL;
+
     if (test_value) {
         Object* consequent = unwrap_object(args[1]);
-        result = clone_if_primitive(consequent);
-        destroy_if_unwrapped(args[1], consequent);
-        return result;
+        if (consequent == args[1]) {
+            increase_refs_count(consequent);
+        }
+        return consequent;
     }
 
     if (count == 2) {
@@ -26,9 +27,10 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
     }
 
     Object* alternative = unwrap_object(args[2]);
-    result = clone_if_primitive(alternative);
-    destroy_if_unwrapped(args[2], alternative);
-    return result;
+    if (alternative == args[2]) {
+        increase_refs_count(alternative);
+    }
+    return alternative;
 }
 
 Object* clisp_not(CLISP_FUNC_PARAMS) {
