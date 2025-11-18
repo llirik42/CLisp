@@ -18,7 +18,7 @@ static void set_double_value(Object* obj, double new_value) {
 
 Object* clisp_add(CLISP_FUNC_PARAMS) {
     if (count == 0) {
-        return make_int(0);
+        return clisp_make_int(0);
     }
 
     if (count == 1) {
@@ -30,7 +30,7 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
         return operand;
     }
 
-    Object* result = make_int(0);
+    Object* result = clisp_make_int(0);
 
     for (unsigned int i = 0; i < count; i++) {
         Object* operand = unwrap_object(args[i]);
@@ -41,8 +41,8 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
-            destroy(result);
-            result = make_double(prev_value);
+            clisp_destroy_object(result);
+            result = clisp_make_double(prev_value);
             result_type = get_object_type(result);
         }
 
@@ -64,7 +64,7 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
 
 Object* clisp_mul(CLISP_FUNC_PARAMS) {
     if (count == 0) {
-        return make_int(1);
+        return clisp_make_int(1);
     }
 
     if (count == 1) {
@@ -76,7 +76,7 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
         return operand;
     }
 
-    Object* result = make_int(1);
+    Object* result = clisp_make_int(1);
 
     for (unsigned int i = 0; i < count; i++) {
         Object* operand = unwrap_object(args[i]);
@@ -86,15 +86,15 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
         enum ObjectType result_type = get_object_type(result);
 
         if (unwrap_numeric_to_double(operand) == 0) {
-            destroy(result);
+            clisp_destroy_object(result);
             destroy_if_unwrapped(args[i], operand);
-            return make_int(0);
+            return clisp_make_int(0);
         }
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
-            destroy(result);
-            result = make_double(prev_value);
+            clisp_destroy_object(result);
+            result = clisp_make_double(prev_value);
             result_type = get_object_type(result);
         }
 
@@ -148,7 +148,7 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
             }
         }
 
-        Object* result = make_double(1 / unwrap_numeric_to_double(operand));
+        Object* result = clisp_make_double(1 / unwrap_numeric_to_double(operand));
         destroy_if_unwrapped(args[0], operand);
         return result;
     }
@@ -165,12 +165,12 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
     Object* result = NULL;
 
     if (get_object_type(operand1) == DOUBLE ||  get_object_type(operand2) == DOUBLE) {
-        result = make_double(unwrap_numeric_to_double(operand1) / unwrap_numeric_to_double(operand2));
+        result = clisp_make_double(unwrap_numeric_to_double(operand1) / unwrap_numeric_to_double(operand2));
     } else {
         if (get_int_value(operand1) % get_int_value(operand2) == 0) {
-            result = make_int(get_int_value(operand1) / get_int_value(operand2));
+            result = clisp_make_int(get_int_value(operand1) / get_int_value(operand2));
         } else {
-            result = make_double(get_int_value(operand1) * 1.0 / get_int_value(operand2));
+            result = clisp_make_double(get_int_value(operand1) * 1.0 / get_int_value(operand2));
         }
     }
 
@@ -208,9 +208,9 @@ Object* clisp_sub(CLISP_FUNC_PARAMS) {
     Object* result = NULL;
 
     if (get_object_type(operand1) == DOUBLE ||  get_object_type(operand2) == DOUBLE) {
-        result = make_double(unwrap_numeric_to_double(operand1) - unwrap_numeric_to_double(operand2));
+        result = clisp_make_double(unwrap_numeric_to_double(operand1) - unwrap_numeric_to_double(operand2));
     } else {
-        result = make_int(get_int_value(operand1) - get_int_value(operand2));
+        result = clisp_make_int(get_int_value(operand1) - get_int_value(operand2));
     }
 
     destroy_if_unwrapped(args[0], operand1);

@@ -10,7 +10,7 @@ static void destroy_simple_object(Object* obj) {
     free_memory(obj);
 }
 
-Object* make_int(int value) {
+Object* clisp_make_int(int value) {
     IntObject* int_object = allocate_memory(sizeof(IntObject));
     init_object((Object*)int_object, INTEGER);
     int_object->value = value;
@@ -27,7 +27,7 @@ void destroy_int(Object* obj) {
     destroy_simple_object(obj);
 }
 
-Object* make_double(double value) {
+Object* clisp_make_double(double value) {
     DoubleObject* double_object = allocate_memory(sizeof(DoubleObject));
     init_object((Object*)double_object, DOUBLE);
     double_object->value = value;
@@ -44,7 +44,7 @@ void destroy_double(Object* obj) {
     destroy_simple_object(obj);
 }
 
-Object* make_boolean(unsigned char value) {
+Object* clisp_make_boolean(unsigned char value) {
     if (value != 0 && value != 1) {
         print_error_and_exit("Boolean value must be 0 or 1!\n", 0);
     }
@@ -57,11 +57,11 @@ Object* make_boolean(unsigned char value) {
 }
 
 Object* make_true() {
-    return make_boolean(1);
+    return clisp_make_boolean(1);
 }
 
 Object* make_false() {
-    return make_boolean(0);
+    return clisp_make_boolean(0);
 }
 
 unsigned char get_boolean_value(Object* obj) {
@@ -73,7 +73,7 @@ void destroy_boolean(Object* obj) {
     destroy_simple_object(obj);
 }
 
-Object* make_string(char* value) {
+Object* clisp_make_string(char* value) {
     StringObject* string_object = allocate_memory(sizeof(StringObject));
     init_object((Object*)string_object, STRING);
     string_object->length = strlen(value);
@@ -101,7 +101,7 @@ void destroy_string(Object* obj) {
     destroy_simple_object(obj);
 }
 
-Object* make_char(char value) {
+Object* clisp_make_char(char value) {
     CharObject* char_object = allocate_memory(sizeof(CharObject));
     init_object((Object*)char_object, CHAR);
     char_object->value = value;
