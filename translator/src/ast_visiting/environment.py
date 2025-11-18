@@ -1,65 +1,52 @@
 from src.code_rendering import Code
+from dataclasses import dataclass
 
 
+
+@dataclass()
 class Environment:
-    def __init__(self, code: Code, name: str, parent=None):
-        self.__code = code
-        self.__name = name
-        self.__parent = parent
-        self.__variables = {}
+    name: str
+    code: Code
+    variables: dict[str, str]
+    parent: "Environment"
 
     @property
-    def code(self) -> Code:
-        return self.__code
+    def has_parent(self) -> bool:
+        return self.parent is not None
 
-    @property
-    def variable_count(self) -> int:
-        return len(self.__variables)
 
-    @property
-    def name(self) -> str:
-        return self.__name
+def has_variable(env: Environment, variable: str) -> bool:
+    return variable in env.variables
 
-    @property
-    def parent(self):
-        return self.__parent
+def has_variable_recursively(env: Environment, name: str) -> bool:
+    if has_variable(env, name):
+        return True
 
-    def has_variable(self, variable: str) -> bool:
-        return variable in self.__variables
+    if env.has_parent:
+        return has_variable_recursively(env.parent, name)
 
-    def has_variable_recursively(self, name: str) -> bool:
-        if self.has_variable(name):
-            return True
+    return False
 
-        if self.__has_parent:
-            return self.__parent.has_variable_recursively(name)
+def update_variable(env: Environment, variable: str, value: str) -> None:
+    env.variables[variable] = value
 
-        return False
+def update_variable_recursively(env: Environment, variable: str, value: str) -> None:
+    if variable in env.variables:
+        env.variables[variable] = value
 
-    def update_variable(self, variable: str, value: str) -> None:
-        self.__variables[variable] = value
+    if env.has_parent:
+        update_variable_recursively(env.parent, variable, value)
 
-    def update_variable_recursively(self, variable: str, value: str) -> None:
-        if variable in self.__variables:
-            self.__variables[variable] = value
-            return
 
-        if self.__has_parent:
-            self.__parent.update_variable_recursively(variable, value)
-
-    @property
-    def __has_parent(self) -> bool:
-        return self.__parent is not None
 
 
 class EnvironmentContext:
     def __init__(self):
-        self.__environment = None
+        self.__env = None
 
-    def init(self, code: Code, name: str):
-        current_env = self.__env
-        new_env = Environment(code=code, name=name, parent=current_env)
-        self.__env = new_env
+    def init(self, name: str, code: Code):
+        parent = self.__env
+        self.__env = Environment(name=name, code=code, variables={}, parent=parent)
 
     def __enter__(self):
         pass
@@ -70,43 +57,24 @@ class EnvironmentContext:
 
     @property
     def code(self) -> Code:
-        return self.__code
+        return self.__env.code
 
     @property
     def variable_count(self) -> int:
-        return len(self.__variables)
+        return len(self.__env.variables)
 
     @property
     def name(self) -> str:
-        return self.__name
-
-    @property
-    def parent(self):
-        return self.__parent
+        return self.__env.name
 
     def has_variable(self, variable: str) -> bool:
-        return variable in self.__variables
+        return has_variable(self.__env, variable)
 
     def has_variable_recursively(self, name: str) -> bool:
-        if self.has_variable(name):
-            return True
-
-        if self.__has_parent:
-            return self.__parent.has_variable_recursively(name)
-
-        return False
+        return has_variable_recursively(self.__env, name)
 
     def update_variable(self, variable: str, value: str) -> None:
-        self.__variables[variable] = value
+        update_variable(self.__env, variable, value)
 
     def update_variable_recursively(self, variable: str, value: str) -> None:
-        if variable in self.__variables:
-            self.__variables[variable] = value
-            return
-
-        if self.__has_parent:
-            self.__parent.update_variable_recursively(variable, value)
-
-    @property
-    def __has_parent(self) -> bool:
-        return self.__parent is not None
+        update_variable_recursively(self.__env, variable, value)

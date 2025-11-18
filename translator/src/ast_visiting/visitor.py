@@ -5,9 +5,9 @@ from src.LispVisitor import LispVisitor
 from src.code_rendering import CodeCreator, Code, wrap_codes, join_codes, transfer_secondary
 from src.function_table import FunctionTable
 from src.variable_manager import VariableManager
+from .environment import EnvironmentContext
 from .evaluable_context import EvaluableContext
 from .exceptions import VisitingException
-from .environment import Environment, EnvironmentContext
 
 __all__ = ["ASTVisitor"]
 
@@ -48,10 +48,11 @@ class ASTVisitor(LispVisitor):
             
             codes = [self.visit(e)[1] for e in ctx.programElement()]
 
+            global_env_code.update_data(varCount=self.__environment_ctx.variable_count)
+
         for c in codes:
             c.make_final()
 
-        global_env_code.update_data(varCount=self.__environment_ctx.env.variable_count)
         global_env_code.add_main_epilog("\n" + join_codes(codes))
 
         main_function_code = self.__code_creator.main_function(
@@ -69,13 +70,12 @@ class ASTVisitor(LispVisitor):
 
         expr_name, expr_code = self.visit(expression)
 
-        env = self.__environment_ctx.env
-        transfer_secondary(expr_code, env.code)
+        transfer_secondary(expr_code, self.__environment_ctx.code)
 
-        env.update_variable(variable.getText(), expr_name)
+        self.__environment_ctx.update_variable(variable.getText(), expr_name)
 
         code = self.__code_creator.set_variable_value(
-            env=env.name, name=f'"{variable.getText()}"', value=expr_name
+            env=self.__environment_ctx.name, name=f'"{variable.getText()}"', value=expr_name
         )
 
         return "", wrap_codes([code, expr_code])  # TODO
@@ -86,23 +86,22 @@ class ASTVisitor(LispVisitor):
         variable = ctx.variable().getText()
         expression = ctx.expression()
 
-        env = self.__environment_ctx.env
-        if not env.has_variable_recursively(variable):
+        if not self.__environment_ctx.has_variable_recursively(variable):
             raise VisitingException(
                 message=f'Unexpected variable "{variable}"', ctx=ctx
             )
 
         expr_name, expr_code = self.visit(expression)
 
-        transfer_secondary(expr_code, env.code)
+        transfer_secondary(expr_code, self.__environment_ctx.code)
 
-        env.update_variable_recursively(variable, expr_name)
+        self.__environment_ctx.update_variable_recursively(variable, expr_name)
 
         assignment_name = self.__variable_manager.create_object_name()
 
         assignment_code = self.__code_creator.update_variable_value(
             var=assignment_name,
-            env=env.name,
+            env=self.__environment_ctx.name,
             name=f'"{variable}"',
             value=expr_name,
         )
@@ -113,10 +112,8 @@ class ASTVisitor(LispVisitor):
         new_env_name = self.__variable_manager.create_environment_name()
 
         new_env_code = self.__code_creator.make_environment(
-            var=new_env_name, parentEnv=old_env.name
+            var=new_env_name, parentEnv=self.__environment_ctx.name
         )
-
-        new_env = Environment(code=new_env_code, name=new_env_name, parent=old_env)
 
         binding_list = ctx.bindingList()
 
@@ -125,12 +122,12 @@ class ASTVisitor(LispVisitor):
             codes = [r[1] for r in self.visit(binding_list)]
             body_name, body_code_text = self.visitBody(ctx.body())
 
-        new_env_code.update_data(varCount=len(codes))
-        
-        new_env_code.add_main_epilog(
-            join_codes(codes).replace("\n\n", "\n") + "\n" + body_code_text + "\n"
-        )
-        new_env_code.add_secondary_prolog("\n")
+            code = self.__environment_ctx.code
+            code.update_data(varCount=len(codes))
+            code.add_main_epilog(
+                join_codes(codes).replace("\n\n", "\n") + "\n" + body_code_text + "\n"
+            )
+            code.add_secondary_prolog("\n")
 
         return body_name, new_env_code
 
@@ -143,19 +140,18 @@ class ASTVisitor(LispVisitor):
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
 
-        env = self.__environment_ctx.env
-        transfer_secondary(expr_code, env.code)
+        transfer_secondary(expr_code, self.__environment_ctx.code)
 
-        if env.has_variable(variable.getText()):
+        if self.__environment_ctx.has_variable(variable.getText()):
             raise VisitingException(
                 f'Variable "{variable.getText()}" appeared more than once in the bindings',
                 ctx=ctx,
             )
 
-        env.update_variable(variable.getText(), expr_name)
+        self.__environment_ctx.update_variable(variable.getText(), expr_name)
 
         code = self.__code_creator.set_variable_value(
-            env=env.name, name=f'"{variable.getText()}"', value=expr_name
+            env=self.__environment_ctx.name, name=f'"{variable.getText()}"', value=expr_name
         )
 
         return "", wrap_codes([code, expr_code])  # TODO
@@ -168,7 +164,7 @@ class ASTVisitor(LispVisitor):
 
         for e in expressions:
             e_name, e_code = self.visit(e)
-            transfer_secondary(e_code, self.__environment.code)
+            transfer_secondary(e_code, self.__environment_ctx.code)
 
             expressions_names.append(e_name)
             expression_codes.append(e_code)
@@ -180,14 +176,14 @@ class ASTVisitor(LispVisitor):
 
         # TODO: handle situation when variable is a standard-library function (like '+')
 
-        if not self.__environment.has_variable_recursively(variable):
+        if not self.__environment_ctx.has_variable_recursively(variable):
             raise VisitingException(
                 message=f'Unexpected variable "{variable}"', ctx=ctx
             )
 
         expr_name = self.__variable_manager.create_object_name()
         expr_code = self.__code_creator.get_variable_value(
-            var=expr_name, env=self.__environment.name, name=f'"{variable}"'
+            var=expr_name, env=self.__environment_ctx.name, name=f'"{variable}"'
         )
 
         return expr_name, expr_code

@@ -5,7 +5,7 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 
-__all__ = ["Code", "wrap_codes", "nest_codes", "join_codes", "CodeCreator"]
+__all__ = ["Code", "wrap_codes", "nest_codes", "transfer_secondary", "join_codes", "CodeCreator"]
 
 
 class Code:
