@@ -83,8 +83,7 @@ class ASTVisitor(LispVisitor):
         for c in codes:
             c.make_final()
 
-
-
+        global_env_code.update_data(varCount=len(self.__env["variables"]))
         global_env_code.add_main_epilog(join_codes(codes))
 
         main_function_code = self.__code_creator.main_function(code=global_env_code.render())
@@ -102,10 +101,7 @@ class ASTVisitor(LispVisitor):
         self.__env["code"].add_secondary_prolog(expr_code.render_secondary())
         expr_code.clear_secondary()
 
-        if not self.__env["variables"].get(variable.getText(), None):
-            self.__env["variables"][variable.getText()] = [expr_name]
-        else:
-            self.__env["variables"][variable.getText()].append(expr_name)
+        self.__env["variables"][variable.getText()] = expr_name
 
         code = self.__code_creator.set_variable_value(
             env=self.__env["var"], name=f'"{variable.getText()}"', value=expr_name
@@ -163,6 +159,8 @@ class ASTVisitor(LispVisitor):
 
         codes = [r[1] for r in self.visit(binding_list)]
 
+        code.update_data(varCount=len(codes))
+
         body_name, body_code_text = self.visitBody(ctx.body())
 
         code.add_main_epilog(join_codes(codes) + body_code_text + "\n")
@@ -184,10 +182,10 @@ class ASTVisitor(LispVisitor):
         self.__env["code"].add_secondary_prolog(expr_code.render_secondary())
         expr_code.clear_secondary()
 
-        if not self.__env["variables"].get(variable.getText(), None):
-            self.__env["variables"][variable.getText()] = [expr_name]
-        else:
-            self.__env["variables"][variable.getText()].append(expr_name)
+        if self.__env["variables"].get(variable.getText(), None):
+            raise VisitingException(f"Variable \"{variable.getText()}\" appeared more than once in the bindings", ctx=ctx)
+
+        self.__env["variables"][variable.getText()] = expr_name
 
         code = self.__code_creator.set_variable_value(
             env=self.__env["var"], name=f'"{variable.getText()}"', value=expr_name

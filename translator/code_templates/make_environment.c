@@ -1,1 +1,1 @@
-Environment* {{ var }} = make_environment({{ parentEnv }});
+Environment* {{ var }} = make_environment({{ parentEnv }}, {{ varCount }});
