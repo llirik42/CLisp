@@ -1,5 +1,7 @@
 from typing import Union
 
+from black.nodes import Visitor
+
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
 from src.code_rendering import CodeCreator, Code, wrap_codes, nest_codes, join_codes
@@ -59,6 +61,13 @@ class ASTVisitor(LispVisitor):
 
         return False
 
+    @staticmethod
+    def __update_variable(env: dict, name: str, new_value: str) -> None:
+        if name in env["variables"]:
+            env["variables"][name] = new_value
+            return
+
+        ASTVisitor.__update_variable(env["prev"], name, new_value)
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
         # Visit definitions
@@ -119,7 +128,7 @@ class ASTVisitor(LispVisitor):
         self.__env["code"].add_secondary_prolog(expr_code.render_secondary())
         expr_code.clear_secondary()
 
-        self.__env["variables"][variable].append(expr_name)
+        self.__update_variable(env=self.__env, name=variable, new_value=expr_name)
 
         assignment_name = self.__variable_manager.create_variable_name()
 
