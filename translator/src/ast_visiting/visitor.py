@@ -40,6 +40,7 @@ class ASTVisitor(LispVisitor):
             "var": "global_env",
             "variables": {}
         }  # TODO: Отбить
+        self.__env_number = 0
 
     @staticmethod
     def __has_variable(env: dict, name: str) -> bool:
@@ -50,6 +51,14 @@ class ASTVisitor(LispVisitor):
             return ASTVisitor.__has_variable(env["prev"], name)
 
         return False
+
+    @staticmethod
+    def __has_variable_in_parents(env: dict, name: str) -> bool:
+        if len(env["prev"]) > 0:
+            return ASTVisitor.__has_variable(env["prev"], name)
+
+        return False
+
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
         # Visit definitions
@@ -121,14 +130,78 @@ class ASTVisitor(LispVisitor):
             value=expr_name,
         )
 
-        return expr_name, wrap_codes([assignment_code, expr_code])
+        return assignment_name, wrap_codes([assignment_code, expr_code])
 
     def visitLet(self, ctx:LispParser.LetContext):
-        # Создаём новое окружение
-        # Пихаем в окружение переменные
-        # Об
+        self.__env_number += 1
 
-        pass
+        old_env = self.__env
+
+        code = self.__code_creator.make_environment(
+            var=f"env{self.__env_number}", parentEnv=old_env["var"]
+        )
+
+        new_env = {
+            "prev": old_env,
+            "var": f"env{self.__env_number}",
+            "variables": {},
+            "code": code
+        }
+
+        self.__env = new_env
+
+        binding_list = ctx.bindingList()
+
+        codes = [r[1] for r in self.visit(binding_list)]
+
+        body_name, body_code_text = self.visitBody(ctx.body())
+
+        code.add_main_epilog(join_codes(codes) + body_code_text + "\n")
+
+        self.__env = old_env
+
+        return body_name, code
+
+
+    def visitBindingList(self, ctx:LispParser.BindingListContext) -> list[VisitResult]:
+        return [self.visit(b) for b in ctx.binding()]
+
+    def visitBinding(self, ctx:LispParser.BindingContext):
+        variable = ctx.variable()
+
+        expression = ctx.expression()
+        expr_name, expr_code = self.visit(expression)
+
+        self.__env["code"].add_secondary_prolog(expr_code.render_secondary())
+        expr_code.clear_secondary()
+
+        if not self.__env["variables"].get(variable.getText(), None):
+            self.__env["variables"][variable.getText()] = [expr_name]
+        else:
+            self.__env["variables"][variable.getText()].append(expr_name)
+
+        code = self.__code_creator.set_variable_value(
+            env=self.__env["var"], name=f'"{variable.getText()}"', value=expr_name
+        )
+
+        return "", wrap_codes([code, expr_code])  # TODO
+
+
+    def visitBody(self, ctx:LispParser.BodyContext) -> tuple[str, str]:
+        expressions = ctx.expression()
+
+        expressions_names = []
+        expression_codes = []
+
+        for e in expressions:
+            e_name, e_code = self.visit(e)
+            self.__env["code"].add_secondary_prolog(e_code.render_secondary())
+            e_code.clear_secondary()
+
+            expressions_names.append(e_name)
+            expression_codes.append(e_code)
+
+        return expressions_names[-1], join_codes(expression_codes)
 
     def visitVariable(self, ctx: LispParser.VariableContext) -> VisitResult:
         variable = ctx.getText()
