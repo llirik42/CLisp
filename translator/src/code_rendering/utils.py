@@ -1,5 +1,6 @@
 from .code import Code
 
+
 # TODO: сделать лишь один параметр - список кодов (изменить документацию)
 def wrap_codes(codes: list[Code]) -> Code:
     """
@@ -70,4 +71,3 @@ def join_codes(codes: list[Code]) -> str:
 def transfer_secondary(from_: Code, to_: Code) -> None:
     to_.add_secondary_prolog(from_.render_secondary())
     from_.clear_secondary()
-

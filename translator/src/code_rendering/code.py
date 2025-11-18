@@ -5,10 +5,10 @@ from jinja2 import Template
 
 class Code:
     def __init__(
-            self,
-            template: Template,
-            secondary_template: Optional[Template] = None,
-            **kwargs,
+        self,
+        template: Template,
+        secondary_template: Optional[Template] = None,
+        **kwargs,
     ):
         """
         Class represents a template-code that can be rendered with given data.
@@ -120,4 +120,3 @@ class Code:
     def __repr__(self) -> str:
         # TODO: remove
         return f"({repr(self.__template)}, {repr(self.__data)})"
-

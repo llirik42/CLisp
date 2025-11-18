@@ -1,6 +1,12 @@
 from .environment import Environment
 from src.code_rendering import Code
-from .utils import _has_variable, _has_variable_recursively, _update_variable, _update_variable_recursively
+from .utils import (
+    _has_variable,
+    _has_variable_recursively,
+    _update_variable,
+    _update_variable_recursively,
+)
+
 
 class EnvironmentContext:
     def __init__(self):

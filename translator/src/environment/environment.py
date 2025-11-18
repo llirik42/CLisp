@@ -12,4 +12,3 @@ class Environment:
     @property
     def has_parent(self) -> bool:
         return self.parent is not None
-

@@ -31,3 +31,6 @@ class FunctionTable:
             )
 
         return res
+
+    def has_identifier(self, identifier: str) -> bool:
+        return identifier in self.__table
