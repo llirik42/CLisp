@@ -4,7 +4,7 @@
 #include "evaluable.h"
 #include "memory.h"
 
-Object* make_unspecified() {
+Object* clisp_make_unspecified() {
     Object* obj = allocate_memory(sizeof(Object));
     init_object(obj, UNSPECIFIED);
     return obj;
@@ -23,7 +23,7 @@ static void destroy_unspecified(Object* obj) {
     free_memory(obj);
 }
 
-void destroy(Object* obj) {
+void destroy_object(Object* obj) {
     if (!obj || !obj->ref_count) {
         return;
     }

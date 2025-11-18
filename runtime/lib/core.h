@@ -26,8 +26,8 @@ void init_object(Object* obj, enum ObjectType type);
 
 void increase_refs_count(Object* obj);
 
-Object* make_unspecified();
+Object* clisp_make_unspecified();
 
-void destroy(Object* obj);
+void destroy_object(Object* obj);
 
 unsigned char is_numeric(enum ObjectType type);

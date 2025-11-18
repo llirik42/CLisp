@@ -29,7 +29,7 @@ static Object* numeric_comparison(CLISP_FUNC_PARAMS, const char* func_name, comp
     destroy_if_unwrapped(args[0], left_term);
     destroy_if_unwrapped(args[1], right_term);
 
-    return make_boolean(result);
+    return clisp_make_boolean(result);
 }
 
 Object* clisp_greater(CLISP_FUNC_PARAMS) {
@@ -59,7 +59,7 @@ Object *clisp_equal(CLISP_FUNC_PARAMS) {
         double right_double_value = unwrap_numeric_to_double(right_term);
         destroy_if_unwrapped(args[0], left_term);
         destroy_if_unwrapped(args[1], right_term);
-        return make_boolean(left_double_value == right_double_value);
+        return clisp_make_boolean(left_double_value == right_double_value);
     }
 
     if (get_object_type(left_term) != get_object_type(right_term)) {
@@ -97,5 +97,5 @@ Object *clisp_equal(CLISP_FUNC_PARAMS) {
     destroy_if_unwrapped(args[0], left_term);
     destroy_if_unwrapped(args[1], right_term);
 
-    return make_boolean(result);
+    return clisp_make_boolean(result);
 }

@@ -40,5 +40,5 @@ Object* clisp_display(CLISP_FUNC_PARAMS) {
 
     destroy_if_unwrapped(args[0], to_display);
 
-    return make_unspecified();
+    return clisp_make_unspecified();
 }

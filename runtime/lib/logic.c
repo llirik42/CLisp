@@ -23,7 +23,7 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
     }
 
     if (count == 2) {
-        return make_unspecified();
+        return clisp_make_unspecified();
     }
 
     Object* alternative = unwrap_object(args[2]);

@@ -54,7 +54,7 @@ Object* update_variable_value(Environment* env, char* name, Object* value) {
     for (size_t i = 0; i < env->variables_count; i++) {
         if (!strcmp(name, env->variables[i].key)) {
             env->variables[i].val = value;
-            return make_unspecified();
+            return clisp_make_unspecified();
         }
     }
     return update_variable_value(env->parent, name, value);
