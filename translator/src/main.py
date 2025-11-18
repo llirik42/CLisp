@@ -1,11 +1,11 @@
 import argparse
 
+from src.ast_reading import read_ast_file, read_ast_stdin
+from src.ast_visiting import ASTVisitor
+from src.code_rendering import CodeCreator
 from src.environment import EnvironmentContext
 from src.evaluable_context import EvaluableContext
-from src.ast_visiting import ASTVisitor
-from src.code_rendering import CodeCreator, wrap_codes, nest_codes, join_codes
 from src.function_table import FunctionTable
-from src.ast_reading import read_ast_file, read_ast_stdin
 from src.variable_manager import VariableManager
 
 
@@ -47,13 +47,6 @@ def main():
         evaluable_context=EvaluableContext(),
         environment_context=EnvironmentContext(),
     )
-
-    c1 = code_creator.make_constant(value="1", var="var1")
-    c2 = code_creator.make_constant(value="2", var="var2")
-    c3 = code_creator.make_constant(value="3", var="var3")
-    c4 = code_creator.make_constant(value="4", var="var4")
-
-    print(join_codes([c1, c2, c3, c4]))
 
     output_code = visitor.visit(ast)
     write_generated_code(args.output_file, output_code)
