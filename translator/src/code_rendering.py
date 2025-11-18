@@ -5,7 +5,7 @@ from typing import Optional
 from jinja2 import Environment, FileSystemLoader, Template
 
 
-__all__ = ["Code", "wrap_codes", "CodeCreator"]
+__all__ = ["Code", "wrap_codes", "nest_codes", "join_codes", "CodeCreator"]
 
 
 class Code:
@@ -190,6 +190,7 @@ def nest_codes(codes: list[Code]) -> Code:
 def join_codes(codes: list[Code]) -> str:
     rendered = [c.render() for c in codes]
     return "\n".join(rendered)
+
 
 class CodeCreator:
     def __init__(self, templates_folder_path: str):

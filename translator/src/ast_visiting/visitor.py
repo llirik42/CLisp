@@ -1,14 +1,12 @@
 from typing import Union
 
-from black.nodes import Visitor
-
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
-from src.code_rendering import CodeCreator, Code, wrap_codes, nest_codes, join_codes
+from src.code_rendering import CodeCreator, Code, wrap_codes, join_codes
 from src.function_table import FunctionTable
-from .context import EvaluableMakingContext, TopLevelContext
-from .exceptions import VisitingException
 from src.variable_manager import VariableManager
+from .context import EvaluableMakingContext
+from .exceptions import VisitingException
 
 
 __all__ = ["ASTVisitor"]
@@ -36,26 +34,13 @@ class ASTVisitor(LispVisitor):
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
         self.__condition_visiting_ctx = EvaluableMakingContext()
-        self.__top_level_ctx = TopLevelContext()
-        self.__env = {
-            "prev": {},
-            "var": "global_env",
-            "variables": {}
-        }  # TODO: Отбить
-        self.__env_number = 0
+        self.__env = None
 
     @staticmethod
     def __has_variable(env: dict, name: str) -> bool:
         if name in env["variables"]:
             return True
 
-        if len(env["prev"]) > 0:
-            return ASTVisitor.__has_variable(env["prev"], name)
-
-        return False
-
-    @staticmethod
-    def __has_variable_in_parents(env: dict, name: str) -> bool:
         if len(env["prev"]) > 0:
             return ASTVisitor.__has_variable(env["prev"], name)
 
@@ -70,11 +55,16 @@ class ASTVisitor(LispVisitor):
         ASTVisitor.__update_variable(env["prev"], name, new_value)
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> str:
+        self.__env = {
+            "prev": {},
+            "var": self.__variable_manager.create_environment_name(),
+            "variables": {},
+        }  # TODO: Отбить
+
         # Visit definitions
 
-        global_env_name = "global_env"  # TODO: отбить через manager
         global_env_code = self.__code_creator.make_environment(
-            var=global_env_name, parentEnv="NULL"
+            var=self.__env["var"], parentEnv="NULL"
         )
 
         self.__env["code"] = global_env_code
@@ -84,9 +74,12 @@ class ASTVisitor(LispVisitor):
             c.make_final()
 
         global_env_code.update_data(varCount=len(self.__env["variables"]))
-        global_env_code.add_main_epilog(join_codes(codes))
+        global_env_code.add_main_epilog("\n" + join_codes(codes))
 
-        main_function_code = self.__code_creator.main_function(code=global_env_code.render())
+        main_function_code = self.__code_creator.main_function(
+            code=global_env_code.render() + "\n"
+        )
+        main_function_code.make_final()
 
         return main_function_code.render()
 
@@ -126,7 +119,7 @@ class ASTVisitor(LispVisitor):
 
         self.__update_variable(env=self.__env, name=variable, new_value=expr_name)
 
-        assignment_name = self.__variable_manager.create_variable_name()
+        assignment_name = self.__variable_manager.create_object_name()
 
         assignment_code = self.__code_creator.update_variable_value(
             var=assignment_name,
@@ -137,21 +130,17 @@ class ASTVisitor(LispVisitor):
 
         return assignment_name, wrap_codes([assignment_code, expr_code])
 
-    def visitLet(self, ctx:LispParser.LetContext):
-        self.__env_number += 1
+    def visitLet(self, ctx: LispParser.LetContext):
 
         old_env = self.__env
 
+        env_name = self.__variable_manager.create_environment_name()
+
         code = self.__code_creator.make_environment(
-            var=f"env{self.__env_number}", parentEnv=old_env["var"]
+            var=env_name, parentEnv=old_env["var"]
         )
 
-        new_env = {
-            "prev": old_env,
-            "var": f"env{self.__env_number}",
-            "variables": {},
-            "code": code
-        }
+        new_env = {"prev": old_env, "var": env_name, "variables": {}, "code": code}
 
         self.__env = new_env
 
@@ -163,17 +152,19 @@ class ASTVisitor(LispVisitor):
 
         body_name, body_code_text = self.visitBody(ctx.body())
 
-        code.add_main_epilog(join_codes(codes) + body_code_text + "\n")
+        code.add_main_epilog(
+            join_codes(codes).replace("\n\n", "\n") + "\n" + body_code_text + "\n"
+        )
+        code.add_secondary_prolog("\n")
 
         self.__env = old_env
 
         return body_name, code
 
-
-    def visitBindingList(self, ctx:LispParser.BindingListContext) -> list[VisitResult]:
+    def visitBindingList(self, ctx: LispParser.BindingListContext) -> list[VisitResult]:
         return [self.visit(b) for b in ctx.binding()]
 
-    def visitBinding(self, ctx:LispParser.BindingContext):
+    def visitBinding(self, ctx: LispParser.BindingContext):
         variable = ctx.variable()
 
         expression = ctx.expression()
@@ -183,7 +174,10 @@ class ASTVisitor(LispVisitor):
         expr_code.clear_secondary()
 
         if self.__env["variables"].get(variable.getText(), None):
-            raise VisitingException(f"Variable \"{variable.getText()}\" appeared more than once in the bindings", ctx=ctx)
+            raise VisitingException(
+                f'Variable "{variable.getText()}" appeared more than once in the bindings',
+                ctx=ctx,
+            )
 
         self.__env["variables"][variable.getText()] = expr_name
 
@@ -193,8 +187,7 @@ class ASTVisitor(LispVisitor):
 
         return "", wrap_codes([code, expr_code])  # TODO
 
-
-    def visitBody(self, ctx:LispParser.BodyContext) -> tuple[str, str]:
+    def visitBody(self, ctx: LispParser.BodyContext) -> tuple[str, str]:
         expressions = ctx.expression()
 
         expressions_names = []
@@ -220,7 +213,7 @@ class ASTVisitor(LispVisitor):
                 message=f'Unexpected variable "{variable}"', ctx=ctx
             )
 
-        expr_name = self.__variable_manager.create_variable_name()
+        expr_name = self.__variable_manager.create_object_name()
         expr_code = self.__code_creator.get_variable_value(
             var=expr_name, env=self.__env["var"], name=f'"{variable}"'
         )
@@ -345,7 +338,7 @@ class ASTVisitor(LispVisitor):
     def __visit_constant(
         self, code: Code, value: Union[str, int, float]
     ) -> VisitResult:
-        expr_var_name = self.__variable_manager.create_variable_name()
+        expr_var_name = self.__variable_manager.create_object_name()
         code.update_data(var=expr_var_name, value=value)
 
         return expr_var_name, code
@@ -358,7 +351,7 @@ class ASTVisitor(LispVisitor):
         else:
             expr_code = self.__code_creator.function_call()
 
-        expr_var_name = self.__variable_manager.create_variable_name()
+        expr_var_name = self.__variable_manager.create_object_name()
         expr_code.update_data(
             function=function_name, args=operand_names, var=expr_var_name
         )

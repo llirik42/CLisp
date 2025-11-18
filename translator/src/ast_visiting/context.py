@@ -20,20 +20,3 @@ class EvaluableMakingContext:
         """
 
         return self.__counter > 0
-
-
-class TopLevelContext:
-    # TODO: add pydoc
-
-    def __init__(self):
-        self.__counter = 0
-
-    def __enter__(self):
-        self.__counter += 1
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.__counter -= 1
-
-    @property
-    def top_level(self) -> bool:
-        return self.__counter == 1
