@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "const.h"
+#include "primitive.h"
 #include "utils.h"
 
 Object* clisp_if(CLISP_FUNC_PARAMS) {
@@ -13,18 +13,24 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
     }
 
     unsigned char test_value = obj_to_boolean(args[0]);
-    Object* consequent = args[1];
-    Object* alternative = args[2];
 
     if (test_value) {
-        return unwrap_object(consequent);
+        Object* consequent = unwrap_object(args[1]);
+        if (consequent == args[1]) {
+            increase_refs_count(consequent);
+        }
+        return consequent;
     }
 
     if (count == 2) {
         return make_unspecified();
     }
 
-    return unwrap_object(alternative);
+    Object* alternative = unwrap_object(args[2]);
+    if (alternative == args[2]) {
+        increase_refs_count(alternative);
+    }
+    return alternative;
 }
 
 Object* clisp_not(CLISP_FUNC_PARAMS) {

@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "const.h"
+#include "primitive.h"
 #include "core.h"
 #include "utils.h"
 

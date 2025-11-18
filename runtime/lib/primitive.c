@@ -1,10 +1,10 @@
-#include "const.h"
+#include "primitive.h"
 
 #include <string.h>
 
 #include "memory.h"
 #include "utils.h"
-#include "const_types.h"
+#include "primitive_types.h"
 
 static void destroy_simple_object(Object* obj) {
     free_memory(obj);
@@ -12,8 +12,8 @@ static void destroy_simple_object(Object* obj) {
 
 Object* make_int(int value) {
     IntObject* int_object = allocate_memory(sizeof(IntObject));
+    init_object((Object*)int_object, INTEGER);
     int_object->value = value;
-    int_object->type = INTEGER;
 
     return (Object*)int_object;
 }
@@ -29,8 +29,8 @@ void destroy_int(Object* obj) {
 
 Object* make_double(double value) {
     DoubleObject* double_object = allocate_memory(sizeof(DoubleObject));
+    init_object((Object*)double_object, DOUBLE);
     double_object->value = value;
-    double_object->type = DOUBLE;
 
     return (Object*)double_object;
 }
@@ -50,8 +50,8 @@ Object* make_boolean(unsigned char value) {
     }
 
     BooleanObject* boolean_object = allocate_memory(sizeof(BooleanObject));
+    init_object((Object*)boolean_object, BOOLEAN);
     boolean_object->value = value;
-    boolean_object->type = BOOLEAN;
 
     return (Object*)boolean_object;
 }
@@ -75,12 +75,12 @@ void destroy_boolean(Object* obj) {
 
 Object* make_string(char* value) {
     StringObject* string_object = allocate_memory(sizeof(StringObject));
+    init_object((Object*)string_object, STRING);
     string_object->length = strlen(value);
 
     char* container = allocate_memory(sizeof(char) * (string_object->length + 1));
     strcpy(container, value);
     string_object->value = container;
-    string_object->type = STRING;
 
     return (Object*)string_object;
 }
@@ -103,8 +103,8 @@ void destroy_string(Object* obj) {
 
 Object* make_char(char value) {
     CharObject* char_object = allocate_memory(sizeof(CharObject));
+    init_object((Object*)char_object, CHAR);
     char_object->value = value;
-    char_object->type = CHAR;
 
     return (Object*)char_object;
 }
