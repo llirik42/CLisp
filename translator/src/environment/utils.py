@@ -15,13 +15,13 @@ def _has_variable_recursively(env: Environment, name: str) -> bool:
     return False
 
 
-def _update_variable(env: Environment, variable: str, value: str) -> None:
-    env.variables[variable] = value
+def _update_variable(env: Environment, name: str, value: str) -> None:
+    env.variables[name] = value
 
 
-def _update_variable_recursively(env: Environment, variable: str, value: str) -> None:
-    if variable in env.variables:
-        env.variables[variable] = value
+def _update_variable_recursively(env: Environment, name: str, value: str) -> None:
+    if name in env.variables:
+        env.variables[name] = value
 
     if env.has_parent:
-        _update_variable_recursively(env.parent, variable, value)
+        _update_variable_recursively(env.parent, name, value)
