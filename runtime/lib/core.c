@@ -23,7 +23,7 @@ static void destroy_unspecified(Object* obj) {
     free_memory(obj);
 }
 
-void destroy_object(Object* obj) {
+void clisp_destroy_object(Object* obj) {
     if (!obj || !obj->ref_count) {
         return;
     }

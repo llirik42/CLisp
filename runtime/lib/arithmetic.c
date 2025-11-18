@@ -41,7 +41,7 @@ Object* clisp_add(CLISP_FUNC_PARAMS) {
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
-            destroy_object(result);
+            clisp_destroy_object(result);
             result = clisp_make_double(prev_value);
             result_type = get_object_type(result);
         }
@@ -86,14 +86,14 @@ Object* clisp_mul(CLISP_FUNC_PARAMS) {
         enum ObjectType result_type = get_object_type(result);
 
         if (unwrap_numeric_to_double(operand) == 0) {
-            destroy_object(result);
+            clisp_destroy_object(result);
             destroy_if_unwrapped(args[i], operand);
             return clisp_make_int(0);
         }
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = get_int_value(result);
-            destroy_object(result);
+            clisp_destroy_object(result);
             result = clisp_make_double(prev_value);
             result_type = get_object_type(result);
         }

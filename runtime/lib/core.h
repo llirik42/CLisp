@@ -28,6 +28,6 @@ void increase_refs_count(Object* obj);
 
 Object* clisp_make_unspecified();
 
-void destroy_object(Object* obj);
+void clisp_destroy_object(Object* obj);
 
 unsigned char is_numeric(enum ObjectType type);
