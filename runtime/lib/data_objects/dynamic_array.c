@@ -6,6 +6,7 @@
 #include "utils.h"
 
 #define BASIC_DA_CAPACITY 10
+#define CAPACITY_MULTIPLIER 1.5
 
 DynamicArray* da_create() {
     DynamicArray *da = allocate_memory(sizeof(DynamicArray));
@@ -17,7 +18,7 @@ DynamicArray* da_create() {
 
 void da_push_back(DynamicArray *da, void *element) {
     if (da->size >= da->capacity) {
-        da->capacity = (int)ceil((double)da->capacity * 1.5);
+        da->capacity = (int)ceil((double)da->capacity * CAPACITY_MULTIPLIER);
         da->data = reallocate_memory(da->data, sizeof(void*) * da->capacity);
     }
 

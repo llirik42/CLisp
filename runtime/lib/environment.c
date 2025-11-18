@@ -8,6 +8,7 @@
 #include "utils.h"
 
 #define BASIC_CAPACITY 4
+#define CAPACITY_MULTIPLIER 1.5
 
 Environment* make_environment(Environment* parent, size_t capacity) {
     if (!capacity) {
@@ -36,7 +37,7 @@ void set_variable_value(Environment* env, char* name, Object* value) {
     }
 
     if (env->variables_count >= env->capacity) {
-        env->capacity = (int)ceil((double)env->capacity * 1.5);
+        env->capacity = (int)ceil((double)env->capacity * CAPACITY_MULTIPLIER);
         env->variables = reallocate_memory(env->variables, sizeof(Variable) * env->capacity);
     }
 
