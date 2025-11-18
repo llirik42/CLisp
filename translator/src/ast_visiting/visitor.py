@@ -17,10 +17,17 @@ from src.evaluable_context import EvaluableContext
 from src.environment import EnvironmentContext
 
 # TODO
-ExpressionVisitResult = tuple[str, Code]  # (variable, code)
-BodyVisitResult = tuple[str, str]  # (variable that matches last expression, code)
-BindingVisitResult = Code  # code
-ProgramVisitResult = str  # Текст программы
+# (variable, code)
+ExpressionVisitResult = tuple[str, Code]
+
+# (variable that matches the last expression, code)
+BodyVisitResult = tuple[str, str]
+
+# code of creating value of the variable and binding it
+BindingVisitResult = Code
+
+# text of the output C-program
+ProgramVisitResult = str
 
 
 class ASTVisitor(LispVisitor):
@@ -38,6 +45,8 @@ class ASTVisitor(LispVisitor):
         :param function_table: function table.
         :param code_creator: code creator.
         :param variable_manager: variable manager.
+        :param evaluable_context: evaluable context.
+        :param environment_context: environment context.
         """
 
         self.__function_table = function_table
