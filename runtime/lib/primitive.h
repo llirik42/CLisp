@@ -37,3 +37,5 @@ Object* make_char(char value);
 char get_char_value(Object* obj);
 
 void destroy_char(Object* obj);
+
+Object* clone_if_primitive(Object* obj);

@@ -117,3 +117,20 @@ char get_char_value(Object* obj) {
 void destroy_char(Object* obj) {
     destroy_simple_object(obj);
 }
+
+Object* clone_if_primitive(Object* obj) {
+    switch (get_object_type(obj)) {
+        case INTEGER:
+            return make_int(get_int_value(obj));
+        case DOUBLE:
+            return make_double(get_double_value(obj));
+        case BOOLEAN:
+            return make_boolean(get_boolean_value(obj));
+        case STRING:
+            return make_string(get_string_value(obj));
+        case CHAR:
+            return make_char(get_char_value(obj));
+        default:
+            return obj;
+    }
+}

@@ -13,18 +13,22 @@ Object* clisp_if(CLISP_FUNC_PARAMS) {
     }
 
     unsigned char test_value = obj_to_boolean(args[0]);
-    Object* consequent = args[1];
-    Object* alternative = args[2];
-
+    Object* result = NULL;
     if (test_value) {
-        return unwrap_object(consequent);
+        Object* consequent = unwrap_object(args[1]);
+        result = clone_if_primitive(consequent);
+        destroy_if_unwrapped(args[1], consequent);
+        return result;
     }
 
     if (count == 2) {
         return make_unspecified();
     }
 
-    return unwrap_object(alternative);
+    Object* alternative = unwrap_object(args[2]);
+    result = clone_if_primitive(alternative);
+    destroy_if_unwrapped(args[2], alternative);
+    return result;
 }
 
 Object* clisp_not(CLISP_FUNC_PARAMS) {
