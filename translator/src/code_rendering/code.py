@@ -13,7 +13,7 @@ class Code:
         """
         Class represents a template-code that can be rendered with given data.
 
-        The final code consists of two parts: main, secondary. For the main part there are given template and extendable epilog, for the secondary there are given template and extendable prolog. Thus, the code consists of
+        The final code consists of two parts: main, secondary. For the main part there are given template, extendable epilog and newline, for the secondary there are given template and extendable prolog. Thus, the code consists of
 
         * main template
         * main epilog
@@ -39,7 +39,7 @@ class Code:
 
     def make_final(self) -> None:
         """
-        Makes the code "final". Being "final" means that there will be no newline after the main part and will be additional newline after the secondary part. Thus, the code will consist of
+        Makes the code "final". Being "final" means that there will be no newline in the end of the main part and will be additional newline in the end of the secondary part. Thus, the code will consist of
 
         * main template
         * main epilog
@@ -69,8 +69,6 @@ class Code:
         self.__main_epilog += text
 
     def add_secondary_prolog(self, text: str):
-        # TODO: переименовать в secondary
-
         """
         Inserts text to the beginning of the secondary prolog.
 
@@ -114,9 +112,9 @@ class Code:
         return f"{self.render_main()}{self.render_secondary()}"
 
     def clear_secondary(self) -> None:
+        """
+        Completely cleanses the secondary part (template + prolog).
+        """
+
         self.__secondary_prolog = ""
         self.__secondary_template = None
-
-    def __repr__(self) -> str:
-        # TODO: remove
-        return f"({repr(self.__template)}, {repr(self.__data)})"

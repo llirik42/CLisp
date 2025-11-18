@@ -9,14 +9,17 @@ from src.code_rendering import (
     join_codes,
     transfer_secondary,
 )
+from src.environment import EnvironmentContext
+from src.evaluable_context import EvaluableContext
 from src.function_table import FunctionTable
 from src.variable_manager import VariableManager
-from .exceptions import VisitingException
+from .exceptions import (
+    UnexpectedVariableException,
+    FunctionRedefineException,
+    UnknownFunctionException,
+    DuplicatedBindingException,
+)
 
-from src.evaluable_context import EvaluableContext
-from src.environment import EnvironmentContext
-
-# TODO
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
 
@@ -87,10 +90,7 @@ class ASTVisitor(LispVisitor):
     ) -> ExpressionVisitResult:
         variable_name = ctx.variable().getText()
         if self.__function_table.has_identifier(variable_name):
-            raise VisitingException(
-                f'The standard library function "{variable_name}" cannot be redefined!',
-                ctx,
-            )
+            raise FunctionRedefineException(variable_name, ctx)
 
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
@@ -98,24 +98,21 @@ class ASTVisitor(LispVisitor):
         transfer_secondary(expr_code, self.__environment_ctx.code)
         self.__environment_ctx.update_variable(variable_name, expr_name)
 
-        code = self.__code_creator.set_variable_value(
+        definition_code = self.__code_creator.set_variable_value(
             env=self.__environment_ctx.name,
             name=f'"{variable_name}"',
             value=expr_name,
         )
 
         # First element is ignored and needed to unify the processing of expressions and definitions
-        return "", wrap_codes([code, expr_code])
+        return "", wrap_codes(definition_code, expr_code)
 
     def visitAssignment(
         self, ctx: LispParser.AssignmentContext
     ) -> ExpressionVisitResult:
         variable_name = ctx.variable().getText()
-
         if not self.__environment_ctx.has_variable_recursively(variable_name):
-            raise VisitingException(
-                message=f'Unexpected variable "{variable_name}"', ctx=ctx
-            )
+            raise UnexpectedVariableException(variable_name, ctx)
 
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
@@ -131,7 +128,7 @@ class ASTVisitor(LispVisitor):
             value=expr_name,
         )
 
-        return assignment_name, wrap_codes([assignment_code, expr_code])
+        return assignment_name, wrap_codes(assignment_code, expr_code)
 
     def visitLet(self, ctx: LispParser.LetContext) -> ExpressionVisitResult:
         new_env_name = self.__variable_manager.create_environment_name()
@@ -165,16 +162,10 @@ class ASTVisitor(LispVisitor):
         variable_name = ctx.variable().getText()
 
         if self.__function_table.has_identifier(variable_name):
-            raise VisitingException(
-                f'The standard library function "{variable_name}" cannot be redefined!',
-                ctx,
-            )
+            raise FunctionRedefineException(variable_name, ctx)
 
         if self.__environment_ctx.has_variable(variable_name):
-            raise VisitingException(
-                f'Variable "{variable_name}" appeared more than once in the bindings',
-                ctx=ctx,
-            )
+            raise DuplicatedBindingException(variable_name, ctx)
 
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
@@ -187,7 +178,7 @@ class ASTVisitor(LispVisitor):
             value=expr_name,
         )
 
-        return wrap_codes([binding_code, expr_code])
+        return wrap_codes(binding_code, expr_code)
 
     def visitBody(self, ctx: LispParser.BodyContext) -> BodyVisitResult:
         expressions = ctx.expression()
@@ -211,9 +202,7 @@ class ASTVisitor(LispVisitor):
         variable_name = ctx.getText()
 
         if not self.__environment_ctx.has_variable_recursively(variable_name):
-            raise VisitingException(
-                message=f'Unexpected variable "{variable_name}"', ctx=ctx
-            )
+            raise UnexpectedVariableException(variable_name, ctx)
 
         expr_name = self.__variable_manager.create_object_name()
         expr_code = self.__code_creator.get_variable_value(
@@ -285,9 +274,7 @@ class ASTVisitor(LispVisitor):
         try:
             c_function = self.__function_table.get_c_func(lisp_function)
         except ValueError as e:
-            raise VisitingException(
-                message=f'Operator "{lisp_function}" not found!', ctx=ctx
-            ) from e
+            raise UnknownFunctionException(lisp_function, ctx) from e
 
         operand_names, operand_codes = self.__visit_operands(ctx.operand())
 
@@ -367,7 +354,7 @@ class ASTVisitor(LispVisitor):
         expr_code.update_data(
             function=function_name, args=operand_names, var=expr_var_name
         )
-        wrapped_expr_code = wrap_codes([expr_code] + operand_codes)
+        wrapped_expr_code = wrap_codes(expr_code, operand_codes)
 
         return expr_var_name, wrapped_expr_code
 
