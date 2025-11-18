@@ -28,6 +28,13 @@ void destroy_environment(Environment* env) {
 }
 
 void set_variable_value(Environment* env, char* name, Object* value) {
+    for (size_t i = 0; i < env->variables_count; i++) {
+        if (!strcmp(name, env->variables[i].key)) {
+            env->variables[i].val = value;
+            return;
+        }
+    }
+
     if (env->variables_count >= env->capacity) {
         env->capacity = (int)ceil((double)env->capacity * 1.5);
         env->variables = reallocate_memory(env->variables, sizeof(Variable) * env->capacity);
