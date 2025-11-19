@@ -1,11 +1,12 @@
 import argparse
 
-
-from .ast_visiting import ASTVisitor
-from .code_rendering import CodeCreator
-from .function_table import FunctionTable
-from .ast_reading import read_ast_file, read_ast_stdin
-from .variable_manager import VariableManager
+from src.ast_reading import read_ast_file, read_ast_stdin
+from src.ast_visiting import ASTVisitor
+from src.code_rendering import CodeCreator
+from src.environment import EnvironmentContext
+from src.evaluable_context import EvaluableContext
+from src.function_table import FunctionTable
+from src.variable_manager import VariableManager
 
 
 def write_generated_code(output_file: str, code: str) -> None:
@@ -43,6 +44,8 @@ def main():
         function_table=function_table,
         code_creator=code_creator,
         variable_manager=VariableManager(),
+        evaluable_context=EvaluableContext(),
+        environment_context=EnvironmentContext(),
     )
 
     output_code = visitor.visit(ast)

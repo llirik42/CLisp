@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 
 __all__ = ["FunctionTable"]
@@ -33,3 +32,12 @@ class FunctionTable:
             )
 
         return res
+
+    def has_identifier(self, identifier: str) -> bool:
+        """
+        Returns whether table has an identifier.
+
+        :param identifier: function identifier.
+        """
+
+        return identifier in self.__table
