@@ -8,7 +8,7 @@ class VariableManager:
         """
 
         self.__objects_count = 0
-        self.__environments_count = 0
+        self.__environments_count = -1
 
     def create_object_name(self) -> str:
         """
@@ -24,4 +24,8 @@ class VariableManager:
         """
 
         self.__environments_count += 1
+
+        if self.__environments_count == 0:
+            return "global_env"
+
         return f"env{self.__environments_count}"

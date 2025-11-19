@@ -148,8 +148,7 @@ class ASTVisitor(LispVisitor):
             new_env_code.update_data(varCount=len(bindings_codes))
 
             joined_bindings_codes = join_codes(bindings_codes).replace("\n\n", "\n")
-            new_env_code.add_main_epilog(f"{joined_bindings_codes}\n{body_code}\n")
-            new_env_code.add_secondary_prolog("\n")
+            new_env_code.add_main_epilog(f"{joined_bindings_codes}\n{body_code}")
 
         return body_name, new_env_code
 

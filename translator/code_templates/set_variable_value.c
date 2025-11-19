@@ -1,1 +1,1 @@
-set_variable_value({{ env }}, {{ name }}, {{ value }});
+clisp_set_variable_value({{ env }}, {{ name }}, {{ value }});
