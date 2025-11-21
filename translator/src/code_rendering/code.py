@@ -36,6 +36,7 @@ class Code:
         )
         self.__secondary_template = secondary_template
         self.__final = False
+        self.__final_final = False
 
     def make_final(self) -> None:
         """
@@ -49,6 +50,9 @@ class Code:
         """
 
         self.__final = True
+
+    def make_final_final(self) -> None:
+        self.__final_final = True
 
     def update_data(self, **kwargs) -> None:
         """
@@ -81,6 +85,9 @@ class Code:
         """
         Renders and returns main part.
         """
+
+        if self.__final_final:
+            return f"{self.__template.render(self.__data)}{self.__main_epilog}"
 
         rendered = f"{self.__template.render(self.__data)}\n{self.__main_epilog}"
 

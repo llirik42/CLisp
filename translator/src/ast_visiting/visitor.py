@@ -11,7 +11,7 @@ from src.code_rendering import (
 )
 from src.environment import EnvironmentContext
 from src.evaluable_context import EvaluableContext
-from src.function_table import FunctionTable
+from src.standard_elements import StandardElements
 from src.variable_manager import VariableManager
 from .exceptions import (
     UnexpectedVariableException,
@@ -19,6 +19,7 @@ from .exceptions import (
     UnknownFunctionException,
     DuplicatedBindingException,
 )
+from src.lambda_context import LambdaContext
 
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
@@ -36,30 +37,49 @@ ProgramVisitResult = str
 class ASTVisitor(LispVisitor):
     def __init__(
         self,
-        function_table: FunctionTable,
+        standard_elements: StandardElements,
         code_creator: CodeCreator,
         variable_manager: VariableManager,
         evaluable_context: EvaluableContext,
         environment_context: EnvironmentContext,
+        lambda_context: LambdaContext,
     ):
         """
         Class represents a visitor of AST of the Lisp. Result of the visiting - code on C, that can be used in interpretation.
 
-        :param function_table: function table.
+        :param standard_elements: standard elements.
         :param code_creator: code creator.
         :param variable_manager: variable manager.
         :param evaluable_context: evaluable context.
         :param environment_context: environment context.
         """
 
-        self.__function_table = function_table
+        self.__standard_elements = standard_elements
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
         self.__evaluable_ctx = evaluable_context
         self.__environment_ctx = environment_context
+        self.__lambda_ctx = lambda_context
+        self.__function_definitions = []
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
         top_level_env_name = self.__variable_manager.create_environment_name()
+
+        # TODO: объявить лямбды для всех функций
+
+        make_lambda_codes = []
+        declare_lambda_codes = []
+
+        for lisp_name, c_name in self.__standard_elements.get_function_items():
+            lambda_name = self.__variable_manager.create_object_name()
+            make_lambda_code = self.__code_creator.make_lambda(function=c_name, var=lambda_name)
+            make_lambda_code.make_final_final()
+            make_lambda_codes.append(make_lambda_code)
+            self.__lambda_ctx.add_lambda(lisp_name, lambda_name)
+            declare_lambda_code = self.__code_creator.set_variable_value(env=top_level_env_name, name=f"\"{lisp_name}\"", value=lambda_name)
+            declare_lambda_code.make_final_final()
+            declare_lambda_codes.append(declare_lambda_code)
+
         top_level_env_code = self.__code_creator.make_environment(
             var=top_level_env_name
         )
@@ -71,16 +91,20 @@ class ASTVisitor(LispVisitor):
 
             elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
             top_level_env_code.update_data(
-                varCount=self.__environment_ctx.variable_count
+                varCount=self.__environment_ctx.variable_count + self.__standard_elements.function_count
             )
 
         for c in elements_codes:
             c.make_final()
 
-        top_level_env_code.add_main_epilog(f"\n{join_codes(elements_codes)}")
+        for c in make_lambda_codes:
+            transfer_secondary(c, top_level_env_code)
+
+        top_level_env_code.add_main_epilog(f"{join_codes(make_lambda_codes)}\n{join_codes(declare_lambda_codes)}\n\n{join_codes(elements_codes)}")
 
         main_function_code = self.__code_creator.main_function(
-            code=f"{top_level_env_code.render()}\n"
+            code=f"{top_level_env_code.render()}\n",
+            functions=[c.render() for c in self.__function_definitions],
         )
 
         return main_function_code.render()
@@ -89,7 +113,7 @@ class ASTVisitor(LispVisitor):
         self, ctx: LispParser.DefinitionContext
     ) -> ExpressionVisitResult:
         variable_name = ctx.variable().getText()
-        if self.__function_table.has_identifier(variable_name):
+        if self.__standard_elements.has_identifier(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
 
         expression = ctx.expression()
@@ -160,7 +184,7 @@ class ASTVisitor(LispVisitor):
     def visitBinding(self, ctx: LispParser.BindingContext) -> BindingVisitResult:
         variable_name = ctx.variable().getText()
 
-        if self.__function_table.has_identifier(variable_name):
+        if self.__standard_elements.has_identifier(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
 
         if self.__environment_ctx.has_variable(variable_name):
@@ -180,13 +204,25 @@ class ASTVisitor(LispVisitor):
         return wrap_codes(binding_code, expr_code)
 
     def visitBody(self, ctx: LispParser.BodyContext) -> BodyVisitResult:
+        inside_lambda = self.__lambda_ctx.inside_lambda
+
         expressions = ctx.expression()
 
         expr_names = []
         expr_codes = []
 
+        if inside_lambda:
+            for e in expressions:
+                e_name, e_code = self.visit(e)
+                expr_names.append(e_name)
+                expr_codes.append(e_code)
+
+            return expr_names[-1], join_codes(expr_codes)
+
+        # TODO:
+        # If body isn't inside lambda, then it's inside let, let* or letrec
+
         for e in expressions:
-            # TODO: change for body of lambda
             e_name, e_code = self.visit(e)
             transfer_secondary(e_code, self.__environment_ctx.code)
 
@@ -200,6 +236,12 @@ class ASTVisitor(LispVisitor):
 
         variable_name = ctx.getText()
 
+        # TODO:
+        if self.__lambda_ctx.inside_lambda and variable_name in self.__lambda_ctx.params:
+            expr_name = self.__variable_manager.create_object_name()
+            expr_code = self.__code_creator.get_arg(var=expr_name, list="args", index=self.__lambda_ctx.get_param_index(variable_name))
+            return expr_name, expr_code
+
         if not self.__environment_ctx.has_variable_recursively(variable_name):
             raise UnexpectedVariableException(variable_name, ctx)
 
@@ -211,8 +253,7 @@ class ASTVisitor(LispVisitor):
         return expr_name, expr_code
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> ExpressionVisitResult:
-        identifier = "if"
-        c_function = self.__function_table.get_c_func(identifier)
+        c_name = self.__standard_elements.get_epi_element("if")
 
         test = ctx.test()
         consequent = ctx.consequent()
@@ -232,33 +273,31 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(alternate_code)
 
         return self.__visit_function(
-            function_name=c_function,
+            function_name=c_name,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitAnd(self, ctx: LispParser.AndContext) -> ExpressionVisitResult:
-        identifier = "and"
-        c_function = self.__function_table.get_c_func(identifier)
+        c_name = self.__standard_elements.get_epi_element("and")
 
         with self.__evaluable_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
 
         return self.__visit_function(
-            function_name=c_function,
+            function_name=c_name,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
     def visitOr(self, ctx: LispParser.OrContext) -> ExpressionVisitResult:
-        identifier = "or"
-        c_function = self.__function_table.get_c_func(identifier)
+        c_name = self.__standard_elements.get_epi_element("or")
 
         with self.__evaluable_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
 
         return self.__visit_function(
-            function_name=c_function,
+            function_name=c_name,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
@@ -271,24 +310,63 @@ class ASTVisitor(LispVisitor):
         lisp_function = ctx.operator().getText()
 
         try:
-            c_function = self.__function_table.get_c_func(lisp_function)
+            c_name = self.__standard_elements.get_epi_element(lisp_function)
         except ValueError as e:
             raise UnknownFunctionException(lisp_function, ctx) from e
 
         operand_names, operand_codes = self.__visit_operands(ctx.operand())
 
         return self.__visit_function(
-            function_name=c_function,
+            function_name=c_name,
             operand_names=operand_names,
             operand_codes=operand_codes,
         )
 
+    def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
+        # TODO: Нужно проверять количество аргументов, переданных в лямбду при компиляции
+
+        # TODO: проверить, что параметры в formals не повторяются по названию
+
+        formals = ctx.formals()
+        body = ctx.body()
+
+        with self.__lambda_ctx:
+            self.visitFormals(formals)
+            body_name, body_code_text = self.visit(body)
+
+        function_name = self.__variable_manager.create_function_name()
+        function_code = self.__code_creator.declare_function(
+            func=function_name, var=body_name, code=body_code_text + "\n"
+        )
+        self.__function_definitions.append(function_code)
+
+        lambda_variable = self.__variable_manager.create_object_name()
+        lambda_creation_code = self.__code_creator.make_lambda(
+            var=lambda_variable, function=function_name, env=self.__environment_ctx.name
+        )
+
+        return lambda_variable, lambda_creation_code
+
+    def visitFixedFormals(self, ctx:LispParser.FixedFormalsContext):
+        variables = ctx.variable()
+
+        for i, v in enumerate(variables):
+            self.__lambda_ctx.add_param(v.getText(), i)
+
+    def visitListFormals(self, ctx:LispParser.ListFormalsContext):
+        variable = ctx.variable()
+        self.__lambda_ctx.add_param(variable.getText(), 0)
+
+    def visitVariadicFormals(self, ctx:LispParser.VariadicFormalsContext):
+        variable = ctx.variable()
+
+        for i, v in enumerate(variable):
+            self.__lambda_ctx.add_param(v.getText(), i)
+
     def visitBoolConstant(
         self, ctx: LispParser.BoolConstantContext
     ) -> ExpressionVisitResult:
-        c_function = self.__function_table.get_c_func("#boolean#")
-
-        code = self.__code_creator.make_constant(function=c_function)
+        code = self.__code_creator.make_boolean()
         value = 1 if ctx.getText() == "#t" else 0
 
         return self.__visit_constant(
@@ -304,32 +382,28 @@ class ASTVisitor(LispVisitor):
         if value == "'":
             value = "\\'"  # Escape single quote
 
-        c_function = self.__function_table.get_c_func("#character#")
-        code = self.__code_creator.make_constant(function=c_function)
+        code = self.__code_creator.make_character()
 
         return self.__visit_constant(code=code, value=f"'{value}'")
 
     def visitStringConstant(
         self, ctx: LispParser.StringConstantContext
     ) -> ExpressionVisitResult:
-        c_function = self.__function_table.get_c_func("#string#")
-        code = self.__code_creator.make_constant(function=c_function)
+        code = self.__code_creator.make_string()
 
         return self.__visit_constant(code=code, value=ctx.getText())
 
     def visitIntegerConstant(
         self, ctx: LispParser.IntegerConstantContext
     ) -> ExpressionVisitResult:
-        c_function = self.__function_table.get_c_func("#integer#")
-        code = self.__code_creator.make_constant(function=c_function)
+        code = self.__code_creator.make_int()
 
         return self.__visit_constant(code=code, value=int(ctx.getText()))
 
     def visitFloatConstant(
         self, ctx: LispParser.FloatConstantContext
     ) -> ExpressionVisitResult:
-        c_function = self.__function_table.get_c_func("#float#")
-        code = self.__code_creator.make_constant(function=c_function)
+        code = self.__code_creator.make_float()
 
         return self.__visit_constant(code=code, value=float(ctx.getText()))
 

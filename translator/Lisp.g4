@@ -43,12 +43,12 @@ procedure : LBRACKET LAMBDA formals body RBRACKET ;
 formals
     : fixedFormals
     | variadicFormals
-    | periodFormals
+    | listFormals
     ;
 
 fixedFormals : LBRACKET variable* RBRACKET ;
-variadicFormals : variable ;
-periodFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
+listFormals : variable ;
+variadicFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
 
 assignment : LBRACKET SET variable expression RBRACKET ;
 

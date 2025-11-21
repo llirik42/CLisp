@@ -1,13 +1,15 @@
 import os
 from pathlib import Path
 
+from src.standard_elements import StandardElements
+
 from jinja2 import Environment, FileSystemLoader, Template
 
 from .code import Code
 
 
 class CodeCreator:
-    def __init__(self, templates_folder_path: str):
+    def __init__(self, standard_elements: StandardElements, templates_folder_path: str):
         """
         Class represents a creator for objects of Code.
 
@@ -15,8 +17,24 @@ class CodeCreator:
         :raises FileNotFoundError: the directory not found.
         """
 
+        self.__standard_elements = standard_elements
         self.__env = Environment(loader=FileSystemLoader(templates_folder_path))
         self.__load_templates(templates_folder_path)
+
+    def make_float(self, **kwargs) -> Code:
+        return self.make_constant(function=self.__standard_elements.get_internal("float"), **kwargs)
+
+    def make_int(self, **kwargs) -> Code:
+        return self.make_constant(function=self.__standard_elements.get_internal("integer"), **kwargs)
+
+    def make_string(self, **kwargs) -> Code:
+        return self.make_constant(function=self.__standard_elements.get_internal("string"), **kwargs)
+
+    def make_character(self, **kwargs) -> Code:
+        return self.make_constant(function=self.__standard_elements.get_internal("character"), **kwargs)
+
+    def make_boolean(self, **kwargs) -> Code:
+        return self.make_constant(function=self.__standard_elements.get_internal("boolean"), **kwargs)
 
     def make_constant(self, **kwargs) -> Code:
         """
@@ -43,6 +61,46 @@ class CodeCreator:
         return Code(
             template=self.__get_template("make_evaluable"),
             secondary_template=self.__get_template("destroy_object"),
+            **kwargs,
+        )
+
+    def make_lambda(self, **kwargs) -> Code:
+        """
+        Returns code that creates an lambda variable.
+
+        :param kwargs: initial data in the code.
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("make_lambda"),
+            secondary_template=self.__get_template("destroy_object"),
+            **kwargs,
+        )
+
+    def declare_function(self, **kwargs) -> Code:
+        """
+        Returns code that declares a function.
+
+        :param kwargs: initial data in the code.
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("declare_function"),
+            **kwargs,
+        )
+
+    def get_arg(self, **kwargs) -> Code:
+        """
+        Returns code that gets an arg of the function.
+
+        :param kwargs: initial data in the code.
+        :raises KeyError: template-file of the code not found.
+        """
+
+        return Code(
+            template=self.__get_template("get_arg"),
             **kwargs,
         )
 

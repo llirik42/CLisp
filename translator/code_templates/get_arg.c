@@ -1,0 +1,1 @@
+Object* {{ var }} = args[{{ index }}];
