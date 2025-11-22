@@ -11,7 +11,7 @@ from src.code_rendering import (
 )
 from src.environment import EnvironmentContext
 from src.evaluable_context import EvaluableContext
-from src.standard_elements import StandardElements
+from src.symbols import Symbols
 from src.variable_manager import VariableManager
 from .exceptions import (
     UnexpectedIdentifierException,
@@ -38,7 +38,7 @@ ProgramVisitResult = str
 class ASTVisitor(LispVisitor):
     def __init__(
         self,
-        standard_elements: StandardElements,
+        symbols: Symbols,
         code_creator: CodeCreator,
         variable_manager: VariableManager,
         evaluable_context: EvaluableContext,
@@ -48,14 +48,14 @@ class ASTVisitor(LispVisitor):
         """
         Class represents a visitor of AST of the Lisp. Result of the visiting - code on C, that can be used in interpretation.
 
-        :param standard_elements: standard elements.
+        :param symbols: standard elements.
         :param code_creator: code creator.
         :param variable_manager: variable manager.
         :param evaluable_context: evaluable context.
         :param environment_context: environment context.
         """
 
-        self.__standard_elements = standard_elements
+        self.__symbols = symbols
         self.__code_creator = code_creator
         self.__variable_manager = variable_manager
         self.__evaluable_ctx = evaluable_context
@@ -71,7 +71,7 @@ class ASTVisitor(LispVisitor):
         make_lambda_codes = []
         declare_lambda_codes = []
 
-        for lisp_name, c_name in self.__standard_elements.get_function_items():
+        for lisp_name, c_name in self.__symbols.find_api_function_items():
             lambda_name = self.__variable_manager.create_object_name()
             make_lambda_code = self.__code_creator.make_lambda(
                 function=c_name, var=lambda_name
@@ -97,7 +97,7 @@ class ASTVisitor(LispVisitor):
             elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
             top_level_env_code.update_data(
                 varCount=self.__environment_ctx.variable_count
-                + self.__standard_elements.function_count
+                + self.__symbols.api_function_count
             )
 
         for c in elements_codes:
@@ -123,7 +123,7 @@ class ASTVisitor(LispVisitor):
         # TODO: change when addint internal definitions (in let and in body of lambda)
 
         variable_name = ctx.variable().getText()
-        if self.__standard_elements.has_identifier(variable_name):
+        if self.__symbols.has_api_symbol(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
 
         expression = ctx.expression()
@@ -208,7 +208,7 @@ class ASTVisitor(LispVisitor):
     def visitBinding(self, ctx: LispParser.BindingContext) -> BindingVisitResult:
         variable_name = ctx.variable().getText()
 
-        if self.__standard_elements.has_identifier(variable_name):
+        if self.__symbols.has_api_symbol(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
 
         if self.__environment_ctx.has_variable(variable_name):
@@ -237,7 +237,9 @@ class ASTVisitor(LispVisitor):
 
         if inside_lambda:
             for e in expressions:
-                e_name, e_code = self.visit(e) # TODO: сделать так, чтобы пустые строки стояли там где надо, когда в body лямбды несколько выражений
+                e_name, e_code = self.visit(
+                    e
+                )  # TODO: сделать так, чтобы пустые строки стояли там где надо, когда в body лямбды несколько выражений
                 expr_names.append(e_name)
                 expr_codes.append(e_code)
 
@@ -281,7 +283,9 @@ class ASTVisitor(LispVisitor):
         return expr_name, expr_code
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> ExpressionVisitResult:
-        c_name = self.__standard_elements.get_epi_element("if")
+        symbol = "if"
+        c_name = self.__symbols.find_api_symbol(symbol)
+        assert c_name is not None, f'Symbol "{symbol}" is not found'
 
         test = ctx.test()
         consequent = ctx.consequent()
@@ -307,7 +311,9 @@ class ASTVisitor(LispVisitor):
         )
 
     def visitAnd(self, ctx: LispParser.AndContext) -> ExpressionVisitResult:
-        c_name = self.__standard_elements.get_epi_element("and")
+        symbol = "and"
+        c_name = self.__symbols.find_api_symbol(symbol)
+        assert c_name is not None, f'Symbol "{symbol}" is not found'
 
         with self.__evaluable_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
@@ -319,7 +325,9 @@ class ASTVisitor(LispVisitor):
         )
 
     def visitOr(self, ctx: LispParser.OrContext) -> ExpressionVisitResult:
-        c_name = self.__standard_elements.get_epi_element("or")
+        symbol = "or"
+        c_name = self.__symbols.find_api_symbol(symbol)
+        assert c_name is not None, f'Symbol "{symbol}" is not found'
 
         with self.__evaluable_ctx:
             operand_names, operand_codes = self.__visit_operands(ctx.test())
@@ -337,10 +345,9 @@ class ASTVisitor(LispVisitor):
 
         lisp_function = ctx.operator().getText()
 
-        try:
-            c_name = self.__standard_elements.get_epi_element(lisp_function)
-        except ValueError as e:
-            raise UnknownFunctionException(lisp_function, ctx) from e
+        c_name = self.__symbols.find_api_symbol(lisp_function)
+        if c_name is None:
+            raise UnknownFunctionException(lisp_function, ctx)
 
         operand_names, operand_codes = self.__visit_operands(ctx.operand())
 
@@ -441,7 +448,9 @@ class ASTVisitor(LispVisitor):
 
         variadic_arg_c_name = self.__variable_manager.create_object_name()
         variadic_arg_getting_code = self.__code_creator.make_list(
-            var=variadic_arg_c_name, count=f"count-{len(fixed_variables)}", elements=f"args+{len(fixed_variables)}"
+            var=variadic_arg_c_name,
+            count=f"count-{len(fixed_variables)}",
+            elements=f"args+{len(fixed_variables)}",
         )  # TODO: прибито
         variadic_arg_getting_code.make_final_final()
 

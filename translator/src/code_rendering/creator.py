@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from src.standard_elements import StandardElements
+from src.symbols import Symbols
 
 from jinja2 import Environment, FileSystemLoader, Template
 
@@ -9,7 +9,7 @@ from .code import Code
 
 
 class CodeCreator:
-    def __init__(self, standard_elements: StandardElements, templates_folder_path: str):
+    def __init__(self, symbols: Symbols, templates_folder_path: str):
         """
         Class represents a creator for objects of Code.
 
@@ -17,33 +17,33 @@ class CodeCreator:
         :raises FileNotFoundError: the directory not found.
         """
 
-        self.__standard_elements = standard_elements
+        self.__symbols = symbols
         self.__env = Environment(loader=FileSystemLoader(templates_folder_path))
         self.__load_templates(templates_folder_path)
 
     def make_float(self, **kwargs) -> Code:
         return self.make_constant(
-            function=self.__standard_elements.get_internal("float"), **kwargs
+            function=self.__symbols.find_internal_function("float"), **kwargs
         )
 
     def make_int(self, **kwargs) -> Code:
         return self.make_constant(
-            function=self.__standard_elements.get_internal("integer"), **kwargs
+            function=self.__symbols.find_internal_function("integer"), **kwargs
         )
 
     def make_string(self, **kwargs) -> Code:
         return self.make_constant(
-            function=self.__standard_elements.get_internal("string"), **kwargs
+            function=self.__symbols.find_internal_function("string"), **kwargs
         )
 
     def make_character(self, **kwargs) -> Code:
         return self.make_constant(
-            function=self.__standard_elements.get_internal("character"), **kwargs
+            function=self.__symbols.find_internal_function("character"), **kwargs
         )
 
     def make_boolean(self, **kwargs) -> Code:
         return self.make_constant(
-            function=self.__standard_elements.get_internal("boolean"), **kwargs
+            function=self.__symbols.find_internal_function("boolean"), **kwargs
         )
 
     def make_constant(self, **kwargs) -> Code:
