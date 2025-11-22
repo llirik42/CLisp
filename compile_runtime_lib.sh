@@ -47,7 +47,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo -e "${YELLOW}Compiling library...${NC}"
-make
+cmake --build . --target runtime
 
 if [ $? -eq 0 ]; then
   echo -e "${GREEN}Assembly completed successfully.${NC}"
