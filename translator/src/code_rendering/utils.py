@@ -1,6 +1,6 @@
 from typing import Union
 
-from .code import Code
+from src.code_rendering.codes.code import Code
 
 
 def wrap_codes(code: Code, wrapping: Union[Code, list[Code]]) -> Code:

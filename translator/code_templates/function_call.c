@@ -1,2 +1,1 @@
-{% set argList = var+'_args' %}Object* {{ argList }}[] = {% raw %}{{% endraw %}{{ args | join(', ') }}{% raw %}}{% endraw %};
-Object* {{ var }} = {{ function }}({{ args | length }}, {{ argList }});
+{% if var %}{{ type }} {{ var }} = {% else %}{% endif %}{{ func }}({{ args | join(', ') }});

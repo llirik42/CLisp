@@ -20,7 +20,7 @@ from .exceptions import (
     DuplicatedBindingException,
 )
 from src.lambda_context import LambdaContext
-from ..code_rendering.code import create_empty_code
+from src.code_rendering.codes.code import create_empty_code
 
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
@@ -110,7 +110,7 @@ class ASTVisitor(LispVisitor):
             f"{join_codes(make_lambda_codes)}\n{join_codes(declare_lambda_codes)}\n\n{join_codes(elements_codes)}"
         )
 
-        main_function_code = self.__code_creator.main_function(
+        main_function_code = self.__code_creator.program(
             code=f"{top_level_env_code.render()}\n",
             functions=[c.render() for c in self.__function_definitions],
         )
@@ -524,7 +524,7 @@ class ASTVisitor(LispVisitor):
         if self.__evaluable_ctx.should_make_evaluable:
             expr_code = self.__code_creator.make_evaluable()
         else:
-            expr_code = self.__code_creator.function_call()
+            expr_code = self.__code_creator.function_call_old()
 
         expr_var_name = self.__variable_manager.create_object_name()
         expr_code.update_data(

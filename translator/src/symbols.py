@@ -100,4 +100,4 @@ class Symbols:
 
     @property
     def __internal_types(self) -> SymbolSection:
-        return self.__data["internal"]["type"]
+        return self.__data["internal"]["types"]

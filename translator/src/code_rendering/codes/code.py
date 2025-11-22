@@ -1,13 +1,18 @@
-from typing import Optional
+from typing import Optional, Callable, Any
 
 from jinja2 import Template
+from abc import ABC
 
 
-class Code:
+class Code(ABC):
     def __init__(
         self,
-        template: Optional[Template] = None,
+        main_template: Optional[Template] = None,
         secondary_template: Optional[Template] = None,
+        main_data: Optional[dict] = None,
+        secondary_data: Optional[dict] = None,
+        main_validate: Optional[Callable[[dict], None]] = None,
+        secondary_validate: Optional[Callable[[dict], None]] = None,
         **kwargs,
     ):
         """
@@ -21,22 +26,30 @@ class Code:
         * secondary prolog
         * secondary template
 
-        :param template: main template of code.
+        :param main_template: main template of code.
         :param secondary_template: template of code that will be inserted after the main one and rendered with it.
         :param kwargs: initial data.
         """
+
+        if main_data is None:
+            main_data = {}
+
+        if secondary_data is None:
+            secondary_data = {}
+
+        self.__main_data = main_data
+        self.__secondary_data = secondary_data
 
         self.__main_epilog = ""  # Code that will be inserted after the main template
         self.__secondary_prolog = (
             ""  # Code that will be inserted before the secondary template
         )
-        self.__template = template
-        self.__data = (
-            kwargs  # Data to be inserted both into the main and secondary templates
-        )
+        self.__template = main_template
         self.__secondary_template = secondary_template
         self.__final = False
         self.__final_final = False
+        self.__main_validate = main_validate
+        self.__secondary_validate = secondary_validate
 
     @property
     def final(self) -> bool:
@@ -65,7 +78,7 @@ class Code:
         :param kwargs: data to update.
         """
 
-        self.__data.update(kwargs)
+        self.__common_data.update(kwargs)
 
     def add_main_epilog(self, text: str):
         """
@@ -90,11 +103,14 @@ class Code:
         Renders and returns main part.
         """
 
+        if self.__main_validate:
+            self.__main_validate(self.__main_data)
+
         result = self.__main_epilog
 
         tmp = ""
         if self.__template:
-            tmp = self.__template.render(self.__data)
+            tmp = self.__template.render(self.__main_data)
 
         if self.__final_final:
             return f"{tmp}{result}"
@@ -111,10 +127,13 @@ class Code:
         Renders and returns secondary part.
         """
 
+        if self.__secondary_validate:
+            self.__secondary_validate(self.__secondary_data)
+
         rendered = self.__secondary_prolog
 
         if self.__secondary_template:
-            rendered += f"\n{self.__secondary_template.render(self.__data)}"
+            rendered += f"\n{self.__secondary_template.render(self.__secondary_data)}"
 
         if self.__final:
             return f"{rendered}\n"
@@ -135,6 +154,18 @@ class Code:
 
         self.__secondary_prolog = ""
         self.__secondary_template = None
+
+    def _get_main_data(self, key: str) -> Any:
+        return self.__main_data.get(key, None)
+
+    def _get_main_secondary(self, key: str) -> Any:
+        return self.__secondary_data.get(key, None)
+
+    def _update_main_data(self, **kwargs) -> None:
+        self.__main_data.update(**kwargs)
+
+    def _update_secondary_data(self, **kwargs) -> None:
+        self.__secondary_data.update(**kwargs)
 
 
 # TODO: сделать main шаблон опциональным
