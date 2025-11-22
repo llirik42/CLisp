@@ -14,12 +14,13 @@ from src.evaluable_context import EvaluableContext
 from src.standard_elements import StandardElements
 from src.variable_manager import VariableManager
 from .exceptions import (
-    UnexpectedVariableException,
+    UnexpectedIdentifierException,
     FunctionRedefineException,
     UnknownFunctionException,
     DuplicatedBindingException,
 )
 from src.lambda_context import LambdaContext
+from ..code_rendering.code import create_empty_code
 
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
@@ -72,11 +73,15 @@ class ASTVisitor(LispVisitor):
 
         for lisp_name, c_name in self.__standard_elements.get_function_items():
             lambda_name = self.__variable_manager.create_object_name()
-            make_lambda_code = self.__code_creator.make_lambda(function=c_name, var=lambda_name)
+            make_lambda_code = self.__code_creator.make_lambda(
+                function=c_name, var=lambda_name
+            )
             make_lambda_code.make_final_final()
             make_lambda_codes.append(make_lambda_code)
             self.__lambda_ctx.add_lambda(lisp_name, lambda_name)
-            declare_lambda_code = self.__code_creator.set_variable_value(env=top_level_env_name, name=f"\"{lisp_name}\"", value=lambda_name)
+            declare_lambda_code = self.__code_creator.set_variable_value(
+                env=top_level_env_name, name=f'"{lisp_name}"', value=lambda_name
+            )
             declare_lambda_code.make_final_final()
             declare_lambda_codes.append(declare_lambda_code)
 
@@ -91,7 +96,8 @@ class ASTVisitor(LispVisitor):
 
             elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
             top_level_env_code.update_data(
-                varCount=self.__environment_ctx.variable_count + self.__standard_elements.function_count
+                varCount=self.__environment_ctx.variable_count
+                + self.__standard_elements.function_count
             )
 
         for c in elements_codes:
@@ -100,7 +106,9 @@ class ASTVisitor(LispVisitor):
         for c in make_lambda_codes:
             transfer_secondary(c, top_level_env_code)
 
-        top_level_env_code.add_main_epilog(f"{join_codes(make_lambda_codes)}\n{join_codes(declare_lambda_codes)}\n\n{join_codes(elements_codes)}")
+        top_level_env_code.add_main_epilog(
+            f"{join_codes(make_lambda_codes)}\n{join_codes(declare_lambda_codes)}\n\n{join_codes(elements_codes)}"
+        )
 
         main_function_code = self.__code_creator.main_function(
             code=f"{top_level_env_code.render()}\n",
@@ -136,7 +144,7 @@ class ASTVisitor(LispVisitor):
     ) -> ExpressionVisitResult:
         variable_name = ctx.variable().getText()
         if not self.__environment_ctx.has_variable_recursively(variable_name):
-            raise UnexpectedVariableException(variable_name, ctx)
+            raise UnexpectedIdentifierException(variable_name, ctx)
 
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
@@ -213,7 +221,7 @@ class ASTVisitor(LispVisitor):
 
         if inside_lambda:
             for e in expressions:
-                e_name, e_code = self.visit(e)
+                e_name, e_code = self.visit(e) # TODO: сделать так, чтобы пустые строки стояли там где надо, когда в body лямбды несколько выражений
                 expr_names.append(e_name)
                 expr_codes.append(e_code)
 
@@ -236,14 +244,18 @@ class ASTVisitor(LispVisitor):
 
         variable_name = ctx.getText()
 
-        # TODO:
-        if self.__lambda_ctx.inside_lambda and variable_name in self.__lambda_ctx.params:
-            expr_name = self.__variable_manager.create_object_name()
-            expr_code = self.__code_creator.get_arg(var=expr_name, list="args", index=self.__lambda_ctx.get_param_index(variable_name))
-            return expr_name, expr_code
+        # TODO: корректно обрабатывать ситуацию, когда переменной нет в сигнатуре лямбды
+        if (
+            self.__lambda_ctx.inside_lambda
+            and variable_name in self.__lambda_ctx.params
+        ):
+            param_name = self.__lambda_ctx.get_param_c_name(variable_name)[
+                0
+            ]  # TODO: использовать не кортеж
+            return param_name, create_empty_code()
 
         if not self.__environment_ctx.has_variable_recursively(variable_name):
-            raise UnexpectedVariableException(variable_name, ctx)
+            raise UnexpectedIdentifierException(variable_name, ctx)
 
         expr_name = self.__variable_manager.create_object_name()
         expr_code = self.__code_creator.get_variable_value(
@@ -327,41 +339,106 @@ class ASTVisitor(LispVisitor):
 
         # TODO: проверить, что параметры в formals не повторяются по названию
 
+        self.__variable_manager.enter_function()  # TODO:
+
         formals = ctx.formals()
         body = ctx.body()
 
+        function_code = self.__code_creator.declare_function()
+
         with self.__lambda_ctx:
-            self.visitFormals(formals)
+            self.__lambda_ctx.set_code(function_code)
+            formals_text_before, formals_text_after = self.visitFormals(formals)
             body_name, body_code_text = self.visit(body)
 
         function_name = self.__variable_manager.create_function_name()
-        function_code = self.__code_creator.declare_function(
-            func=function_name, var=body_name, code=body_code_text + "\n"
+        function_code.update_data(
+            func=function_name,
+            var=body_name,
+            code=formals_text_before + "\n" + body_code_text + formals_text_after,
         )
         self.__function_definitions.append(function_code)
+        function_code.make_final()
 
         lambda_variable = self.__variable_manager.create_object_name()
         lambda_creation_code = self.__code_creator.make_lambda(
             var=lambda_variable, function=function_name, env=self.__environment_ctx.name
         )
 
+        self.__variable_manager.exit_function()
+
         return lambda_variable, lambda_creation_code
 
-    def visitFixedFormals(self, ctx:LispParser.FixedFormalsContext):
+    def visitFixedFormals(self, ctx: LispParser.FixedFormalsContext) -> tuple[str, str]:
         variables = ctx.variable()
 
+        codes = []
         for i, v in enumerate(variables):
-            self.__lambda_ctx.add_param(v.getText(), i)
+            current_arg_c_name = self.__variable_manager.create_object_name()
+            current_arg_getting_code = self.__code_creator.get_arg(
+                index=i, var=current_arg_c_name
+            )
+            current_arg_getting_code.make_final_final()
+            codes.append(current_arg_getting_code)
+            self.__lambda_ctx.add_param(
+                lisp_name=v.getText(), c_name=current_arg_c_name, variadic=False
+            )
 
-    def visitListFormals(self, ctx:LispParser.ListFormalsContext):
+        return join_codes(codes), ""
+
+    def visitListFormals(self, ctx: LispParser.ListFormalsContext) -> tuple[str, str]:
         variable = ctx.variable()
-        self.__lambda_ctx.add_param(variable.getText(), 0)
+        arg_c_name = self.__variable_manager.create_object_name()
+        arg_getting_code = self.__code_creator.make_list(
+            var=arg_c_name, count="count", elements="args"
+        )  # TODO: прибито
+        arg_getting_code.make_final_final()
 
-    def visitVariadicFormals(self, ctx:LispParser.VariadicFormalsContext):
-        variable = ctx.variable()
+        secondary = arg_getting_code.render_secondary()
+        arg_getting_code.clear_secondary()
 
-        for i, v in enumerate(variable):
-            self.__lambda_ctx.add_param(v.getText(), i)
+        self.__lambda_ctx.add_param(
+            lisp_name=variable.getText(), c_name=arg_c_name, variadic=True
+        )
+
+        return arg_getting_code.render(), secondary
+
+    def visitVariadicFormals(
+        self, ctx: LispParser.VariadicFormalsContext
+    ) -> tuple[str, str]:
+        fixed_variables = ctx.variable()[:-1]
+        variadic_variable = ctx.variable()[-1]
+
+        codes_to_join = []
+
+        for i, v in enumerate(fixed_variables):
+            current_arg_c_name = self.__variable_manager.create_object_name()
+            current_arg_getting_code = self.__code_creator.get_arg(
+                index=i, var=current_arg_c_name
+            )
+            current_arg_getting_code.make_final_final()
+            codes_to_join.append(current_arg_getting_code)
+            self.__lambda_ctx.add_param(
+                lisp_name=v.getText(), c_name=current_arg_c_name, variadic=False
+            )
+
+        variadic_arg_c_name = self.__variable_manager.create_object_name()
+        variadic_arg_getting_code = self.__code_creator.make_list(
+            var=variadic_arg_c_name, count=f"count-{len(fixed_variables)}", elements=f"args+{len(fixed_variables)}"
+        )  # TODO: прибито
+        variadic_arg_getting_code.make_final_final()
+
+        secondary = variadic_arg_getting_code.render_secondary()
+        variadic_arg_getting_code.clear_secondary()
+        codes_to_join.append(variadic_arg_getting_code)
+
+        self.__lambda_ctx.add_param(
+            lisp_name=variadic_variable.getText(),
+            c_name=variadic_arg_c_name,
+            variadic=True,
+        )
+
+        return join_codes(codes_to_join), secondary
 
     def visitBoolConstant(
         self, ctx: LispParser.BoolConstantContext

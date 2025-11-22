@@ -18,9 +18,9 @@ class VisitingException(Exception):
         return self.__ctx
 
 
-class UnexpectedVariableException(VisitingException):
-    def __init__(self, variable_name: str, ctx: ParserRuleContext):
-        super().__init__(f'Unexpected variable "{variable_name}"', ctx)
+class UnexpectedIdentifierException(VisitingException):
+    def __init__(self, identifier: str, ctx: ParserRuleContext):
+        super().__init__(f'Unexpected identifier "{identifier}"', ctx)
 
 
 class FunctionRedefineException(VisitingException):

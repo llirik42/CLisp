@@ -11,14 +11,20 @@ class VariableManager:
         self.__environment_count = -1
         self.__function_count = 0
 
+        self.__function = False
+        self.__function_object_count = 0
+
     def create_object_name(self) -> str:
         """
         Creates and returns a name of the variable with a new object.
         """
 
-        self.__object_count += 1
+        if not self.__function:
+            self.__object_count += 1
+            return f"var{self.__object_count}"
 
-        return f"var{self.__object_count}"
+        self.__function_object_count += 1
+        return f"var{self.__function_object_count}"
 
     def create_environment_name(self) -> str:
         """
@@ -40,3 +46,10 @@ class VariableManager:
         self.__function_count += 1
 
         return f"func{self.__function_count}"
+
+    def enter_function(self) -> None:
+        self.__function = True
+        self.__function_object_count = 0
+
+    def exit_function(self) -> None:
+        self.__function = False

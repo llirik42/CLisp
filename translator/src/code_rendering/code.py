@@ -6,7 +6,7 @@ from jinja2 import Template
 class Code:
     def __init__(
         self,
-        template: Template,
+        template: Optional[Template] = None,
         secondary_template: Optional[Template] = None,
         **kwargs,
     ):
@@ -37,6 +37,10 @@ class Code:
         self.__secondary_template = secondary_template
         self.__final = False
         self.__final_final = False
+
+    @property
+    def final(self) -> bool:
+        return self.__final
 
     def make_final(self) -> None:
         """
@@ -86,10 +90,16 @@ class Code:
         Renders and returns main part.
         """
 
-        if self.__final_final:
-            return f"{self.__template.render(self.__data)}{self.__main_epilog}"
+        result = self.__main_epilog
 
-        rendered = f"{self.__template.render(self.__data)}\n{self.__main_epilog}"
+        tmp = ""
+        if self.__template:
+            tmp = self.__template.render(self.__data)
+
+        if self.__final_final:
+            return f"{tmp}{result}"
+
+        rendered = f"{tmp}\n{result}"
 
         if self.__final:
             return rendered[:-1]  # remove trailing \n
@@ -125,3 +135,10 @@ class Code:
 
         self.__secondary_prolog = ""
         self.__secondary_template = None
+
+
+# TODO: сделать main шаблон опциональным
+def create_empty_code() -> Code:
+    c = Code()
+    c.make_final_final()
+    return c

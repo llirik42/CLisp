@@ -22,7 +22,9 @@ class StandardElements:
         return self.__data["internal"][identifier]
 
     def get_epi_element(self, identifier: str) -> str:
-        res = self.__data["api"]["functions"].get(identifier, None) or self.__data["api"]["macros"].get(identifier, None)
+        res = self.__data["api"]["functions"].get(identifier, None) or self.__data[
+            "api"
+        ]["macros"].get(identifier, None)
 
         if res is None:
             raise ValueError(
@@ -34,7 +36,7 @@ class StandardElements:
     def get_function_items(self) -> list[tuple[str, str]]:
         funcs = self.__data["api"]["functions"]
 
-        return list (funcs.items())
+        return list(funcs.items())
 
     @property
     def function_count(self) -> int:

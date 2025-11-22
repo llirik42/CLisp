@@ -22,19 +22,29 @@ class CodeCreator:
         self.__load_templates(templates_folder_path)
 
     def make_float(self, **kwargs) -> Code:
-        return self.make_constant(function=self.__standard_elements.get_internal("float"), **kwargs)
+        return self.make_constant(
+            function=self.__standard_elements.get_internal("float"), **kwargs
+        )
 
     def make_int(self, **kwargs) -> Code:
-        return self.make_constant(function=self.__standard_elements.get_internal("integer"), **kwargs)
+        return self.make_constant(
+            function=self.__standard_elements.get_internal("integer"), **kwargs
+        )
 
     def make_string(self, **kwargs) -> Code:
-        return self.make_constant(function=self.__standard_elements.get_internal("string"), **kwargs)
+        return self.make_constant(
+            function=self.__standard_elements.get_internal("string"), **kwargs
+        )
 
     def make_character(self, **kwargs) -> Code:
-        return self.make_constant(function=self.__standard_elements.get_internal("character"), **kwargs)
+        return self.make_constant(
+            function=self.__standard_elements.get_internal("character"), **kwargs
+        )
 
     def make_boolean(self, **kwargs) -> Code:
-        return self.make_constant(function=self.__standard_elements.get_internal("boolean"), **kwargs)
+        return self.make_constant(
+            function=self.__standard_elements.get_internal("boolean"), **kwargs
+        )
 
     def make_constant(self, **kwargs) -> Code:
         """
@@ -66,7 +76,7 @@ class CodeCreator:
 
     def make_lambda(self, **kwargs) -> Code:
         """
-        Returns code that creates an lambda variable.
+        Returns code that creates a lambda variable.
 
         :param kwargs: initial data in the code.
         :raises KeyError: template-file of the code not found.
@@ -74,6 +84,13 @@ class CodeCreator:
 
         return Code(
             template=self.__get_template("make_lambda"),
+            secondary_template=self.__get_template("destroy_object"),
+            **kwargs,
+        )
+
+    def make_list(self, **kwargs) -> Code:
+        return Code(
+            template=self.__get_template("make_list"),
             secondary_template=self.__get_template("destroy_object"),
             **kwargs,
         )
@@ -87,7 +104,8 @@ class CodeCreator:
         """
 
         return Code(
-            template=self.__get_template("declare_function"),
+            template=self.__get_template("declare_function_start"),
+            secondary_template=self.__get_template("declare_function_end"),
             **kwargs,
         )
 
