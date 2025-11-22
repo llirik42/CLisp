@@ -120,6 +120,8 @@ class ASTVisitor(LispVisitor):
     def visitDefinition(
         self, ctx: LispParser.DefinitionContext
     ) -> ExpressionVisitResult:
+        # TODO: change when addint internal definitions (in let and in body of lambda)
+
         variable_name = ctx.variable().getText()
         if self.__standard_elements.has_identifier(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
@@ -142,8 +144,22 @@ class ASTVisitor(LispVisitor):
     def visitAssignment(
         self, ctx: LispParser.AssignmentContext
     ) -> ExpressionVisitResult:
+        # TODO: обработать ситуацию, когда меняется аргумент функции
+
         variable_name = ctx.variable().getText()
-        if not self.__environment_ctx.has_variable_recursively(variable_name):
+
+        if self.__lambda_ctx.inside_lambda:
+            env = self.__lambda_ctx.environment
+            env_name = "env"  # TODO: ПРиБИТО (из шаблона)
+
+            if variable_name in self.__lambda_ctx.params:
+                change_lambda_param = True
+                # TODO:
+        else:
+            env = self.__environment_ctx.env
+            env_name = self.__environment_ctx.name
+
+        if not env.has_variable_recursively(variable_name):
             raise UnexpectedIdentifierException(variable_name, ctx)
 
         expression = ctx.expression()
@@ -155,7 +171,7 @@ class ASTVisitor(LispVisitor):
         assignment_name = self.__variable_manager.create_object_name()
         assignment_code = self.__code_creator.update_variable_value(
             var=assignment_name,
-            env=self.__environment_ctx.name,
+            env=env_name,
             name=f'"{variable_name}"',
             value=expr_name,
         )
@@ -348,6 +364,7 @@ class ASTVisitor(LispVisitor):
 
         with self.__lambda_ctx:
             self.__lambda_ctx.set_code(function_code)
+            self.__lambda_ctx.set_environment(self.__environment_ctx.env)
             formals_text_before, formals_text_after = self.visitFormals(formals)
             body_name, body_code_text = self.visit(body)
 

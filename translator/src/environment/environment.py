@@ -1,7 +1,6 @@
 from src.code_rendering import Code
 from dataclasses import dataclass
 
-
 @dataclass()
 class Environment:
     """
@@ -27,3 +26,26 @@ class Environment:
         """
 
         return self.parent is not None
+
+    def has_variable(self, variable: str) -> bool:
+        return variable in self.variables
+
+    def has_variable_recursively(self, name: str) -> bool:
+        if self.has_variable(name):
+            return True
+
+        if self.has_parent:
+            return _has_variable_recursively(self.parent, name)
+
+        return False
+
+    def update_variable(self, name: str, value: str) -> None:
+        self.variables[name] = value
+
+    def update_variable_recursively(self, name: str, value: str) -> None:
+        if name in self.variables:
+            self.variables[name] = value
+            return
+
+        if self.has_parent:
+            self.parent.update_variable_recursively(name, value)

@@ -1,6 +1,7 @@
 __all__ = ["LambdaContext"]
 
 from src.code_rendering import Code
+from src.environment.environment import Environment
 
 
 # TODO: add pydoc
@@ -10,6 +11,7 @@ class LambdaContext:
         self.__lambdas = {}
         self.__params = {}
         self.__code = None
+        self.__environment = None
 
     def __enter__(self):
         self.__counter += 1
@@ -33,6 +35,13 @@ class LambdaContext:
     @property
     def params(self) -> None:
         return self.__params
+
+    def set_environment(self, env: Environment) -> None:
+        self.__environment = env
+
+    @property
+    def environment(self) -> Environment:
+        return self.__environment
 
     def add_param(self, lisp_name: str, c_name: str, variadic: bool = False) -> None:
         self.__params[lisp_name] = (c_name, variadic)

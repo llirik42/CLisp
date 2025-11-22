@@ -1,11 +1,5 @@
 from .environment import Environment
 from src.code_rendering import Code
-from .utils import (
-    _has_variable,
-    _has_variable_recursively,
-    _update_variable,
-    _update_variable_recursively,
-)
 
 
 class EnvironmentContext:
@@ -87,33 +81,37 @@ class EnvironmentContext:
         :param variable: name of the variable to check
         """
 
-        return _has_variable(self.__env, variable)
+        return self.__env.has_variable(variable)
 
-    def has_variable_recursively(self, name: str) -> bool:
+    def has_variable_recursively(self, variable: str) -> bool:
         """
         Whether current environment has the given variable in it ancestral tree (current -> parent -> parent of the parent -> etc).
 
-        :param name: name of the variable to check
+        :param variable: name of the variable to check
         """
 
-        return _has_variable_recursively(self.__env, name)
+        return self.__env.has_variable_recursively(variable)
 
-    def update_variable(self, name: str, value: str) -> None:
+    def update_variable(self, variable: str, value: str) -> None:
         """
         Sets variable value in the current environment.
 
-        :param name: name of the variable
+        :param variable: name of the variable
         :param value: value of the variable
         """
 
-        _update_variable(self.__env, name, value)
+        self.__env.update_variable(variable, value)
 
-    def update_variable_recursively(self, name: str, value: str) -> None:
+    def update_variable_recursively(self, variable: str, value: str) -> None:
         """
         Sets variable in the current environment or the first ancestral that has the variable.
 
-        :param name: name of the variable
+        :param variable: name of the variable
         :param value: value of the variable
         """
 
-        _update_variable_recursively(self.__env, name, value)
+        self.__env.update_variable_recursively(variable, value)
+
+    @property
+    def env(self) -> Environment:
+        return self.__env
