@@ -1,12 +1,10 @@
 from .code import Code
 
 
-class MakeEvaluableCode(Code):
+class LambdaCallCode(Code):
     def __init__(self, **kwargs):
         """
         Initial args is an empty list.
-
-
         """
 
         super().__init__(**kwargs)
@@ -20,7 +18,7 @@ class MakeEvaluableCode(Code):
         self._update_main_data(var=value, args_var=args_var)
         self._update_secondary_data(args=[value])
 
-    def set_func(self, value: str) -> None:
+    def set_lambda(self, value: str) -> None:
         self.__call_args[0] = value
         self.__update_call_args()
 

@@ -2,24 +2,35 @@ import os
 from pathlib import Path
 from typing import Any
 
-from src.code_rendering.codes.get_variable_value import GetVariableValueCode
-from src.code_rendering.codes.make_environment import MakeEnvironmentCode
-from src.code_rendering.codes.make_evaluable import MakeEvaluableCode
-from src.code_rendering.codes.make_lambda import MakeLambdaCode
-from src.code_rendering.codes.make_list import MakeListCode
-from src.code_rendering.codes.make_primitive import MakePrimitiveCode
-from src.code_rendering.codes.set_variable_code import SetVariableValueCode
-from src.code_rendering.codes.update_variable_code import UpdateVariableValueCode
-from src.symbols import Symbols
-
 from jinja2 import Environment, FileSystemLoader, Template
 
-from src.code_rendering.codes.code import Code
+from src.code_rendering.codes import (
+    EmptyCode,
+    MakePrimitiveCode,
+    MakeEvaluableCode,
+    MakeLambdaCode,
+    MakeListCode,
+    MakeEnvironmentCode,
+    GetVariableValueCode,
+    SetVariableValueCode,
+    UpdateVariableValueCode,
+    LambdaCallCode,
+    ProcedureCallCode,
+    GetFunctionArgumentCode,
+    LambdaDefinition,
+    ProgramCode,
+)
+from src.symbols import Symbols
+
+
+def check_required(data: dict[str, Any], required: list[str]) -> None:
+    for r in required:
+        if r not in data:
+            raise KeyError(f'"{r}" is required')
 
 
 def check_var(data: dict[str, Any]) -> None:
-    if "var" not in data:
-        raise KeyError(f'"var" is required')
+    check_required(data, ["var"])
 
 
 class CodeCreator:
@@ -34,6 +45,11 @@ class CodeCreator:
         self.__symbols = symbols
         self.__env = Environment(loader=FileSystemLoader(templates_folder_path))
         self.__load_templates(templates_folder_path)
+
+    def empty(self) -> EmptyCode:
+        c = EmptyCode()
+        c.make_final_final()
+        return c
 
     def make_int(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__symbols.find_internal_function("integer"))
@@ -190,107 +206,71 @@ class CodeCreator:
             secondary_data={"func": self.__symbols.find_internal_function("~object")},
         )
 
-    def declare_function(self, **kwargs) -> Code:
-        """
-        Returns code that declares a function.
+    def get_func_arg(self) -> GetFunctionArgumentCode:
+        def main_validate(data: dict) -> None:
+            check_required(data, ["var", "array", "index"])
 
-        :param kwargs: initial data in the code.
-        :raises KeyError: template-file of the code not found.
-        """
+        return GetFunctionArgumentCode(
+            main_template=self.__get_array_element_template(),
+            main_validate=main_validate,
+            main_data={
+                "type": self.__symbols.find_internal_type("object"),
+            },
+        )
 
+    def procedure_call(self) -> ProcedureCallCode:
+        def main_validate(data: dict) -> None:
+            check_required(data, ["var", "func"])
+
+        object_type = self.__symbols.find_internal_type("object")
+
+        return ProcedureCallCode(
+            main_template=self.__function_call_arg_list_template(),
+            secondary_template=self.__function_call_template(),
+            main_validate=main_validate,
+            main_data={
+                "type": object_type,
+                "args_type": object_type,
+            },
+            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+        )
+
+    def lambda_call(self) -> LambdaCallCode:
+        def main_validate(data: dict) -> None:
+            check_var(data)
+
+            call_args = data["call_args"]
+            if call_args[0] == "":
+                raise KeyError(f'"lambda" is required')
+
+        object_type = self.__symbols.find_internal_type("object")
+
+        return LambdaCallCode(
+            main_template=self.__function_call_arg_list_template(),
+            secondary_template=self.__function_call_template(),
+            main_validate=main_validate,
+            main_data={
+                "type": object_type,
+                "args_type": object_type,
+                "func": self.__symbols.find_internal_function("lambda_call"),
+            },
+            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+        )
+
+    def lambda_definition(self) -> LambdaDefinition:
         def validate(data: dict) -> None:
-            required = ["code", "ret_type", "func"]
+            check_required(data, ["body", "ret"])
 
-            for r in required:
-                if r not in data:
-                    raise KeyError(f'"{r}" is required')
-
-        return Code(
-            main_template=self.__get_template("declare_function"),
-            validate=validate,
-            **kwargs,
+        return LambdaDefinition(
+            main_template=self.__get_template("function_definition"),
+            main_data={
+                "ret_type": self.__symbols.find_internal_type("object"),
+                "params": self.__symbols.find_internal_type("lambda_function_params"),
+            },
+            main_validate=validate,
         )
 
-    def get_arg(self, **kwargs) -> Code:
-        """
-        Returns code that gets an arg of the function.
-
-        :param kwargs: initial data in the code.
-        :raises KeyError: template-file of the code not found.
-        """
-
-        return Code(
-            main_template=self.__get_template("get_arg"),
-            **kwargs,
-        )
-
-    def function_call(self, **kwargs) -> Code:
-        def validate(data: dict) -> None:
-            if "func" not in data:
-                raise KeyError('"func" is required')
-
-            if "var" in data and "type" not in data:
-                raise KeyError('"type" is required while "var" is present')
-
-        return Code(
-            main_template=self.__get_template("function_call"),
-            validate=validate,
-            **kwargs,
-        )
-
-    def function_call_arg_list(self, **kwargs) -> Code:
-        def validate(data: dict) -> None:
-            required = ["args_var", "func", "args_type"]
-
-            for r in required:
-                if r not in data:
-                    raise KeyError(f'"{r}" is required')
-
-            if "var" in data and "type" not in data:
-                raise KeyError('"type" is required while "var" is present')
-
-        return Code(
-            main_template=self.__get_template("function_call_arg_list"),
-            validate=validate,
-            **kwargs,
-        )
-
-    def get_array_element(self, **kwargs) -> Code:
-        def validate(data: dict) -> None:
-            required = ["type", "var", "array", "index"]
-
-            for r in required:
-                if r not in data:
-                    raise KeyError(f'"{r}" is required')
-
-        return Code(
-            main_template=self.__get_template("get_array_element"),
-            validate=validate,
-            **kwargs,
-        )
-
-    def function_call_old(self, **kwargs) -> Code:
-        """
-        Returns code that calls a function.
-
-        :param kwargs: initial data in the code.
-        :raises KeyError: template-file of the code not found.
-        """
-
-        return Code(
-            main_template=self.__get_template("function_call"),
-            secondary_template=self.__get_template("destroy_object"),
-            **kwargs,
-        )
-
-    def program(self, **kwargs) -> Code:
-        """
-        Returns code that creates function main().
-
-        :param kwargs: initial data in the code.
-        :raises KeyError: template-file of the code not found.
-        """
-
+    def program(self, **kwargs) -> ProgramCode:
         def validate(data: dict) -> None:
             required = ["code"]
 
@@ -298,7 +278,7 @@ class CodeCreator:
                 if r not in data:
                     raise KeyError(f'"{r}" is required')
 
-        return Code(
+        return ProgramCode(
             main_template=self.__get_template("program"), validate=validate, **kwargs
         )
 
@@ -307,7 +287,7 @@ class CodeCreator:
             check_var(data)
 
             if "args" not in data:
-                raise KeyError(f'"value" is is required')  # See MakePrimitiveCode
+                raise KeyError(f'"value" is is required')
 
         return MakePrimitiveCode(
             main_template=self.__function_call_template(),

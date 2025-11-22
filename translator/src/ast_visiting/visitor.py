@@ -20,7 +20,6 @@ from .exceptions import (
     DuplicatedBindingException,
 )
 from src.lambda_context import LambdaContext
-from src.code_rendering.codes.code import create_empty_code
 
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
@@ -367,7 +366,7 @@ class ASTVisitor(LispVisitor):
         formals = ctx.formals()
         body = ctx.body()
 
-        function_code = self.__code_creator.declare_function()
+        function_code = self.__code_creator.lambda_definition()
 
         with self.__lambda_ctx:
             self.__lambda_ctx.set_code(function_code)

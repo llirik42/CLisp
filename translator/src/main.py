@@ -5,10 +5,9 @@ from src.ast_visiting import ASTVisitor
 from src.code_rendering import CodeCreator
 from src.environment import EnvironmentContext
 from src.evaluable_context import EvaluableContext
+from src.lambda_context import LambdaContext
 from src.symbols import Symbols
 from src.variable_manager import VariableManager
-from src.lambda_context import LambdaContext
-from src.code_rendering.codes import MakePrimitiveCode
 
 
 def write_generated_code(output_file: str, code: str) -> None:
@@ -43,29 +42,17 @@ def main():
     standard_elements = Symbols(args.procedure_table)
     code_creator = CodeCreator(standard_elements, args.templates)
 
-    code = code_creator.update_variable_value()
-    code.set_var("var13")
+    visitor = ASTVisitor(
+        symbols=standard_elements,
+        code_creator=code_creator,
+        variable_manager=VariableManager(),
+        evaluable_context=EvaluableContext(),
+        environment_context=EnvironmentContext(),
+        lambda_context=LambdaContext(),
+    )
 
-    # code.set_value("var13")
-    code.set_env("env2")
-    # code.set_name("x")
-
-    # code.set_element_count(13)
-    # code.set_element_pointer("args")
-
-    print(code.render())
-
-    # visitor = ASTVisitor(
-    #     symbols=standard_elements,
-    #     code_creator=code_creator,
-    #     variable_manager=VariableManager(),
-    #     evaluable_context=EvaluableContext(),
-    #     environment_context=EnvironmentContext(),
-    #     lambda_context=LambdaContext(),
-    # )
-    #
-    # output_code = visitor.visit(ast)
-    # write_generated_code(args.output_file, output_code)
+    output_code = visitor.visit(ast)
+    write_generated_code(args.output_file, output_code)
 
 
 if __name__ == "__main__":

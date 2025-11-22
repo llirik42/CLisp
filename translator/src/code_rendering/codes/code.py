@@ -166,10 +166,3 @@ class Code(ABC):
 
     def _update_secondary_data(self, **kwargs) -> None:
         self.__secondary_data.update(**kwargs)
-
-
-# TODO: сделать main шаблон опциональным
-def create_empty_code() -> Code:
-    c = Code()
-    c.make_final_final()
-    return c
