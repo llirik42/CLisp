@@ -36,7 +36,7 @@
       "set_variable_value": "clisp_set_variable_value",
       "update_variable_value": "clisp_update_variable_value",
       "get_variable_value": "clisp_get_variable_value",
-      "lambda_call": "clisp_call"
+      "lambda_call": "clisp_lambda_call"
     },
     "types": {
       "object": "Object*",

@@ -168,7 +168,8 @@ def join_codes(codes: list[Code]) -> str:
     :param codes: codes to join.
     """
 
-    rendered = filter(lambda r: not r.isspace(), [c.render() for c in codes])
+    rendered = list(filter(lambda r: not r.isspace(), [c.render() for c in codes]))
+
     return "\n".join(rendered)
 
 

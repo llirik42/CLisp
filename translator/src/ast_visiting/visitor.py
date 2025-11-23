@@ -63,6 +63,9 @@ class ASTVisitor(LispVisitor):
         self.__lambda_ctx = lambda_context
         self.__function_definitions = []
 
+        self.__last_expr = False
+        self.__current_depth = 0
+
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
         global_env_creation_func = "create_global_env"
         global_env_destroying_func = "destroy_global_env"
@@ -183,7 +186,7 @@ class ASTVisitor(LispVisitor):
             self.__environment_ctx.init(code=new_env_code, name=new_env_name)
 
             bindings_codes = [c for c in self.visit(binding_list)]
-            body_name, body_code = self.visitBody(ctx.body())
+            body_name, body_code = self.visit(ctx.environmentBody())
 
             # TODO: add internal definitions to varCount
             new_env_code.update_data(capacity=len(bindings_codes))
@@ -221,25 +224,36 @@ class ASTVisitor(LispVisitor):
 
         return wrap_codes(binding_code, expr_code)
 
-    def visitBody(self, ctx: LispParser.BodyContext) -> BodyVisitResult:
-        inside_lambda = self.__lambda_ctx.inside_lambda
-
+    def visitProcedureBody(self, ctx:LispParser.ProcedureBodyContext) -> BodyVisitResult:
         expressions = ctx.expression()
 
         expr_names = []
         expr_codes = []
 
-        if inside_lambda:
-            for e in expressions:
-                e_name, e_code = self.visit(e)
-                e_code.make_final()
-                expr_names.append(e_name)
-                expr_codes.append(e_code)
+        for i, e in enumerate(expressions):
+            e_name, e_code = self.visit(e)
 
-            return expr_names[-1], join_codes(expr_codes)
+            # TODO: fix
+            if i == len(expressions) - 1:
+                sec = e_code.render_secondary()
+                e_code.clear_secondary()
+                tmp = "\n" + "\n".join(sec.split("\n")[2:])
+                if tmp[-1] == "\n":
+                    tmp = tmp[:-1]
 
-        # TODO:
-        # If body isn't inside lambda, then it's inside let, let* or letrec
+                e_code.add_secondary_prolog(tmp)
+
+            e_code.make_final()
+            expr_names.append(e_name)
+            expr_codes.append(e_code)
+
+        return expr_names[-1], join_codes(expr_codes)
+
+    def visitEnvironmentBody(self, ctx:LispParser.EnvironmentBodyContext) -> BodyVisitResult:
+        expressions = ctx.expression()
+
+        expr_names = []
+        expr_codes = []
 
         for e in expressions:
             e_name, e_code = self.visit(e)
@@ -360,7 +374,7 @@ class ASTVisitor(LispVisitor):
         self.__variable_manager.enter_function()  # TODO:
 
         formals = ctx.formals()
-        body = ctx.body()
+        body = ctx.procedureBody()
 
         function_code = self.__code_creator.lambda_definition()
 
@@ -371,10 +385,16 @@ class ASTVisitor(LispVisitor):
             body_name, body_code_text = self.visit(body)
 
         function_name = self.__variable_manager.create_function_name()
+
+        if body_code_text == "":
+            body = formals_text_before + "\n" + formals_text_after
+        else:
+            body = formals_text_before + "\n\n" + body_code_text + formals_text_after
+
         function_code.update_data(
             func=function_name,
             ret_var=body_name,
-            body=formals_text_before + "\n\n" + body_code_text + formals_text_after,
+            body=body,
         )
 
         self.__function_definitions.append(function_code)
