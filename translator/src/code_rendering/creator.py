@@ -169,15 +169,14 @@ class CodeCreator:
         def main_validate(data: dict) -> None:
             check_required(data, "var", "index")
 
-        params = self.__symbols.find_internal_type("lambda_function_params")
-        args_name = params[1].split(" ")[1]
+        args = "args"
 
         return GetFunctionArgumentCode(
             main_template=self.__get_template("get_function_argument"),
             main_validate=main_validate,
             main_data={
                 "type": self.__symbols.find_internal_type("object"),
-                "args": args_name,
+                "args": args,
             },
         )
 
@@ -215,7 +214,7 @@ class CodeCreator:
 
     def lambda_definition(self) -> LambdaDefinition:
         def validate(data: dict) -> None:
-            check_required(data, "body", "ret_var")
+            check_required(data, "body", "ret_var", "func")
 
         return LambdaDefinition(
             main_template=self.__get_template("lambda_definition"),

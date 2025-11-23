@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from .code import Code
 
@@ -15,7 +15,7 @@ class MakeListCode(Code):
     def update_data(
         self,
         var: Optional[str] = None,
-        count: Optional[int] = None,
+        count: Optional[Union[str, int]] = None,
         elements: Optional[str] = None,
     ) -> None:
         self._update_main_data(var=var, count=count, elements=elements)
