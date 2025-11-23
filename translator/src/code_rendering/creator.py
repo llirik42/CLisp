@@ -20,7 +20,8 @@ from src.code_rendering.codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
-    DestroyGlobalEnvironmentCode, DestroyObjectCode,
+    DestroyGlobalEnvironmentCode,
+    DestroyObjectCode,
 )
 from src.code_rendering.codes.global_environment_creation import (
     GlobalEnvironmentCreation,

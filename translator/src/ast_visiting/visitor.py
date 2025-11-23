@@ -64,92 +64,47 @@ class ASTVisitor(LispVisitor):
         self.__function_definitions = []
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
-        # Code of the function that creates and returns the global environment
-        global_env_creation_func = "_create_global_env"
-        global_env_creation_var = "env"
-        global_env_creation_func_code = (
-            self.__code_creator.global_environment_creation()
-        )
-        global_env_creation_func_code.update_data(
-            func=global_env_creation_func, var=global_env_creation_var
-        )
-        make_env_code = self.__code_creator.make_environment()
-        make_env_code.update_data(var=global_env_creation_var)
-        make_env_code.make_final_final()
-        make_env_code.clear_secondary()
-        global_env_creation_func_code.add_to_body(make_env_code.render())
-
-        # Code of the function that accepts and destroys the global environment
-        global_env_destroying_func = "_destroy_global_env"
-        global_env_destroying_var = "env"
-        global_env_destroying_func_code = (
-            self.__code_creator.global_environment_destroying()
-        )
-        global_env_destroying_func_code.update_data(
-            func=global_env_destroying_func, var=global_env_destroying_var
-        )
-        destroy_env_code = self.__code_creator.make_environment()
-        destroy_env_code.update_data(var=global_env_destroying_var)
-        destroy_env_code.make_final_final()
-        destroy_env_code.clear_main()
+        global_env_creation_func = "create_global_env"
+        global_env_destroying_func = "destroy_global_env"
 
         global_env_name = self.__variable_manager.create_environment_name()
-        get_global_env_code = self.__code_creator.get_global_environment()
-        get_global_env_code.update_data(
+        main_code = self.__code_creator.get_global_environment()
+        main_code.update_data(
             var=global_env_name,
             get_func=global_env_creation_func,
             destroy_func=global_env_destroying_func,
         )
 
-        # TODO: обход все стандартных функий для добавления их в глобальное окружение
+        # Обход выражений программы
+        capacity_appendix = 0
+        with self.__environment_ctx:
+            self.__environment_ctx.init(
+                code=main_code, name=global_env_name
+            )
+            elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
+            capacity_appendix += self.__environment_ctx.variable_count
+        for c in elements_codes:
+            c.make_final()
+        main_code.add_main_epilog(
+            f"\n{join_codes(elements_codes)}"
+        )
 
-        # Добавление в функцию создания
-        creation_make_codes = []
-        creation_define_codes = []
-        for lisp_name, c_name in self.__symbols.find_api_function_items():
-            creation_var = self.__variable_manager.create_object_name()
-            make_lambda_code = self.__code_creator.make_lambda()
-            make_lambda_code.update_data(var=creation_var, func=c_name)
-            make_lambda_code.make_final_final()
-            make_lambda_code.clear_secondary()
-            creation_make_codes.append(make_lambda_code)
+        global_env_creation_code = self.__global_env_creation_code(
+            global_env_creation_func,
+            capacity_appendix
+        )
 
-            define_lambda_code = self.__code_creator.set_variable_value()
-            define_lambda_code.update_data(env=global_env_creation_var, name=f'"{lisp_name}"', value=creation_var)
-            define_lambda_code.make_final_final()
-            creation_define_codes.append(define_lambda_code)
-        global_env_creation_func_code.add_to_body("\n".join([c.render() for c in creation_make_codes]))
-        global_env_creation_func_code.add_to_body("\n".join([c.render() for c in creation_define_codes]), newline=False)
-
-        self.__variable_manager.reset_object_count()
-
-        # Добавление в функцию удаления
-        destroying_get_codes = []
-        destroying_destroy_codes = []
-        for lisp_name, c_name in self.__symbols.find_api_function_items():
-            get_var = self.__variable_manager.create_object_name()
-            get_var_code = self.__code_creator.get_variable_value()
-            get_var_code.update_data(var=get_var, env=global_env_destroying_var, name=f'"{lisp_name}"')
-            get_var_code.make_final_final()
-            destroying_get_codes.append(get_var_code)
-
-            destroy_lambda_code = self.__code_creator.destroy_object()
-            destroy_lambda_code.update_data(var=get_var)
-            destroy_lambda_code.make_final_final()
-            destroying_destroy_codes.append(destroy_lambda_code)
-        global_env_destroying_func_code.add_to_body("\n".join([c.render() for c in destroying_get_codes]))
-        global_env_destroying_func_code.add_to_body("\n".join([c.render() for c in destroying_destroy_codes]))
-        global_env_destroying_func_code.add_to_body(destroy_env_code.render(), newline=False)
-
-        self.__variable_manager.reset_object_count()
+        global_env_destroying_code = self.__global_env_destroying_code(
+            global_env_destroying_func
+        )
 
         program_code = self.__code_creator.program()
         program_code.update_data(
             declarations=[
-                global_env_creation_func_code.render(),
-                global_env_destroying_func_code.render(),
+                global_env_creation_code.render(),
+                global_env_destroying_code.render(),
             ],
-            main_body=get_global_env_code.render(),
+            main_body=main_code.render(),
         )
 
         return program_code.render()
@@ -593,3 +548,89 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(op_template)
 
         return operand_names, operand_codes
+
+    def __global_env_creation_code(self, func_name: str, capacity_appendix: int) -> Code:
+        global_env_creation_var = "env"
+        global_env_creation_func_code = (
+            self.__code_creator.global_environment_creation()
+        )
+        global_env_creation_func_code.update_data(
+            func=func_name, var=global_env_creation_var
+        )
+        make_env_code = self.__code_creator.make_environment()
+        make_env_code.update_data(var=global_env_creation_var, capacity=capacity_appendix+self.__symbols.api_function_count)
+        make_env_code.make_final_final()
+        make_env_code.clear_secondary()
+        global_env_creation_func_code.add_to_body(make_env_code.render())
+
+        # Добавление в функцию создания
+        creation_make_codes = []
+        creation_define_codes = []
+        for lisp_name, c_name in self.__symbols.find_api_function_items():
+            creation_var = self.__variable_manager.create_object_name()
+            make_lambda_code = self.__code_creator.make_lambda()
+            make_lambda_code.update_data(var=creation_var, func=c_name)
+            make_lambda_code.make_final_final()
+            make_lambda_code.clear_secondary()
+            creation_make_codes.append(make_lambda_code)
+
+            define_lambda_code = self.__code_creator.set_variable_value()
+            define_lambda_code.update_data(
+                env=global_env_creation_var, name=f'"{lisp_name}"', value=creation_var
+            )
+            define_lambda_code.make_final_final()
+            creation_define_codes.append(define_lambda_code)
+        global_env_creation_func_code.add_to_body(
+            "\n".join([c.render() for c in creation_make_codes])
+        )
+        global_env_creation_func_code.add_to_body(
+            "\n".join([c.render() for c in creation_define_codes]), newline=False
+        )
+
+        self.__variable_manager.reset_object_count()
+
+        return global_env_creation_func_code
+
+    def __global_env_destroying_code(self, func_name: str) -> Code:
+        # Code of the function that accepts and destroys the global environment
+        global_env_destroying_var = "env"
+        global_env_destroying_func_code = (
+            self.__code_creator.global_environment_destroying()
+        )
+        global_env_destroying_func_code.update_data(
+            func=func_name, var=global_env_destroying_var
+        )
+        destroy_env_code = self.__code_creator.make_environment()
+        destroy_env_code.update_data(var=global_env_destroying_var)
+        destroy_env_code.make_final_final()
+        destroy_env_code.clear_main()
+
+        # Добавление в функцию удаления
+        destroying_get_codes = []
+        destroying_destroy_codes = []
+        for lisp_name, c_name in self.__symbols.find_api_function_items():
+            get_var = self.__variable_manager.create_object_name()
+            get_var_code = self.__code_creator.get_variable_value()
+            get_var_code.update_data(
+                var=get_var, env=global_env_destroying_var, name=f'"{lisp_name}"'
+            )
+            get_var_code.make_final_final()
+            destroying_get_codes.append(get_var_code)
+
+            destroy_lambda_code = self.__code_creator.destroy_object()
+            destroy_lambda_code.update_data(var=get_var)
+            destroy_lambda_code.make_final_final()
+            destroying_destroy_codes.append(destroy_lambda_code)
+        global_env_destroying_func_code.add_to_body(
+            "\n".join([c.render() for c in destroying_get_codes])
+        )
+        global_env_destroying_func_code.add_to_body(
+            "\n".join([c.render() for c in destroying_destroy_codes])
+        )
+        global_env_destroying_func_code.add_to_body(
+            destroy_env_code.render(), newline=False
+        )
+
+        self.__variable_manager.reset_object_count()
+
+        return global_env_destroying_func_code
