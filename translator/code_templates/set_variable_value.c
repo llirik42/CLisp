@@ -1,0 +1,1 @@
+{{ func }}({{ env }}, {{ name }}, {{ value }});

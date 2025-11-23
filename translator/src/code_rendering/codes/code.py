@@ -71,14 +71,14 @@ class Code(ABC):
     def make_final_final(self) -> None:
         self.__final_final = True
 
-    def update_data(self, **kwargs) -> None:
-        """
-        Update data that will be used for rendering.
-
-        :param kwargs: data to update.
-        """
-
-        self.__common_data.update(kwargs)
+    # def update_data(self, **kwargs) -> None:
+    #     """
+    #     Update data that will be used for rendering.
+    #
+    #     :param kwargs: data to update.
+    #     """
+    #
+    #     self.__common_data.update(kwargs)
 
     def add_main_epilog(self, text: str):
         """
@@ -162,7 +162,11 @@ class Code(ABC):
         return self.__secondary_data.get(key, None)
 
     def _update_main_data(self, **kwargs) -> None:
-        self.__main_data.update(**kwargs)
+        for k, v in kwargs.items():
+            if v is not None:
+                self.__main_data[k] = v
 
     def _update_secondary_data(self, **kwargs) -> None:
-        self.__secondary_data.update(**kwargs)
+        for k, v in kwargs.items():
+            if v is not None:
+                self.__secondary_data[k] = v
