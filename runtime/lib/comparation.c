@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "primitive.h"
+#include "objects/primitive.h"
 #include "utils.h"
 
 typedef unsigned int (*comparison_fn)(double, double);

@@ -1,7 +1,7 @@
 #include "core.h"
 
-#include "primitive.h"
-#include "evaluable.h"
+#include "objects/primitive.h"
+#include "objects/evaluable.h"
 #include "memory.h"
 
 Object* clisp_make_unspecified() {

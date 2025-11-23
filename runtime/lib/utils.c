@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "primitive.h"
-#include "evaluable.h"
+#include "objects/primitive.h"
+#include "objects/evaluable.h"
 
 void print_error_and_exit(char* message, unsigned char use_perror) {
     if (!use_perror) {

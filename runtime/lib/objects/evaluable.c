@@ -1,6 +1,6 @@
 #include "evaluable.h"
 
-#include "memory.h"
+#include "../memory.h"
 
 Object* clisp_make_evaluable(postponed_func func, CLISP_FUNC_PARAMS) {
     EvaluableObject* evaluable_object = allocate_memory(sizeof(EvaluableObject));

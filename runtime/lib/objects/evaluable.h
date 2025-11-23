@@ -1,5 +1,5 @@
 #pragma once
-#include "core.h"
+#include "../core.h"
 
 typedef Object*(*postponed_func)(CLISP_FUNC_PARAMS);
 

@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "primitive.h"
+#include "objects/primitive.h"
 #include "core.h"
 #include "utils.h"
 
