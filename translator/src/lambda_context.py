@@ -12,8 +12,13 @@ class LambdaContext:
         self.__params = {}
         self.__code = None
         self.__environment = None
+        self.__destructors = []
+
+    def add_destructor(self, code: Code) -> None:
+        self.__destructors.append(code)
 
     def __enter__(self):
+        self.__destructors = []
         self.__counter += 1
         self.__params = {}
 
@@ -22,11 +27,6 @@ class LambdaContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__counter -= 1
-
-    @property
-    def code(self) -> Code:
-        assert self.__code is not None
-        return self.__code
 
     @property
     def inside_lambda(self) -> bool:

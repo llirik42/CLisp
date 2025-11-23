@@ -36,7 +36,7 @@ class Environment:
             return True
 
         if self.has_parent:
-            return _has_variable_recursively(self.parent, name)
+            return self.parent.has_variable_recursively(name)
 
         return False
 

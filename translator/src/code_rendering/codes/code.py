@@ -170,10 +170,10 @@ class Code(ABC):
     def is_empty(self) -> bool:
         return self.__empty
 
-    def _get_main_data(self, key: str) -> Any:
+    def get_main_data(self, key: str) -> Any:
         return self.__main_data.get(key, None)
 
-    def _get_main_secondary(self, key: str) -> Any:
+    def get_main_secondary(self, key: str) -> Any:
         return self.__secondary_data.get(key, None)
 
     def _update_main_data(self, **kwargs) -> None:

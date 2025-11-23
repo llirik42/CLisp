@@ -20,7 +20,7 @@ class GlobalEnvironmentCreation(Code):
         self._update_main_data(func=func, var=var)
 
     def add_to_body(self, delta: str, newline: bool = True) -> None:
-        old = self._get_main_data("body")
+        old = self.get_main_data("body")
         new = old + delta
         if newline:
             new += "\n"

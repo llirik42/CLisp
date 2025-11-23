@@ -63,8 +63,6 @@ class ASTVisitor(LispVisitor):
         self.__lambda_ctx = lambda_context
         self.__function_definitions = []
 
-        self.__last_expr = False
-        self.__current_depth = 0
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
         global_env_creation_func = "create_global_env"
@@ -78,23 +76,23 @@ class ASTVisitor(LispVisitor):
             destroy_func=global_env_destroying_func,
         )
 
+        # TODO: резервация номеров переменных под функии объявления стандартных функций
+        self.__variable_manager.add_object_count(self.__symbols.api_function_count * 2)
+
         # Обход выражений программы
         capacity_appendix = 0
         with self.__environment_ctx:
-            self.__environment_ctx.init(
-                code=main_code, name=global_env_name
-            )
+            self.__environment_ctx.init(code=main_code, name=global_env_name)
             elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
             capacity_appendix += self.__environment_ctx.variable_count
         for c in elements_codes:
             c.make_final()
-        main_code.add_main_epilog(
-            f"\n{join_codes(elements_codes)}"
-        )
+        main_code.add_main_epilog(f"\n{join_codes(elements_codes)}")
+
+        self.__variable_manager.reset_object_count()
 
         global_env_creation_code = self.__global_env_creation_code(
-            global_env_creation_func,
-            capacity_appendix
+            global_env_creation_func, capacity_appendix
         )
 
         global_env_destroying_code = self.__global_env_destroying_code(
@@ -103,7 +101,8 @@ class ASTVisitor(LispVisitor):
 
         program_code = self.__code_creator.program()
         program_code.update_data(
-            declarations=[c.render() for c in self.__function_definitions] + [
+            declarations=[c.render() for c in self.__function_definitions]
+            + [
                 global_env_creation_code.render(),
                 global_env_destroying_code.render(),
             ],
@@ -149,8 +148,7 @@ class ASTVisitor(LispVisitor):
             env_name = "env"  # TODO: ПРиБИТО (из шаблона)
 
             if variable_name in self.__lambda_ctx.params:
-                change_lambda_param = True
-                # TODO:
+                pass
         else:
             env = self.__environment_ctx.env
             env_name = self.__environment_ctx.name
@@ -161,8 +159,23 @@ class ASTVisitor(LispVisitor):
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
 
-        transfer_secondary(expr_code, self.__environment_ctx.code)
-        self.__environment_ctx.update_variable_recursively(variable_name, expr_name)
+        if self.__lambda_ctx.inside_lambda:
+            # Перенос удаления объекта по значению переменной в то окружение, в котором создана лямбда
+            get_var_value_code = self.__code_creator.get_variable_value()
+            get_var_value_code.update_data(
+                var=expr_code.get_main_data("var"),
+                env=self.__environment_ctx.env.parent.name,
+                name=f'"{variable_name}"',
+            )
+            get_var_value_code.make_final_final()
+
+            expr_code.add_secondary_prolog("\n" + get_var_value_code.render())
+
+            transfer_secondary(expr_code, self.__environment_ctx.code)
+            self.__environment_ctx.update_variable_recursively(variable_name, expr_name)
+        else:
+            transfer_secondary(expr_code, self.__environment_ctx.code)
+            self.__environment_ctx.update_variable_recursively(variable_name, expr_name)
 
         assignment_name = self.__variable_manager.create_object_name()
         assignment_code = self.__code_creator.update_variable_value()
@@ -224,7 +237,9 @@ class ASTVisitor(LispVisitor):
 
         return wrap_codes(binding_code, expr_code)
 
-    def visitProcedureBody(self, ctx:LispParser.ProcedureBodyContext) -> BodyVisitResult:
+    def visitProcedureBody(
+        self, ctx: LispParser.ProcedureBodyContext
+    ) -> BodyVisitResult:
         expressions = ctx.expression()
 
         expr_names = []
@@ -249,7 +264,9 @@ class ASTVisitor(LispVisitor):
 
         return expr_names[-1], join_codes(expr_codes)
 
-    def visitEnvironmentBody(self, ctx:LispParser.EnvironmentBodyContext) -> BodyVisitResult:
+    def visitEnvironmentBody(
+        self, ctx: LispParser.EnvironmentBodyContext
+    ) -> BodyVisitResult:
         expressions = ctx.expression()
 
         expr_names = []
@@ -367,20 +384,24 @@ class ASTVisitor(LispVisitor):
         )
 
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
+        procedure_env_name = "env"  # TODO: прибито (из шаблона)
+
         # TODO: Нужно проверять количество аргументов, переданных в лямбду при компиляции
 
         # TODO: проверить, что параметры в formals не повторяются по названию
-
-        self.__variable_manager.enter_function()  # TODO:
 
         formals = ctx.formals()
         body = ctx.procedureBody()
 
         function_code = self.__code_creator.lambda_definition()
 
-        with self.__lambda_ctx:
-            self.__lambda_ctx.set_code(function_code)
+        with self.__lambda_ctx, self.__environment_ctx:
+            self.__environment_ctx.init(
+                name=procedure_env_name, code=self.__environment_ctx.code
+            )
+
             self.__lambda_ctx.set_environment(self.__environment_ctx.env)
+
             formals_text_before, formals_text_after = self.visitFormals(formals)
             body_name, body_code_text = self.visit(body)
 
@@ -405,8 +426,6 @@ class ASTVisitor(LispVisitor):
         lambda_creation_code.update_data(
             var=lambda_variable, func=function_name, env=self.__environment_ctx.name
         )
-
-        self.__variable_manager.exit_function()
 
         return lambda_variable, lambda_creation_code
 
@@ -438,7 +457,7 @@ class ASTVisitor(LispVisitor):
 
         arg_getting_code.make_final_final()
 
-        secondary = arg_getting_code.render_secondary()
+        secondary = arg_getting_code.render_secondary() + "\n"
         arg_getting_code.clear_secondary()
 
         self.__lambda_ctx.add_param(
@@ -479,7 +498,7 @@ class ASTVisitor(LispVisitor):
 
         variadic_arg_getting_code.make_final_final()
 
-        secondary = variadic_arg_getting_code.render_secondary()
+        secondary = variadic_arg_getting_code.render_secondary() + "\n"
         variadic_arg_getting_code.clear_secondary()
         codes_to_join.append(variadic_arg_getting_code)
 
@@ -568,7 +587,9 @@ class ASTVisitor(LispVisitor):
 
         return operand_names, operand_codes
 
-    def __global_env_creation_code(self, func_name: str, capacity_appendix: int) -> Code:
+    def __global_env_creation_code(
+        self, func_name: str, capacity_appendix: int
+    ) -> Code:
         global_env_creation_var = "env"
         global_env_creation_func_code = (
             self.__code_creator.global_environment_creation()
@@ -577,7 +598,10 @@ class ASTVisitor(LispVisitor):
             func=func_name, var=global_env_creation_var
         )
         make_env_code = self.__code_creator.make_environment()
-        make_env_code.update_data(var=global_env_creation_var, capacity=capacity_appendix+self.__symbols.api_function_count)
+        make_env_code.update_data(
+            var=global_env_creation_var,
+            capacity=capacity_appendix + self.__symbols.api_function_count,
+        )
         make_env_code.make_final_final()
         make_env_code.clear_secondary()
         global_env_creation_func_code.add_to_body(make_env_code.render())
@@ -599,14 +623,12 @@ class ASTVisitor(LispVisitor):
             )
             define_lambda_code.make_final_final()
             creation_define_codes.append(define_lambda_code)
-        global_env_creation_func_code.add_to_body("\n"+
-            "\n".join([c.render() for c in creation_make_codes]) + "\n"
+        global_env_creation_func_code.add_to_body(
+            "\n" + "\n".join([c.render() for c in creation_make_codes]) + "\n"
         )
         global_env_creation_func_code.add_to_body(
             "\n".join([c.render() for c in creation_define_codes])
         )
-
-        self.__variable_manager.reset_object_count()
 
         return global_env_creation_func_code
 
@@ -649,7 +671,5 @@ class ASTVisitor(LispVisitor):
         global_env_destroying_func_code.add_to_body(
             destroy_env_code.render(), newline=False
         )
-
-        self.__variable_manager.reset_object_count()
 
         return global_env_destroying_func_code
