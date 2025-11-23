@@ -100,7 +100,7 @@ class ASTVisitor(LispVisitor):
 
         program_code = self.__code_creator.program()
         program_code.update_data(
-            declarations=[
+            declarations=[c.render() for c in self.__function_definitions] + [
                 global_env_creation_code.render(),
                 global_env_destroying_code.render(),
             ],
@@ -376,7 +376,6 @@ class ASTVisitor(LispVisitor):
             ret_var=body_name,
             body=formals_text_before + "\n" + body_code_text + formals_text_after,
         )
-        function_code.update_data()
 
         self.__function_definitions.append(function_code)
         function_code.make_final()
