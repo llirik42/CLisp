@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core.h"
+#include "lib/core.h"
 
 typedef struct {
     enum ObjectType type;

@@ -8,3 +8,5 @@
 #include "lib/logic.h"
 #include "lib/comparation.h"
 #include "lib/environment.h"
+#include "lib/objects/list.h"
+#include "lib/objects/lambda.h"

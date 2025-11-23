@@ -7,6 +7,8 @@ enum ObjectType {
     EVALUABLE,
     STRING,
     CHAR,
+    LIST,
+    LAMBDA,
     UNSPECIFIED,
 };
 

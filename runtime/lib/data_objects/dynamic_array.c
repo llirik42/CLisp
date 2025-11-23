@@ -8,9 +8,13 @@
 #define BASIC_DA_CAPACITY 10
 #define CAPACITY_MULTIPLIER 1.5
 
-DynamicArray* da_create() {
+DynamicArray* da_create(unsigned short capacity) {
     DynamicArray *da = allocate_memory(sizeof(DynamicArray));
-    da->capacity = BASIC_DA_CAPACITY;
+    if (!capacity) {
+        da->capacity = BASIC_DA_CAPACITY;
+    } else {
+        da->capacity = capacity;
+    }
     da->size = 0;
     da->data = allocate_memory(sizeof(void*) * da->capacity);
     return da;

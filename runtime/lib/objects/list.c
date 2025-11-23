@@ -1,0 +1,46 @@
+#include "list.h"
+
+#include "lib/memory.h"
+
+Object* clisp_make_list(unsigned short size) {
+    ListObject* list_object = allocate_memory(sizeof(ListObject));
+    init_object((Object*)list_object, LIST);
+
+    list_object->list = da_create(size);
+    return (Object*)list_object;
+}
+
+void clisp_list_append(Object* list, Object* obj) {
+    const ListObject* list_object = (ListObject*)list;
+    da_push_back(list_object->list, obj);
+}
+
+Object* clisp_list_at(Object* list, size_t index) {
+    const ListObject* list_object = (ListObject*)list;
+    return da_get(list_object->list, index);
+}
+
+size_t clisp_list_length(Object* list) {
+    const ListObject* list_object = (ListObject*)list;
+    return da_size(list_object->list);
+
+}
+
+Object* clisp_make_list_from_array(unsigned int size, Object** array) {
+    ListObject* list_object = allocate_memory(sizeof(ListObject));
+    init_object((Object*)list_object, LIST);
+
+    list_object->list = da_create(size);
+
+    for (size_t i = 0; i < size; i++) {
+        da_push_back(list_object->list, array[i]);
+    }
+
+    return (Object*)list_object;
+}
+
+void destroy_list(Object* obj) {
+    const ListObject* list_object = (ListObject*)obj;
+    da_destroy(list_object->list);
+    free_memory(obj);
+}
