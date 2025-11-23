@@ -113,9 +113,9 @@ class Code(ABC):
             tmp = self.__template.render(self.__main_data)
 
         if self.__final_final:
-            return f"{tmp}{result}"
-
-        rendered = f"{tmp}\n{result}"
+            rendered = f"{tmp}{result}"
+        else:
+            rendered = f"{tmp}\n{result}"
 
         if self.__final:
             return rendered[:-1]  # remove trailing \n

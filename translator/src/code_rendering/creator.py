@@ -52,8 +52,9 @@ class CodeCreator:
         self.__load_templates(templates_folder_path)
 
     def empty(self) -> EmptyCode:
-        c = EmptyCode()
+        c = EmptyCode(empty=True)
         c.make_final_final()
+
         return c
 
     def destroy_object(self) -> DestroyObjectCode:

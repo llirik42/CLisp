@@ -231,9 +231,8 @@ class ASTVisitor(LispVisitor):
 
         if inside_lambda:
             for e in expressions:
-                e_name, e_code = self.visit(
-                    e
-                )  # TODO: сделать так, чтобы пустые строки стояли там где надо, когда в body лямбды несколько выражений
+                e_name, e_code = self.visit(e)
+                e_code.make_final()
                 expr_names.append(e_name)
                 expr_codes.append(e_code)
 
@@ -264,6 +263,7 @@ class ASTVisitor(LispVisitor):
             param_name = self.__lambda_ctx.get_param_c_name(variable_name)[
                 0
             ]  # TODO: использовать не кортеж
+
             return param_name, self.__code_creator.empty()
 
         if not self.__environment_ctx.has_variable_recursively(variable_name):
@@ -374,7 +374,7 @@ class ASTVisitor(LispVisitor):
         function_code.update_data(
             func=function_name,
             ret_var=body_name,
-            body=formals_text_before + "\n" + body_code_text + formals_text_after,
+            body=formals_text_before + "\n\n" + body_code_text + formals_text_after,
         )
 
         self.__function_definitions.append(function_code)
