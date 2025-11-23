@@ -22,8 +22,12 @@ from src.code_rendering.codes import (
     GetGlobalEnvironmentCode,
     DestroyGlobalEnvironmentCode,
 )
-from src.code_rendering.codes.global_environment_creation import GlobalEnvironmentCreation
-from src.code_rendering.codes.global_environment_destroying import GlobalEnvironmentDestroying
+from src.code_rendering.codes.global_environment_creation import (
+    GlobalEnvironmentCreation,
+)
+from src.code_rendering.codes.global_environment_destroying import (
+    GlobalEnvironmentDestroying,
+)
 from src.symbols import Symbols
 
 
@@ -132,16 +136,20 @@ class CodeCreator:
         def main_validate(data: dict) -> None:
             check_required(data, "var")
 
+            if "func" not in data:
+                raise KeyError(f'"get_func" is required')
+
+        def secondary_validate(data: dict) -> None:
+            if "func" not in data:
+                raise KeyError(f'"destroy_func" is required')
+
         return GetGlobalEnvironmentCode(
             main_template=self.__get_template("get_global_environment"),
             secondary_template=self.__get_template("destroy_global_environment"),
             main_validate=main_validate,
+            secondary_validate=secondary_validate,
             main_data={
                 "type": self.__symbols.find_internal_type("environment"),
-                "func": self.__symbols.find_internal_function("environment"),
-            },
-            secondary_data={
-                "func": self.__symbols.find_internal_function("~environment")
             },
         )
 
