@@ -84,7 +84,6 @@ unsigned char obj_to_boolean(Object* obj) {
 
 // Unwrap non-constant type. If evaluable - returns evaluated. If lambda - returns evaluated lambda.
 Object* unwrap_object(Object* obj) {
-    // TODO: Add lambda evaluation
     return evaluate(obj);
 }
 
@@ -92,5 +91,4 @@ void destroy_if_unwrapped(Object* origin, Object* unwrapped) {
     if (get_object_type(origin) == EVALUABLE) {
         destroy_evaluable(unwrapped);
     }
-    // TODO: Process lambda
 }
