@@ -105,17 +105,21 @@ class ASTVisitor(LispVisitor):
         for c in elements_codes:
             c.make_final()
 
-        for c in make_lambda_codes:
-            transfer_secondary(c, top_level_env_code)
+        # for c in make_lambda_codes:
+        #     transfer_secondary(c, top_level_env_code)
+
+        # top_level_env_code.add_main_epilog(
+        #     f"{join_codes(make_lambda_codes)}\n{join_codes(declare_lambda_codes)}\n\n{join_codes(elements_codes)}"
+        # )
 
         top_level_env_code.add_main_epilog(
-            f"{join_codes(make_lambda_codes)}\n{join_codes(declare_lambda_codes)}\n\n{join_codes(elements_codes)}"
+            f"{join_codes(elements_codes)}"
         )
 
-        main_function_code = self.__code_creator.program(
-            code=f"{top_level_env_code.render()}\n",
-            functions=[c.render() for c in self.__function_definitions],
-        )
+        main_function_code = self.__code_creator.program()
+        main_function_code.update_data(main_body=f"{top_level_env_code.render()}\n",
+                                       #declarations=[c.render() for c in self.__function_definitions]
+                                       )
 
         return main_function_code.render()
 

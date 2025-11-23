@@ -225,12 +225,12 @@ class CodeCreator:
             main_validate=validate,
         )
 
-    def program(self, **kwargs) -> ProgramCode:
+    def program(self) -> ProgramCode:
         def validate(data: dict) -> None:
             pass
 
         return ProgramCode(
-            main_template=self.__get_template("program"), validate=validate, **kwargs
+            main_template=self.__get_template("program"), validate=validate
         )
 
     def __make_primitive(self, creation_function: str) -> MakePrimitiveCode:
