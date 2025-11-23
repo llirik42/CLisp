@@ -57,6 +57,15 @@ class Code(ABC):
     def final(self) -> bool:
         return self.__final
 
+    def remove_first_secondary_line(self) -> None:
+        old_secondary = self.render_secondary()
+        self.clear_secondary()
+        new_secondary = "\n" + "\n".join(old_secondary.split("\n")[2:])
+        if new_secondary[-1] == "\n":
+            new_secondary = new_secondary[:-1]
+
+        self.add_secondary_prolog(new_secondary)
+
     def make_final(self) -> None:
         """
         Makes the code "final". Being "final" means that there will be no newline in the end of the main part and will be additional newline in the end of the secondary part. Thus, the code will consist of

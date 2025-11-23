@@ -123,7 +123,7 @@ class ASTVisitor(LispVisitor):
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
 
-        transfer_secondary(expr_code, self.__environment_ctx.code)
+        expr_code.remove_first_secondary_line()
         self.__environment_ctx.update_variable(variable_name, expr_name)
 
         definition_code = self.__code_creator.set_variable_value()
@@ -145,9 +145,10 @@ class ASTVisitor(LispVisitor):
 
         if self.__lambda_ctx.inside_lambda:
             env = self.__lambda_ctx.environment
-            env_name = "env"  # TODO: ПРиБИТО (из шаблона)
+            env_name = "env"
 
             if variable_name in self.__lambda_ctx.params:
+                # TODO
                 pass
         else:
             env = self.__environment_ctx.env
@@ -159,23 +160,8 @@ class ASTVisitor(LispVisitor):
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
 
-        if self.__lambda_ctx.inside_lambda:
-            # Перенос удаления объекта по значению переменной в то окружение, в котором создана лямбда
-            get_var_value_code = self.__code_creator.get_variable_value()
-            get_var_value_code.update_data(
-                var=expr_code.get_main_data("var"),
-                env=self.__environment_ctx.env.parent.name,
-                name=f'"{variable_name}"',
-            )
-            get_var_value_code.make_final_final()
-
-            expr_code.add_secondary_prolog("\n" + get_var_value_code.render())
-
-            transfer_secondary(expr_code, self.__environment_ctx.code)
-            self.__environment_ctx.update_variable_recursively(variable_name, expr_name)
-        else:
-            transfer_secondary(expr_code, self.__environment_ctx.code)
-            self.__environment_ctx.update_variable_recursively(variable_name, expr_name)
+        expr_code.remove_first_secondary_line()
+        self.__environment_ctx.update_variable_recursively(variable_name, expr_name)
 
         assignment_name = self.__variable_manager.create_object_name()
         assignment_code = self.__code_creator.update_variable_value()
@@ -225,7 +211,7 @@ class ASTVisitor(LispVisitor):
 
         expression = ctx.expression()
         expr_name, expr_code = self.visit(expression)
-        transfer_secondary(expr_code, self.__environment_ctx.code)
+        expr_code.remove_first_secondary_line()
         self.__environment_ctx.update_variable(variable_name, expr_name)
 
         binding_code = self.__code_creator.set_variable_value()
@@ -250,13 +236,7 @@ class ASTVisitor(LispVisitor):
 
             # TODO: fix
             if i == len(expressions) - 1:
-                sec = e_code.render_secondary()
-                e_code.clear_secondary()
-                tmp = "\n" + "\n".join(sec.split("\n")[2:])
-                if tmp[-1] == "\n":
-                    tmp = tmp[:-1]
-
-                e_code.add_secondary_prolog(tmp)
+                e_code.remove_first_secondary_line()
 
             e_code.make_final()
             expr_names.append(e_name)
@@ -407,10 +387,15 @@ class ASTVisitor(LispVisitor):
 
         function_name = self.__variable_manager.create_function_name()
 
-        if body_code_text == "":
-            body = formals_text_before + "\n" + formals_text_after
+        if formals_text_before:
+            body = formals_text_before + "\n\n"
         else:
-            body = formals_text_before + "\n\n" + body_code_text + formals_text_after
+            body = ""
+
+        if body_code_text == "":
+            body += formals_text_after
+        else:
+            body += body_code_text + formals_text_after
 
         function_code.update_data(
             func=function_name,
