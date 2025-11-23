@@ -14,6 +14,9 @@ class VariableManager:
         self.__function = False
         self.__function_object_count = 0
 
+    def reset_object_count(self):
+        self.__object_count = 0
+
     def create_object_name(self) -> str:
         """
         Creates and returns a name of the variable with a new object.

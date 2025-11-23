@@ -17,9 +17,13 @@ from src.code_rendering.codes import (
     LambdaCallCode,
     ProcedureCallCode,
     GetFunctionArgumentCode,
-    LambdaDefinition,
+    LambdaDefinitionCode,
     ProgramCode,
+    GetGlobalEnvironmentCode,
+    DestroyGlobalEnvironmentCode,
 )
+from src.code_rendering.codes.global_environment_creation import GlobalEnvironmentCreation
+from src.code_rendering.codes.global_environment_destroying import GlobalEnvironmentDestroying
 from src.symbols import Symbols
 
 
@@ -124,6 +128,40 @@ class CodeCreator:
             },
         )
 
+    def get_global_environment(self) -> GetGlobalEnvironmentCode:
+        def main_validate(data: dict) -> None:
+            check_required(data, "var")
+
+        return GetGlobalEnvironmentCode(
+            main_template=self.__get_template("get_global_environment"),
+            secondary_template=self.__get_template("destroy_global_environment"),
+            main_validate=main_validate,
+            main_data={
+                "type": self.__symbols.find_internal_type("environment"),
+                "func": self.__symbols.find_internal_function("environment"),
+            },
+            secondary_data={
+                "func": self.__symbols.find_internal_function("~environment")
+            },
+        )
+
+    def destroy_global_environment(self) -> DestroyGlobalEnvironmentCode:
+        def main_validate(data: dict) -> None:
+            check_required(data, "var")
+
+        return DestroyGlobalEnvironmentCode(
+            main_template=self.__get_template("make_environment"),
+            secondary_template=self.__get_template("destroy_environment"),
+            main_validate=main_validate,
+            main_data={
+                "type": self.__symbols.find_internal_type("environment"),
+                "func": self.__symbols.find_internal_function("environment"),
+            },
+            secondary_data={
+                "func": self.__symbols.find_internal_function("~environment")
+            },
+        )
+
     def get_variable_value(self) -> GetVariableValueCode:
         def main_validate(data: dict) -> None:
             check_required(data, "var", "env", "name")
@@ -212,11 +250,11 @@ class CodeCreator:
             secondary_data={"func": self.__symbols.find_internal_function("~object")},
         )
 
-    def lambda_definition(self) -> LambdaDefinition:
+    def lambda_definition(self) -> LambdaDefinitionCode:
         def validate(data: dict) -> None:
             check_required(data, "body", "ret_var", "func")
 
-        return LambdaDefinition(
+        return LambdaDefinitionCode(
             main_template=self.__get_template("lambda_definition"),
             main_data={
                 "ret_type": self.__symbols.find_internal_type("object"),
@@ -225,12 +263,37 @@ class CodeCreator:
             main_validate=validate,
         )
 
-    def program(self) -> ProgramCode:
+    def global_environment_creation(self) -> GlobalEnvironmentCreation:
         def validate(data: dict) -> None:
+            check_required(data, "func", "var", "body")
+
+        return GlobalEnvironmentCreation(
+            main_template=self.__get_template("global_environment_creation"),
+            main_data={
+                "type": self.__symbols.find_internal_type("environment"),
+            },
+            main_validate=validate,
+        )
+
+    def global_environment_destroying(self) -> GlobalEnvironmentDestroying:
+        def validate(data: dict) -> None:
+            check_required(data, "func", "var", "body")
+
+        return GlobalEnvironmentDestroying(
+            main_template=self.__get_template("global_environment_destroying"),
+            main_data={
+                "type": self.__symbols.find_internal_type("environment"),
+            },
+            main_validate=validate,
+        )
+
+    def program(self) -> ProgramCode:
+        def main_validate(data: dict) -> None:
             pass
 
         return ProgramCode(
-            main_template=self.__get_template("program"), validate=validate
+            main_template=self.__get_template("program"),
+            main_validate=main_validate,
         )
 
     def __make_primitive(self, creation_function: str) -> MakePrimitiveCode:

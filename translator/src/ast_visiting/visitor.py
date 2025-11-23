@@ -64,64 +64,87 @@ class ASTVisitor(LispVisitor):
         self.__function_definitions = []
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
-        top_level_env_name = self.__variable_manager.create_environment_name()
-
-        # TODO: объявить лямбды для всех функций
-
-        make_lambda_codes = []
-        declare_lambda_codes = []
-
-        for lisp_name, c_name in self.__symbols.find_api_function_items():
-            lambda_name = self.__variable_manager.create_object_name()
-
-            make_lambda_code = self.__code_creator.make_lambda()
-            make_lambda_code.update_data(var=lambda_name, func=c_name)
-
-            make_lambda_code.make_final_final()
-            make_lambda_codes.append(make_lambda_code)
-            self.__lambda_ctx.add_lambda(lisp_name, lambda_name)
-
-            define_lambda_code = self.__code_creator.set_variable_value()
-            define_lambda_code.update_data(env=top_level_env_name, name=f'"{lisp_name}"', value=lambda_name)
-
-            define_lambda_code.make_final_final()
-            declare_lambda_codes.append(define_lambda_code)
-
-        top_level_env_code = self.__code_creator.make_environment()
-        top_level_env_code.update_data(var=top_level_env_name)
+        global_env_creation_code = self.__code_creator.global_environment_creation()
 
 
-        with self.__environment_ctx:
-            self.__environment_ctx.init(
-                code=top_level_env_code, name=top_level_env_name
-            )
 
-            elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
-            top_level_env_code.update_data(
-                capacity=self.__environment_ctx.variable_count
-                + self.__symbols.api_function_count
-            )
+        # create_env_name = "env"
+        # create_env_code = self.__code_creator.make_environment()
+        # create_env_code.update_data(var=create_env_name)
+        # create_env_code.clear_secondary()
+        # create_env_code.make_final_final()
+        #
+        # destroy_env_name = "env"
+        # destroy_env_code = self.__code_creator.make_environment()
+        # destroy_env_code.update_data(var=destroy_env_name)
+        # destroy_env_code.clear_main()
+        # destroy_env_code.make_final_final()
 
-        for c in elements_codes:
-            c.make_final()
-
+        # global_env_name = self.__variable_manager.create_environment_name()
+        # get_global_env_code = self.__code_creator.get_global_environment()
+        # destroy_global_env_code = self.__code_creator.destroy_global_environment()
+        #
+        # make_lambda_codes = []
+        # declare_lambda_codes = []
+        #
+        # # TODO Просмотр всех функций стандартной библиотеки
+        # for lisp_name, c_name in self.__symbols.find_api_function_items():
+        #     lambda_name = self.__variable_manager.create_object_name()
+        #
+        #     make_lambda_code = self.__code_creator.make_lambda()
+        #     make_lambda_code.update_data(var=lambda_name, func=c_name)
+        #
+        #     make_lambda_code.make_final_final()
+        #     make_lambda_codes.append(make_lambda_code)
+        #     self.__lambda_ctx.add_lambda(lisp_name, lambda_name)
+        #
+        #     define_lambda_code = self.__code_creator.set_variable_value()
+        #     define_lambda_code.update_data(
+        #         env=create_env_name, name=f'"{lisp_name}"', value=lambda_name
+        #     )
+        #
+        #     define_lambda_code.make_final_final()
+        #     declare_lambda_codes.append(define_lambda_code)
+        #
+        # self.__variable_manager.reset_object_count()  # TODO: чтобы нумерация объектов в main начиналась заново и нумерация лямбд в _create_global_env() её не затрагивала
+        #
+        # top_level_env_code = self.__code_creator.make_environment()
+        # top_level_env_code.update_data(var=global_env_name)
+        #
+        # # TODO Просмотр кода программы
+        # with self.__environment_ctx:
+        #     self.__environment_ctx.init(
+        #         code=top_level_env_code, name=global_env_name
+        #     )
+        #
+        #     elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
+        #     create_env_code.update_data(
+        #         capacity=self.__environment_ctx.variable_count
+        #         + self.__symbols.api_function_count
+        #     )
+        #
+        # for c in elements_codes:
+        #     c.make_final()
+        #
         # for c in make_lambda_codes:
-        #     transfer_secondary(c, top_level_env_code)
+        #     transfer_secondary(c, destroy_env_code)
+        #
+        # top_level_env_code.add_main_epilog(f"\n{join_codes(elements_codes)}")
 
-        # top_level_env_code.add_main_epilog(
-        #     f"{join_codes(make_lambda_codes)}\n{join_codes(declare_lambda_codes)}\n\n{join_codes(elements_codes)}"
+        program_code = self.__code_creator.program()
+
+        # program_code.update_data(
+        #     main_body=f"{top_level_env_code.render()}\n",
+        #     declarations=[c.render() for c in self.__function_definitions],
+        #     global_env_creation_body=join_codes([create_env_code] + make_lambda_codes)
+        #     + "\n"
+        #     + join_codes(declare_lambda_codes),
+        #     global_env_destroying_body=destroy_env_code.render(),
+        #     global_env_creation_var=create_env_name,
+        #     global_env_destroying_var=destroy_env_name,
         # )
 
-        top_level_env_code.add_main_epilog(
-            f"{join_codes(elements_codes)}"
-        )
-
-        main_function_code = self.__code_creator.program()
-        main_function_code.update_data(main_body=f"{top_level_env_code.render()}\n",
-                                       #declarations=[c.render() for c in self.__function_definitions]
-                                       )
-
-        return main_function_code.render()
+        return program_code.render()
 
     def visitDefinition(
         self, ctx: LispParser.DefinitionContext
@@ -139,9 +162,11 @@ class ASTVisitor(LispVisitor):
         self.__environment_ctx.update_variable(variable_name, expr_name)
 
         definition_code = self.__code_creator.set_variable_value()
-        definition_code.update_data(env=self.__environment_ctx.name,
-                                    name=f'"{variable_name}"',
-                                    value=expr_name,)
+        definition_code.update_data(
+            env=self.__environment_ctx.name,
+            name=f'"{variable_name}"',
+            value=expr_name,
+        )
 
         # First element is ignored and needed to unify the processing of expressions and definitions
         return "", wrap_codes(definition_code, expr_code)
@@ -175,10 +200,12 @@ class ASTVisitor(LispVisitor):
 
         assignment_name = self.__variable_manager.create_object_name()
         assignment_code = self.__code_creator.update_variable_value()
-        assignment_code.update_data(var=assignment_name,
-                                    env=env_name,
-                                    name=f'"{variable_name}"',
-                                    value=expr_name,)
+        assignment_code.update_data(
+            var=assignment_name,
+            env=env_name,
+            name=f'"{variable_name}"',
+            value=expr_name,
+        )
 
         return assignment_name, wrap_codes(assignment_code, expr_code)
 
@@ -223,9 +250,11 @@ class ASTVisitor(LispVisitor):
         self.__environment_ctx.update_variable(variable_name, expr_name)
 
         binding_code = self.__code_creator.set_variable_value()
-        binding_code.update_data(env=self.__environment_ctx.name,
-                                 name=f'"{variable_name}"',
-                                 value=expr_name,)
+        binding_code.update_data(
+            env=self.__environment_ctx.name,
+            name=f'"{variable_name}"',
+            value=expr_name,
+        )
 
         return wrap_codes(binding_code, expr_code)
 
@@ -279,7 +308,9 @@ class ASTVisitor(LispVisitor):
 
         expr_name = self.__variable_manager.create_object_name()
         expr_code = self.__code_creator.get_variable_value()
-        expr_code.update_data(var=expr_name, env=self.__environment_ctx.name, name=f'"{variable_name}"')
+        expr_code.update_data(
+            var=expr_name, env=self.__environment_ctx.name, name=f'"{variable_name}"'
+        )
 
         return expr_name, expr_code
 
@@ -389,7 +420,9 @@ class ASTVisitor(LispVisitor):
 
         lambda_variable = self.__variable_manager.create_object_name()
         lambda_creation_code = self.__code_creator.make_lambda()
-        lambda_creation_code.update_data(var=lambda_variable, func=function_name, env=self.__environment_ctx.name)
+        lambda_creation_code.update_data(
+            var=lambda_variable, func=function_name, env=self.__environment_ctx.name
+        )
 
         self.__variable_manager.exit_function()
 
@@ -456,9 +489,11 @@ class ASTVisitor(LispVisitor):
 
         variadic_arg_c_name = self.__variable_manager.create_object_name()
         variadic_arg_getting_code = self.__code_creator.make_list()
-        variadic_arg_getting_code.update_data(var=variadic_arg_c_name,
-                                              count=f"{count}-{len(fixed_variables)}",
-                                              elements=f"{args}+{len(fixed_variables)}",)
+        variadic_arg_getting_code.update_data(
+            var=variadic_arg_c_name,
+            count=f"{count}-{len(fixed_variables)}",
+            elements=f"{args}+{len(fixed_variables)}",
+        )
 
         variadic_arg_getting_code.make_final_final()
 
@@ -535,9 +570,7 @@ class ASTVisitor(LispVisitor):
             expr_code = self.__code_creator.procedure_call()
 
         expr_var_name = self.__variable_manager.create_object_name()
-        expr_code.update_data(
-            func=function_name, args=operand_names, var=expr_var_name
-        )
+        expr_code.update_data(func=function_name, args=operand_names, var=expr_var_name)
         wrapped_expr_code = wrap_codes(expr_code, operand_codes)
 
         return expr_var_name, wrapped_expr_code

@@ -147,6 +147,10 @@ class Code(ABC):
 
         return f"{self.render_main()}{self.render_secondary()}"
 
+    def clear_main(self) -> None:
+        self.__main_epilog = ""
+        self.__template = None
+
     def clear_secondary(self) -> None:
         """
         Completely cleanses the secondary part (template + prolog).
