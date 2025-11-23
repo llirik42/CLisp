@@ -580,11 +580,11 @@ class ASTVisitor(LispVisitor):
             )
             define_lambda_code.make_final_final()
             creation_define_codes.append(define_lambda_code)
-        global_env_creation_func_code.add_to_body(
-            "\n".join([c.render() for c in creation_make_codes])
+        global_env_creation_func_code.add_to_body("\n"+
+            "\n".join([c.render() for c in creation_make_codes]) + "\n"
         )
         global_env_creation_func_code.add_to_body(
-            "\n".join([c.render() for c in creation_define_codes]), newline=False
+            "\n".join([c.render() for c in creation_define_codes])
         )
 
         self.__variable_manager.reset_object_count()
@@ -622,7 +622,7 @@ class ASTVisitor(LispVisitor):
             destroy_lambda_code.make_final_final()
             destroying_destroy_codes.append(destroy_lambda_code)
         global_env_destroying_func_code.add_to_body(
-            "\n".join([c.render() for c in destroying_get_codes])
+            "\n".join([c.render() for c in destroying_get_codes]) + "\n"
         )
         global_env_destroying_func_code.add_to_body(
             "\n".join([c.render() for c in destroying_destroy_codes])
