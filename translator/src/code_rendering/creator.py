@@ -20,7 +20,7 @@ from src.code_rendering.codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
-    DestroyGlobalEnvironmentCode,
+    DestroyGlobalEnvironmentCode, DestroyObjectCode,
 )
 from src.code_rendering.codes.global_environment_creation import (
     GlobalEnvironmentCreation,
@@ -54,6 +54,18 @@ class CodeCreator:
         c = EmptyCode()
         c.make_final_final()
         return c
+
+    def destroy_object(self) -> DestroyObjectCode:
+        def main_validate(data: dict) -> None:
+            check_required(data, "var")
+
+        return DestroyObjectCode(
+            main_template=self.__get_template("destroy_object"),
+            main_validate=main_validate,
+            main_data={
+                "func": self.__symbols.find_internal_function("~object"),
+            },
+        )
 
     def make_int(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__symbols.find_internal_function("integer"))

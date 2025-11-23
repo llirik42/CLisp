@@ -15,3 +15,4 @@ from .set_variable_code import SetVariableValueCode
 from .update_variable_code import UpdateVariableValueCode
 from .get_global_environment import GetGlobalEnvironmentCode
 from .destroy_global_environment import DestroyGlobalEnvironmentCode
+from .destroy_object import DestroyObjectCode

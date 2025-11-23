@@ -136,7 +136,9 @@ class Code(ABC):
             if self.__final_final:
                 rendered += f"{self.__secondary_template.render(self.__secondary_data)}"
             else:
-                rendered += f"\n{self.__secondary_template.render(self.__secondary_data)}"
+                rendered += (
+                    f"\n{self.__secondary_template.render(self.__secondary_data)}"
+                )
 
         if self.__final:
             return f"{rendered}\n"
