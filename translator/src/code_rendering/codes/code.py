@@ -13,6 +13,7 @@ class Code(ABC):
         secondary_data: Optional[dict] = None,
         main_validate: Optional[Callable[[dict], None]] = None,
         secondary_validate: Optional[Callable[[dict], None]] = None,
+        empty: bool = False,
         **kwargs,
     ):
         """
@@ -50,6 +51,7 @@ class Code(ABC):
         self.__final_final = False
         self.__main_validate = main_validate
         self.__secondary_validate = secondary_validate
+        self.__empty = empty
 
     @property
     def final(self) -> bool:
@@ -163,6 +165,10 @@ class Code(ABC):
 
         self.__secondary_prolog = ""
         self.__secondary_template = None
+
+    @property
+    def is_empty(self) -> bool:
+        return self.__empty
 
     def _get_main_data(self, key: str) -> Any:
         return self.__main_data.get(key, None)

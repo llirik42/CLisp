@@ -56,3 +56,7 @@ class VariableManager:
 
     def exit_function(self) -> None:
         self.__function = False
+
+    @property
+    def object_count(self) -> int:
+        return self.__function_object_count
