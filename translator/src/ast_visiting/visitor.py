@@ -17,7 +17,9 @@ from .exceptions import (
     UnexpectedIdentifierException,
     FunctionRedefineException,
     UnknownFunctionException,
-    DuplicatedBindingException, DuplicatedParamException, ParamNameConflictException,
+    DuplicatedBindingException,
+    DuplicatedParamException,
+    ParamNameConflictException,
 )
 from src.lambda_context import LambdaContext
 from ..code_rendering.codes import MakePrimitiveCode
@@ -63,9 +65,11 @@ class ASTVisitor(LispVisitor):
         self.__lambda_ctx = lambda_context
         self.__function_definitions = []
 
-
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
         global_env_creation_func = "create_global_env"
+        global_env_creation_code = self.__global_env_creation_code(
+            global_env_creation_func
+        )
 
         global_env_name = self.__variable_manager.create_environment_name()
         main_code = self.__code_creator.get_global_environment()
@@ -74,25 +78,16 @@ class ASTVisitor(LispVisitor):
             get_func=global_env_creation_func,
         )
 
-        # TODO: резервация номеров переменных под функии объявления стандартных функций
-        self.__variable_manager.add_object_count(self.__symbols.api_function_count * 1)
-
         # Обход выражений программы
-        capacity_appendix = 0
         with self.__environment_ctx:
             self.__environment_ctx.init(code=main_code, name=global_env_name)
             elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
-            capacity_appendix += self.__environment_ctx.variable_count
         for c in elements_codes:
             c.make_final()
         if len(elements_codes) != 0:
             main_code.add_main_epilog(f"\n{join_codes(elements_codes)}")
 
         self.__variable_manager.reset_object_count()
-
-        global_env_creation_code = self.__global_env_creation_code(
-            global_env_creation_func, capacity_appendix
-        )
 
         program_code = self.__code_creator.program()
         program_code.update_data(
@@ -139,7 +134,7 @@ class ASTVisitor(LispVisitor):
 
         if self.__lambda_ctx.inside_lambda:
             env = self.__lambda_ctx.environment
-            env_name = "env"
+            env_name = "env"  # TODO: прибито
 
             if variable_name in self.__lambda_ctx.params:
                 # TODO
@@ -180,9 +175,6 @@ class ASTVisitor(LispVisitor):
 
             bindings_codes = [c for c in self.visit(binding_list)]
             body_name, body_code = self.visit(ctx.environmentBody())
-
-            # TODO: add internal definitions to varCount
-            new_env_code.update_data(capacity=len(bindings_codes))
 
             joined_bindings_codes = join_codes(bindings_codes).replace("\n\n", "\n")
             new_env_code.add_main_epilog(f"{joined_bindings_codes}\n{body_code}")
@@ -366,8 +358,6 @@ class ASTVisitor(LispVisitor):
 
         # TODO: Нужно проверять количество аргументов, переданных в лямбду при компиляции
 
-        # TODO: проверить, что параметры в formals не повторяются по названию
-
         formals = ctx.formals()
         body = ctx.procedureBody()
 
@@ -418,7 +408,6 @@ class ASTVisitor(LispVisitor):
         codes = []
         lisp_names = []
         for i, v in enumerate(variables):
-            # TODO: check param name
             param_lisp_name = v.getText()
             if param_lisp_name in lisp_names:
                 raise DuplicatedParamException(param_lisp_name, ctx)
@@ -597,9 +586,7 @@ class ASTVisitor(LispVisitor):
 
         return operand_names, operand_codes
 
-    def __global_env_creation_code(
-        self, func_name: str, capacity_appendix: int
-    ) -> Code:
+    def __global_env_creation_code(self, func_name: str) -> Code:
         global_env_creation_var = "env"
         global_env_creation_func_code = (
             self.__code_creator.global_environment_creation()
@@ -610,7 +597,6 @@ class ASTVisitor(LispVisitor):
         make_env_code = self.__code_creator.make_environment()
         make_env_code.update_data(
             var=global_env_creation_var,
-            capacity=capacity_appendix + self.__symbols.api_function_count,
         )
         make_env_code.make_final_final()
         make_env_code.clear_secondary()
@@ -633,6 +619,7 @@ class ASTVisitor(LispVisitor):
             )
             define_lambda_code.make_final_final()
             creation_define_codes.append(define_lambda_code)
+
         global_env_creation_func_code.add_to_body(
             "\n" + "\n".join([c.render() for c in creation_make_codes]) + "\n"
         )

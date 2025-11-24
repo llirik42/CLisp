@@ -11,9 +11,6 @@ class VariableManager:
         self.__environment_count = -1
         self.__function_count = 0
 
-    def add_object_count(self, delta: int) -> None:
-        self.__object_count += delta
-
     def reset_object_count(self):
         self.__object_count = 0
 

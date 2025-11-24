@@ -10,13 +10,10 @@ class MakeEnvironmentCode(Code):
         """
 
         super().__init__(**kwargs)
-        self._update_main_data(parent="NULL", capacity=0)
+        self._update_main_data(parent="NULL")
 
     def update_data(
-        self,
-        var: Optional[str] = None,
-        parent: Optional[str] = None,
-        capacity: Optional[int] = None,
+        self, var: Optional[str] = None, parent: Optional[str] = None
     ) -> None:
-        self._update_main_data(var=var, parent=parent, capacity=capacity)
+        self._update_main_data(var=var, parent=parent)
         self._update_secondary_data(var=var)

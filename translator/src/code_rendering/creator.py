@@ -162,7 +162,7 @@ class CodeCreator:
             },
             secondary_data={
                 "func": self.__symbols.find_internal_function("~environment")
-            }
+            },
         )
 
     def destroy_global_environment(self) -> DestroyGlobalEnvironmentCode:

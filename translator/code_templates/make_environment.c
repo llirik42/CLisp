@@ -1,1 +1,1 @@
-{{ type }} {{ var }} = {{ func }}({{ parent }}, {{ capacity }});
+{{ type }} {{ var }} = {{ func }}({{ parent }});
