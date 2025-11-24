@@ -1,0 +1,15 @@
+******************[TESTING CODE]******************
+(define x 40)
+
+(display x)
+(set! x 50)
+(display x)
+
+(display (let ((y 10)) (set! y 60) y))
+(display (let ((y 10)) (let ((y 100)) (set! y 0) (display y)) y))
+******************[EXPECTED OUT]******************
+40
+50
+60
+0
+10
