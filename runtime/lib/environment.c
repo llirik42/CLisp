@@ -15,9 +15,26 @@
 #define BASIC_CAPACITY 4
 #define CAPACITY_MULTIPLIER 1.5
 
-#define RESERVED_NAMES_COUNT 11
+typedef struct NamedFunc {
+    const char* name;
+    clisp_func func;
+} NamedFunc;
 
-static char* reserved_names[] = {"display", "+", "-", "*", "/", ">", ">=", "<", "<=", "==", "not"};
+static const NamedFunc reserved[] = {
+    {"display", clisp_display},
+    {"+", clisp_add},
+    {"-", clisp_sub},
+    {"*", clisp_mul},
+    {"/", clisp_div},
+    {">", clisp_greater},
+    {">=", clisp_greater_or_equal},
+    {"<", clisp_less},
+    {"<=", clisp_less_or_equal},
+    {"==", clisp_equal},
+    {"not", clisp_not},
+};
+
+#define RESERVED_COUNT sizeof(reserved) / sizeof(NamedFunc)
 
 static Environment* make_environment(Environment* parent, size_t capacity) {
     Environment* env = allocate_memory(sizeof(Environment));
@@ -47,8 +64,8 @@ void clisp_set_variable_value(Environment* env, char* name, Object* value) {
         __builtin_unreachable();
     }
 
-    for (size_t i = 0; i < RESERVED_NAMES_COUNT; i++) {
-        if (!strcmp(name, reserved_names[i])) {
+    for (size_t i = 0; i < RESERVED_COUNT; i++) {
+        if (!strcmp(name, reserved[i].name)) {
             print_error_and_exit("Variable name is reserved!\n", 0);
         }
     }
@@ -75,8 +92,8 @@ Object* clisp_update_variable_value(Environment* env, char* name, Object* value)
         __builtin_unreachable();
     }
 
-    for (size_t i = 0; i < RESERVED_NAMES_COUNT; i++) {
-        if (!strcmp(name, reserved_names[i])) {
+    for (size_t i = 0; i < RESERVED_COUNT; i++) {
+        if (!strcmp(name, reserved[i].name)) {
             print_error_and_exit("Variable name is reserved!\n", 0);
         }
     }
@@ -105,31 +122,22 @@ Object* clisp_get_variable_value(Environment* env, char* name) {
     return clisp_get_variable_value(env->parent, name);
 }
 
-static void set_reserved_variable(Environment* env, char* name, Object* value) {
+static void set_reserved_variable(Environment* env, const char* name, Object* value) {
     Variable var = {name, value};
     env->variables[env->variables_count++] = var;
 }
 
 Environment* clisp_make_global_environment() {
-    Environment* env = clisp_make_environment_capacity(NULL, RESERVED_NAMES_COUNT);
-
-    set_reserved_variable(env, "display", clisp_make_lambda_without_env(clisp_display));
-    set_reserved_variable(env, "+", clisp_make_lambda_without_env(clisp_add));
-    set_reserved_variable(env, "-", clisp_make_lambda_without_env(clisp_sub));
-    set_reserved_variable(env, "*", clisp_make_lambda_without_env(clisp_mul));
-    set_reserved_variable(env, "/", clisp_make_lambda_without_env(clisp_div));
-    set_reserved_variable(env, ">", clisp_make_lambda_without_env(clisp_greater));
-    set_reserved_variable(env, ">=", clisp_make_lambda_without_env(clisp_greater_or_equal));
-    set_reserved_variable(env, "<", clisp_make_lambda_without_env(clisp_less));
-    set_reserved_variable(env, "<=", clisp_make_lambda_without_env(clisp_less_or_equal));
-    set_reserved_variable(env, "==", clisp_make_lambda_without_env(clisp_equal));
-    set_reserved_variable(env, "not", clisp_make_lambda_without_env(clisp_not));
+    Environment* env = clisp_make_environment_capacity(NULL, RESERVED_COUNT);
+    for (size_t i = 0; i < RESERVED_COUNT; i++) {
+        set_reserved_variable(env, reserved[i].name, clisp_make_lambda_without_env(reserved[i].func));
+    }
 
     return env;
 }
 
 void clisp_destroy_global_environment(Environment* env) {
-    for (size_t i = 0; i < RESERVED_NAMES_COUNT; i++) {
+    for (size_t i = 0; i < RESERVED_COUNT; i++) {
         clisp_destroy_object(env->variables[i].val);
     }
 

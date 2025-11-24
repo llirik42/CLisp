@@ -3,7 +3,7 @@
 #include "data_objects/dynamic_array.h"
 
 typedef struct {
-    char* key;
+    const char* key;
     Object* val;
 } Variable;
 
