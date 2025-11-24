@@ -1,5 +1,6 @@
-from src.code_rendering import Code
 from dataclasses import dataclass
+
+from src.code_rendering import Code
 
 
 @dataclass()

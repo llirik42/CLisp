@@ -1,5 +1,5 @@
-from .environment import Environment
 from src.code_rendering import Code
+from .environment import Environment
 
 
 class EnvironmentContext:

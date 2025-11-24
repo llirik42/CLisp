@@ -20,14 +20,7 @@ from src.code_rendering.codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
-    DestroyGlobalEnvironmentCode,
     DestroyObjectCode,
-)
-from src.code_rendering.codes.global_environment_creation import (
-    GlobalEnvironmentCreation,
-)
-from src.code_rendering.codes.global_environment_destroying import (
-    GlobalEnvironmentDestroying,
 )
 from src.symbols import Symbols
 
@@ -165,23 +158,6 @@ class CodeCreator:
             },
         )
 
-    def destroy_global_environment(self) -> DestroyGlobalEnvironmentCode:
-        def main_validate(data: dict) -> None:
-            check_required(data, "var")
-
-        return DestroyGlobalEnvironmentCode(
-            main_template=self.__get_template("make_environment"),
-            secondary_template=self.__get_template("destroy_environment"),
-            main_validate=main_validate,
-            main_data={
-                "type": self.__symbols.find_internal_type("environment"),
-                "func": self.__symbols.find_internal_function("environment"),
-            },
-            secondary_data={
-                "func": self.__symbols.find_internal_function("~environment")
-            },
-        )
-
     def get_variable_value(self) -> GetVariableValueCode:
         def main_validate(data: dict) -> None:
             check_required(data, "var", "env", "name")
@@ -279,30 +255,6 @@ class CodeCreator:
             main_data={
                 "ret_type": self.__symbols.find_internal_type("object"),
                 "params": self.__symbols.find_internal_type("lambda_function_params"),
-            },
-            main_validate=validate,
-        )
-
-    def global_environment_creation(self) -> GlobalEnvironmentCreation:
-        def validate(data: dict) -> None:
-            check_required(data, "func", "var", "body")
-
-        return GlobalEnvironmentCreation(
-            main_template=self.__get_template("global_environment_creation"),
-            main_data={
-                "type": self.__symbols.find_internal_type("environment"),
-            },
-            main_validate=validate,
-        )
-
-    def global_environment_destroying(self) -> GlobalEnvironmentDestroying:
-        def validate(data: dict) -> None:
-            check_required(data, "func", "var", "body")
-
-        return GlobalEnvironmentDestroying(
-            main_template=self.__get_template("global_environment_destroying"),
-            main_data={
-                "type": self.__symbols.find_internal_type("environment"),
             },
             main_validate=validate,
         )

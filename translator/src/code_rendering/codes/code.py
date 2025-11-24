@@ -1,7 +1,7 @@
+from abc import ABC
 from typing import Optional, Callable, Any
 
 from jinja2 import Template
-from abc import ABC
 
 
 class Code(ABC):

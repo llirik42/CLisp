@@ -1,9 +1,7 @@
 import json
 from typing import Optional
 
-
 __all__ = ["Symbols"]
-
 
 SymbolSection = dict[str, str]
 

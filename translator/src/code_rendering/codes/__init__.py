@@ -1,6 +1,8 @@
 from .code import Code
+from .destroy_object import DestroyObjectCode
 from .empty import EmptyCode
 from .get_function_argument import GetFunctionArgumentCode
+from .get_global_environment import GetGlobalEnvironmentCode
 from .get_variable_value import GetVariableValueCode
 from .lambda_call import LambdaCallCode
 from .lambda_definition import LambdaDefinitionCode
@@ -13,6 +15,3 @@ from .procedure_call import ProcedureCallCode
 from .program import ProgramCode
 from .set_variable_code import SetVariableValueCode
 from .update_variable_code import UpdateVariableValueCode
-from .get_global_environment import GetGlobalEnvironmentCode
-from .destroy_global_environment import DestroyGlobalEnvironmentCode
-from .destroy_object import DestroyObjectCode
