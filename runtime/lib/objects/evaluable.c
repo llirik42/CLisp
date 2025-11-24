@@ -2,7 +2,7 @@
 
 #include "memory.h"
 
-Object* clisp_make_evaluable(postponed_func func, CLISP_FUNC_PARAMS) {
+Object* clisp_make_evaluable(clisp_func func, CLISP_FUNC_PARAMS) {
     EvaluableObject* evaluable_object = allocate_memory(sizeof(EvaluableObject));
     init_object((Object*)evaluable_object, EVALUABLE);
 

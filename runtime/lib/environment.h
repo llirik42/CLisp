@@ -25,3 +25,7 @@ void clisp_set_variable_value(Environment* env, char* name, Object* value);
 Object* clisp_update_variable_value(Environment* env, char* name, Object* value);
 
 Object* clisp_get_variable_value(Environment* env, char* name);
+
+Environment* clisp_make_global_environment();
+
+void clisp_destroy_global_environment(Environment* env);
