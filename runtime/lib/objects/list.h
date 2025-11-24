@@ -8,7 +8,9 @@ typedef struct {
     DynamicArray* list;
 } ListObject;
 
-Object* clisp_make_list(unsigned short size);
+Object* clisp_make_list();
+
+Object* clisp_make_list_capacity(size_t size);
 
 void clisp_list_append(Object* list, Object* obj);
 

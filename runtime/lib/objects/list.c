@@ -2,12 +2,20 @@
 
 #include "lib/memory.h"
 
-Object* clisp_make_list(unsigned short size) {
+static Object* make_list_base(size_t size) {
     ListObject* list_object = allocate_memory(sizeof(ListObject));
     init_object((Object*)list_object, LIST);
 
     list_object->list = da_create(size);
     return (Object*)list_object;
+}
+
+Object* clisp_make_list() {
+    return make_list_base(UNDEFINED_SIZE);
+}
+
+Object* clisp_make_list_capacity(size_t size) {
+    return make_list_base(size);
 }
 
 void clisp_list_append(Object* list, Object* obj) {
