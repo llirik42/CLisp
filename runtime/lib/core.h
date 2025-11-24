@@ -1,7 +1,5 @@
 #pragma once
 
-#define UNDEFINED_SIZE 0
-
 enum ObjectType {
     INTEGER,
     DOUBLE,

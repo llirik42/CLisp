@@ -10,17 +10,21 @@
 #define BASIC_CAPACITY 4
 #define CAPACITY_MULTIPLIER 1.5
 
-Environment* clisp_make_environment(Environment* parent, size_t capacity) {
-    if (!capacity) {
-        capacity = BASIC_CAPACITY;
-    }
-
+static Environment* make_environment_base(Environment* parent, size_t capacity) {
     Environment* env = allocate_memory(sizeof(Environment));
     env->parent = parent;
     env->capacity = capacity;
     env->variables_count = 0;
     env->variables = allocate_memory(sizeof(Variable) * capacity);
     return env;
+}
+
+Environment* clisp_make_environment(Environment* parent) {
+    return make_environment_base(parent, BASIC_CAPACITY);
+}
+
+Environment* clisp_make_environment_capacity(Environment* parent, size_t capacity) {
+    return make_environment_base(parent, capacity);
 }
 
 void clisp_destroy_environment(Environment* env) {

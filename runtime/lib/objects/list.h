@@ -2,6 +2,8 @@
 #include "lib/data_objects/dynamic_array.h"
 #include "lib/core.h"
 
+#define UNDEFINED_SIZE 0
+
 typedef struct {
     enum ObjectType type;
     unsigned short ref_count;

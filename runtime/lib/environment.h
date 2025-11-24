@@ -14,7 +14,9 @@ typedef struct Environment {
     size_t capacity;
 } Environment;
 
-Environment* clisp_make_environment(Environment* parent, size_t capacity);
+Environment* clisp_make_environment(Environment* parent);
+
+Environment* clisp_make_environment_capacity(Environment* parent, size_t capacity);
 
 void clisp_destroy_environment(Environment* env);
 
