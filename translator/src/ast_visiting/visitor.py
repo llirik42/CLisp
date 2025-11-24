@@ -78,6 +78,10 @@ class ASTVisitor(LispVisitor):
         # Обход выражений программы
         with self.__environment_ctx:
             self.__environment_ctx.init(code=main_code, name=global_env_name)
+
+            # Добавление функций стандартной библиотеки в глобальный контекст
+            for lisp_name, _ in self.__symbols.find_api_function_items():
+                self.__environment_ctx.update_variable(lisp_name, "-") # TODO: name не важен?
             elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
         for c in elements_codes:
             c.make_final()
