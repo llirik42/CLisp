@@ -46,7 +46,7 @@ formals
 fixedFormals : LBRACKET variable* RBRACKET ;
 listFormals : variable ;
 variadicFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
-procedureBody : expression+ ;
+procedureBody : definition* expression+ ;
 
 assignment : LBRACKET SET variable expression RBRACKET ;
 
@@ -55,7 +55,7 @@ letAsterisk : LBRACKET LET_ASTERISK bindingList environmentBody RBRACKET ;
 letRec : LBRACKET LET_REC bindingList environmentBody RBRACKET ;
 bindingList : LBRACKET binding* RBRACKET ;
 binding : LBRACKET variable expression RBRACKET ;
-environmentBody : expression+ ;
+environmentBody : definition* expression+ ;
 
 constant
     : boolConstant

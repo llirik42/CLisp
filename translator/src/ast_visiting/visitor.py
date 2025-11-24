@@ -226,6 +226,8 @@ class ASTVisitor(LispVisitor):
     def visitProcedureBody(
         self, ctx: LispParser.ProcedureBodyContext
     ) -> BodyVisitResult:
+        # TODO: visit definitions
+
         expressions = ctx.expression()
 
         expr_names = []
@@ -247,6 +249,8 @@ class ASTVisitor(LispVisitor):
     def visitEnvironmentBody(
         self, ctx: LispParser.EnvironmentBodyContext
     ) -> BodyVisitResult:
+        # TODO: visit internal definitions
+
         expressions = ctx.expression()
 
         expr_names = []
