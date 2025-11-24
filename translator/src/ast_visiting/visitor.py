@@ -250,11 +250,8 @@ class ASTVisitor(LispVisitor):
         return expr_names[-1], join_codes(expr_codes)
 
     def visitVariable(self, ctx: LispParser.VariableContext) -> ExpressionVisitResult:
-        # TODO: correctly handle the situation when variable is a function (like '+')
-
         variable_name = ctx.getText()
 
-        # TODO: корректно обрабатывать ситуацию, когда переменной нет в сигнатуре лямбды
         if (
             self.__lambda_ctx.inside_lambda
             and variable_name in self.__lambda_ctx.params
@@ -336,25 +333,21 @@ class ASTVisitor(LispVisitor):
         self, ctx: LispParser.ProcedureCallContext
     ) -> ExpressionVisitResult:
         # TODO: add support of calling lambdas
+        # TODO: если if, то получения значения должно быть evaluable (и не должно проверяться на этапе компиляции)
 
-        lisp_function = ctx.operator().getText()
-
-        c_name = self.__symbols.find_api_symbol(lisp_function)
-        if c_name is None:
-            raise UnknownFunctionException(lisp_function, ctx)
-
+        operator_name, operator_code = self.visit(ctx.operator())
         operand_names, operand_codes = self.__visit_operands(ctx.operand())
 
-        return self.__visit_function(
-            function_name=c_name,
-            operand_names=operand_names,
-            operand_codes=operand_codes,
-        )
+        expr_code = self.__code_creator.lambda_call()
+        expr_var_name = self.__variable_manager.create_object_name()
+        expr_code.update_data(var=expr_var_name, lambda_var=operator_name, args=operand_names)
+
+        wrapped_expr_code = wrap_codes(expr_code, [operator_code] + operand_codes)
+
+        return expr_var_name, wrapped_expr_code
 
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
         procedure_env_name = "env"  # TODO: прибито (из шаблона)
-
-        # TODO: Нужно проверять количество аргументов, переданных в лямбду при компиляции
 
         formals = ctx.formals()
         body = ctx.procedureBody()
