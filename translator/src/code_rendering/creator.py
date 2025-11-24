@@ -153,18 +153,16 @@ class CodeCreator:
             if "func" not in data:
                 raise KeyError(f'"get_func" is required')
 
-        def secondary_validate(data: dict) -> None:
-            if "func" not in data:
-                raise KeyError(f'"destroy_func" is required')
-
         return GetGlobalEnvironmentCode(
             main_template=self.__get_template("get_global_environment"),
-            secondary_template=self.__get_template("destroy_global_environment"),
+            secondary_template=self.__get_template("destroy_environment"),
             main_validate=main_validate,
-            secondary_validate=secondary_validate,
             main_data={
                 "type": self.__symbols.find_internal_type("environment"),
             },
+            secondary_data={
+                "func": self.__symbols.find_internal_function("~environment")
+            }
         )
 
     def destroy_global_environment(self) -> DestroyGlobalEnvironmentCode:

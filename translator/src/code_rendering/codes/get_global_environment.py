@@ -11,7 +11,6 @@ class GetGlobalEnvironmentCode(Code):
         self,
         var: Optional[str] = None,
         get_func: Optional[str] = None,
-        destroy_func: Optional[str] = None,
     ) -> None:
         self._update_main_data(var=var, func=get_func)
-        self._update_secondary_data(var=var, func=destroy_func)
+        self._update_secondary_data(var=var)

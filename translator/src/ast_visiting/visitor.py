@@ -66,18 +66,16 @@ class ASTVisitor(LispVisitor):
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
         global_env_creation_func = "create_global_env"
-        global_env_destroying_func = "destroy_global_env"
 
         global_env_name = self.__variable_manager.create_environment_name()
         main_code = self.__code_creator.get_global_environment()
         main_code.update_data(
             var=global_env_name,
             get_func=global_env_creation_func,
-            destroy_func=global_env_destroying_func,
         )
 
         # TODO: резервация номеров переменных под функии объявления стандартных функций
-        self.__variable_manager.add_object_count(self.__symbols.api_function_count * 2)
+        self.__variable_manager.add_object_count(self.__symbols.api_function_count * 1)
 
         # Обход выражений программы
         capacity_appendix = 0
@@ -87,7 +85,8 @@ class ASTVisitor(LispVisitor):
             capacity_appendix += self.__environment_ctx.variable_count
         for c in elements_codes:
             c.make_final()
-        main_code.add_main_epilog(f"\n{join_codes(elements_codes)}")
+        if len(elements_codes) != 0:
+            main_code.add_main_epilog(f"\n{join_codes(elements_codes)}")
 
         self.__variable_manager.reset_object_count()
 
@@ -95,16 +94,11 @@ class ASTVisitor(LispVisitor):
             global_env_creation_func, capacity_appendix
         )
 
-        global_env_destroying_code = self.__global_env_destroying_code(
-            global_env_destroying_func
-        )
-
         program_code = self.__code_creator.program()
         program_code.update_data(
             declarations=[c.render() for c in self.__function_definitions]
             + [
                 global_env_creation_code.render(),
-                global_env_destroying_code.render(),
             ],
             main_body=main_code.render(),
         )
