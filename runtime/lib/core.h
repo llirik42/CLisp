@@ -1,5 +1,7 @@
 #pragma once
 
+#define UNDEFINED_SIZE 0
+
 enum ObjectType {
     INTEGER,
     DOUBLE,
@@ -7,6 +9,8 @@ enum ObjectType {
     EVALUABLE,
     STRING,
     CHAR,
+    LIST,
+    LAMBDA,
     UNSPECIFIED,
 };
 

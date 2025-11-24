@@ -2,9 +2,9 @@
 
 #include <stddef.h>
 
-#include "primitive.h"
+#include "objects/primitive.h"
 #include "utils.h"
-#include "primitive_types.h"
+#include "objects/primitive_types.h"
 
 static void set_int_value(Object* obj, int new_value) {
     IntObject* int_object = (IntObject*)obj;

@@ -24,6 +24,10 @@ set_target_properties(runtime PROPERTIES
 target_include_directories(runtime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 target_link_libraries(runtime m)
 
-add_executable(sandbox ${SOURCE_FILES} sandbox/main.c)
+file(GLOB_RECURSE SANDBOX_EXEC_FILES
+        "./sandbox/*.c"
+)
+
+add_executable(sandbox ${SOURCE_FILES} ${SANDBOX_EXEC_FILES})
 target_include_directories(sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 target_link_libraries(sandbox m)
