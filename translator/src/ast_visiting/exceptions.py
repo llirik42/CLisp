@@ -40,3 +40,15 @@ class DuplicatedBindingException(VisitingException):
         super().__init__(
             f'Variable "{variable_name}" appeared more than once in the bindings', ctx
         )
+
+class DuplicatedParamException(VisitingException):
+    def __init__(self, param_name: str, ctx: ParserRuleContext):
+        super().__init__(
+            f'Param "{param_name}" appeared more than once in the lambda', ctx
+        )
+
+class ParamNameConflictException(VisitingException):
+    def __init__(self, param_name: str, ctx: ParserRuleContext):
+        super().__init__(
+            f'Param "{param_name}" conflicts with the standard library function', ctx
+        )

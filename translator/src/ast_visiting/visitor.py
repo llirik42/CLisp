@@ -17,7 +17,7 @@ from .exceptions import (
     UnexpectedIdentifierException,
     FunctionRedefineException,
     UnknownFunctionException,
-    DuplicatedBindingException,
+    DuplicatedBindingException, DuplicatedParamException, ParamNameConflictException,
 )
 from src.lambda_context import LambdaContext
 from ..code_rendering.codes import MakePrimitiveCode
@@ -416,15 +416,24 @@ class ASTVisitor(LispVisitor):
         variables = ctx.variable()
 
         codes = []
+        lisp_names = []
         for i, v in enumerate(variables):
-            current_arg_c_name = self.__variable_manager.create_object_name()
+            # TODO: check param name
+            param_lisp_name = v.getText()
+            if param_lisp_name in lisp_names:
+                raise DuplicatedParamException(param_lisp_name, ctx)
+            if self.__symbols.has_api_symbol(param_lisp_name):
+                raise ParamNameConflictException(param_lisp_name, ctx)
+            lisp_names.append(param_lisp_name)
+
+            param_c_name = self.__variable_manager.create_object_name()
             current_arg_getting_code = self.__code_creator.get_function_argument()
-            current_arg_getting_code.update_data(index=i, var=current_arg_c_name)
+            current_arg_getting_code.update_data(index=i, var=param_c_name)
 
             current_arg_getting_code.make_final_final()
             codes.append(current_arg_getting_code)
             self.__lambda_ctx.add_param(
-                lisp_name=v.getText(), c_name=current_arg_c_name, variadic=False
+                lisp_name=param_lisp_name, c_name=param_c_name, variadic=False
             )
 
         return join_codes(codes), ""
@@ -433,7 +442,10 @@ class ASTVisitor(LispVisitor):
         count = "count"
         args = "args"
 
-        variable = ctx.variable()
+        param_lisp_name = ctx.variable().getText()
+        if self.__symbols.has_api_symbol(param_lisp_name):
+            raise ParamNameConflictException(param_lisp_name, ctx)
+
         arg_c_name = self.__variable_manager.create_object_name()
         arg_getting_code = self.__code_creator.make_list()
         arg_getting_code.update_data(var=arg_c_name, count=count, elements=args)
@@ -444,7 +456,7 @@ class ASTVisitor(LispVisitor):
         arg_getting_code.clear_secondary()
 
         self.__lambda_ctx.add_param(
-            lisp_name=variable.getText(), c_name=arg_c_name, variadic=True
+            lisp_name=param_lisp_name, c_name=arg_c_name, variadic=True
         )
 
         return arg_getting_code.render(), secondary
@@ -459,8 +471,16 @@ class ASTVisitor(LispVisitor):
         variadic_variable = ctx.variable()[-1]
 
         codes_to_join = []
+        lisp_names = []
 
         for i, v in enumerate(fixed_variables):
+            param_lisp_name = v.getText()
+            if param_lisp_name in lisp_names:
+                raise DuplicatedParamException(param_lisp_name, ctx)
+            if self.__symbols.has_api_symbol(param_lisp_name):
+                raise ParamNameConflictException(param_lisp_name, ctx)
+            lisp_names.append(param_lisp_name)
+
             current_arg_c_name = self.__variable_manager.create_object_name()
             current_arg_getting_code = self.__code_creator.get_function_argument()
             current_arg_getting_code.update_data(index=i, var=current_arg_c_name)
@@ -468,8 +488,15 @@ class ASTVisitor(LispVisitor):
             current_arg_getting_code.make_final_final()
             codes_to_join.append(current_arg_getting_code)
             self.__lambda_ctx.add_param(
-                lisp_name=v.getText(), c_name=current_arg_c_name, variadic=False
+                lisp_name=param_lisp_name, c_name=current_arg_c_name, variadic=False
             )
+
+        # Variadic
+        variadic_lisp_name = variadic_variable.getText()
+        if variadic_lisp_name in lisp_names:
+            raise DuplicatedParamException(variadic_lisp_name, ctx)
+        if self.__symbols.has_api_symbol(variadic_lisp_name):
+            raise ParamNameConflictException(variadic_lisp_name, ctx)
 
         variadic_arg_c_name = self.__variable_manager.create_object_name()
         variadic_arg_getting_code = self.__code_creator.make_list()
@@ -486,7 +513,7 @@ class ASTVisitor(LispVisitor):
         codes_to_join.append(variadic_arg_getting_code)
 
         self.__lambda_ctx.add_param(
-            lisp_name=variadic_variable.getText(),
+            lisp_name=variadic_lisp_name,
             c_name=variadic_arg_c_name,
             variadic=True,
         )
