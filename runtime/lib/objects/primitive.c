@@ -2,8 +2,8 @@
 
 #include <string.h>
 
-#include "../memory.h"
-#include "../utils.h"
+#include "memory.h"
+#include "utils.h"
 #include "primitive_types.h"
 
 static void destroy_simple_object(Object* obj) {

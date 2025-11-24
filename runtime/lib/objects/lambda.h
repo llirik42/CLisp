@@ -2,7 +2,7 @@
 #include "lib/environment.h"
 #include "lib/core.h"
 
-typedef Object*(*lambda)(CLISP_FUNC_PARAMS);
+typedef Object*(*lambda)(Environment* env, CLISP_FUNC_PARAMS);
 
 typedef struct {
     enum ObjectType type;

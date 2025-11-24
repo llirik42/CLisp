@@ -17,5 +17,5 @@ void destroy_lambda(Object* obj) {
 
 Object* clisp_lambda_call(Object* obj, CLISP_FUNC_PARAMS) {
     const LambdaObject* lambda_object = (LambdaObject*)obj;
-    return lambda_object->func(count, args);
+    return lambda_object->func(lambda_object->environment, count, args);
 }
