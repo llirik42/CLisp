@@ -34,6 +34,21 @@ class CodeCreator:
         """
 
         self.__symbols = symbols
+
+        self.__OBJECT_TYPE = self.__symbols.find_internal_type("object")
+        self.__ENVIRONMENT_TYPE = self.__symbols.find_internal_type("environment")
+        self.__DESTROY_OBJECT = self.__symbols.find_internal_function("~object")
+        self.__CREATE_INTEGER = self.__symbols.find_internal_function("integer")
+        self.__CREATE_FLOAT = self.__symbols.find_internal_function("float")
+        self.__CREATE_STRING = self.__symbols.find_internal_function("string")
+        self.__CREATE_CHARACTER = self.__symbols.find_internal_function("character")
+        self.__CREATE_BOOLEAN = self.__symbols.find_internal_function("boolean")
+        self.__CREATE_EVALUABLE = self.__symbols.find_internal_function("evaluable")
+        self.__CREATE_LAMBDA = self.__symbols.find_internal_function("lambda")
+        self.__CREATE_LIST = self.__symbols.find_internal_function("list")
+        self.__CREATE_ENVIRONMENT = self.__symbols.find_internal_function("environment")
+        self.__DESTROY_ENVIRONMENT = self.__symbols.find_internal_function("~environment")
+
         self.__env = Environment(loader=FileSystemLoader(templates_folder_path))
         self.__load_templates(templates_folder_path)
 
@@ -47,34 +62,34 @@ class CodeCreator:
         return DestroyObjectCode(
             main_template=self.__get_template("destroy_object"),
             main_data={
-                "func": self.__symbols.find_internal_function("~object"),
+                "func": self.__DESTROY_OBJECT,
             },
         )
 
     def make_int(self) -> MakePrimitiveCode:
-        return self.__make_primitive(self.__symbols.find_internal_function("integer"))
+        return self.__make_primitive(self.__CREATE_INTEGER)
 
     def make_float(self) -> MakePrimitiveCode:
-        return self.__make_primitive(self.__symbols.find_internal_function("float"))
+        return self.__make_primitive(self.__CREATE_FLOAT)
 
     def make_string(self) -> MakePrimitiveCode:
-        return self.__make_primitive(self.__symbols.find_internal_function("string"))
+        return self.__make_primitive(self.__CREATE_STRING)
 
     def make_character(self) -> MakePrimitiveCode:
-        return self.__make_primitive(self.__symbols.find_internal_function("character"))
+        return self.__make_primitive(self.__CREATE_CHARACTER)
 
     def make_boolean(self) -> MakePrimitiveCode:
-        return self.__make_primitive(self.__symbols.find_internal_function("boolean"))
+        return self.__make_primitive(self.__CREATE_BOOLEAN)
 
     def make_evaluable(self) -> MakeEvaluableCode:
         return MakeEvaluableCode(
             main_template=self.__get_template("make_evaluable"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
-                "creation_func": self.__symbols.find_internal_function("evaluable"),
+                "type": self.__OBJECT_TYPE,
+                "creation_func": self.__CREATE_EVALUABLE,
             },
-            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+            secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
     def make_lambda(self) -> MakeLambdaCode:
@@ -82,10 +97,10 @@ class CodeCreator:
             main_template=self.__get_template("make_lambda"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
-                "creation_func": self.__symbols.find_internal_function("lambda"),
+                "type": self.__OBJECT_TYPE,
+                "creation_func": self.__CREATE_LAMBDA,
             },
-            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+            secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
     def make_list(self) -> MakeListCode:
@@ -93,10 +108,10 @@ class CodeCreator:
             main_template=self.__get_template("make_list"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
-                "func": self.__symbols.find_internal_function("list"),
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_LIST,
             },
-            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+            secondary_data={"func": self.__DESTROY_OBJECT,},
         )
 
     def make_environment(self) -> MakeEnvironmentCode:
@@ -104,11 +119,11 @@ class CodeCreator:
             main_template=self.__get_template("make_environment"),
             secondary_template=self.__get_template("destroy_environment"),
             main_data={
-                "type": self.__symbols.find_internal_type("environment"),
-                "func": self.__symbols.find_internal_function("environment"),
+                "type": self.__ENVIRONMENT_TYPE,
+                "func": self.__CREATE_ENVIRONMENT,
             },
             secondary_data={
-                "func": self.__symbols.find_internal_function("~environment")
+                "func": self.__DESTROY_ENVIRONMENT
             },
         )
 
@@ -117,11 +132,11 @@ class CodeCreator:
             main_template=self.__get_template("get_global_environment"),
             secondary_template=self.__get_template("destroy_environment"),
             main_data={
-                "type": self.__symbols.find_internal_type("environment"),
+                "type": self.__ENVIRONMENT_TYPE,
                 "func": self.__symbols.find_internal_function("environment_global"),
             },
             secondary_data={
-                "func": self.__symbols.find_internal_function("~environment")
+                "func": self.__DESTROY_ENVIRONMENT
             },
         )
 
@@ -129,7 +144,7 @@ class CodeCreator:
         return GetVariableValueCode(
             main_template=self.__get_template("get_variable_value"),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
+                "type": self.__OBJECT_TYPE,
                 "func": self.__symbols.find_internal_function("get_variable_value"),
             },
         )
@@ -138,7 +153,7 @@ class CodeCreator:
         return SetVariableValueCode(
             main_template=self.__get_template("set_variable_value"),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
+                "type": self.__OBJECT_TYPE,
                 "func": self.__symbols.find_internal_function("set_variable_value"),
             },
         )
@@ -148,17 +163,17 @@ class CodeCreator:
             main_template=self.__get_template("update_variable_value"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
+                "type": self.__OBJECT_TYPE,
                 "func": self.__symbols.find_internal_function("update_variable_value"),
             },
-            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+            secondary_data={"func": self.__DESTROY_OBJECT,},
         )
 
     def get_function_argument(self) -> GetFunctionArgumentCode:
         return GetFunctionArgumentCode(
             main_template=self.__get_template("get_function_argument"),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
+                "type": self.__OBJECT_TYPE,
                 "args": "args",
             },
         )
@@ -168,13 +183,13 @@ class CodeCreator:
             main_template=self.__get_template("procedure_call"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
+                "type": self.__OBJECT_TYPE,
             },
-            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+            secondary_data={"func": self.__DESTROY_OBJECT,},
         )
 
     def lambda_call(self) -> LambdaCallCode:
-        object_type = self.__symbols.find_internal_type("object")
+        object_type = self.__OBJECT_TYPE,
 
         return LambdaCallCode(
             main_template=self.__get_template("lambda_call"),
@@ -184,14 +199,14 @@ class CodeCreator:
                 "args_type": object_type,
                 "func": self.__symbols.find_internal_function("lambda_call"),
             },
-            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+            secondary_data={"func": self.__DESTROY_OBJECT,},
         )
 
     def lambda_definition(self) -> LambdaDefinitionCode:
         return LambdaDefinitionCode(
             main_template=self.__get_template("lambda_definition"),
             main_data={
-                "ret_type": self.__symbols.find_internal_type("object"),
+                "ret_type": self.__OBJECT_TYPE,
                 "params": self.__symbols.find_internal_type("lambda_function_params"),
             },
         )
@@ -206,10 +221,10 @@ class CodeCreator:
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "type": self.__symbols.find_internal_type("object"),
+                "type": self.__OBJECT_TYPE,
                 "func": creation_function,
             },
-            secondary_data={"func": self.__symbols.find_internal_function("~object")},
+            secondary_data={"func": self.__DESTROY_OBJECT,},
         )
 
     def __get_destroy_object_template(self) -> Template:

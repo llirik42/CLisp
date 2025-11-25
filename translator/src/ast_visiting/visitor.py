@@ -262,9 +262,9 @@ class ASTVisitor(LispVisitor):
         return expr_var, expr_code
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> ExpressionVisitResult:
-        symbol = "if"
-        c_name = self.__symbols.find_api_symbol(symbol)
-        assert c_name is not None, f'Symbol "{symbol}" is not found'
+        lisp_if = "if"
+        c_name = self.__symbols.find_api_symbol(lisp_if)
+        assert c_name is not None, f'Symbol "{lisp_if}" is not found'
 
         test = ctx.test()
         consequent = ctx.consequent()
@@ -290,9 +290,9 @@ class ASTVisitor(LispVisitor):
         )
 
     def visitAnd(self, ctx: LispParser.AndContext) -> ExpressionVisitResult:
-        symbol = "and"
-        c_name = self.__symbols.find_api_symbol(symbol)
-        assert c_name is not None, f'Symbol "{symbol}" is not found'
+        lisp_and = "and"
+        c_name = self.__symbols.find_api_symbol(lisp_and)
+        assert c_name is not None, f'Symbol "{lisp_and}" is not found'
 
         with self.__evaluable_ctx:
             operand_vars, operand_codes = self.__visit_operands(ctx.test())
@@ -304,9 +304,9 @@ class ASTVisitor(LispVisitor):
         )
 
     def visitOr(self, ctx: LispParser.OrContext) -> ExpressionVisitResult:
-        symbol = "or"
-        c_name = self.__symbols.find_api_symbol(symbol)
-        assert c_name is not None, f'Symbol "{symbol}" is not found'
+        lisp_or = "or"
+        c_name = self.__symbols.find_api_symbol(lisp_or)
+        assert c_name is not None, f'Symbol "{lisp_or}" is not found'
 
         with self.__evaluable_ctx:
             operand_vars, operand_codes = self.__visit_operands(ctx.test())
@@ -403,6 +403,7 @@ class ASTVisitor(LispVisitor):
         return join_codes(codes), ""
 
     def visitListFormals(self, ctx: LispParser.ListFormalsContext) -> tuple[str, str]:
+        # TODO: прибито
         count = "count"
         args = "args"
 
@@ -426,6 +427,7 @@ class ASTVisitor(LispVisitor):
     def visitVariadicFormals(
         self, ctx: LispParser.VariadicFormalsContext
     ) -> tuple[str, str]:
+        # TODO: прибито
         count = "count"
         args = "args"
 
@@ -482,8 +484,10 @@ class ASTVisitor(LispVisitor):
     def visitBoolConstant(
         self, ctx: LispParser.BoolConstantContext
     ) -> ExpressionVisitResult:
+        lisp_true = "#t"
+
         code = self.__code_creator.make_boolean()
-        value = 1 if ctx.getText() == "#t" else 0
+        value = 1 if ctx.getText() == lisp_true else 0
 
         return self.__visit_constant(
             code=code,
