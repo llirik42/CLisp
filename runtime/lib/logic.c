@@ -7,9 +7,9 @@
 
 Object* clisp_if(CLISP_FUNC_PARAMS) {
     if (count < 1 || count > 3) {
-        char error[128];
-        snprintf(error, 128, "Invalid number of arguments passed to clisp_if! Expected 2 or 3. Got %d\n", count);
-        print_error_and_exit(error, 0);
+        char error[ERROR_BUF_SIZE];
+        snprintf(error, sizeof(error), "Invalid number of arguments passed to clisp_if! Expected 2 or 3. Got %d\n", count);
+        clisp_exit(error);
     }
 
     unsigned char test_value = obj_to_boolean(args[0]);

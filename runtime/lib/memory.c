@@ -5,13 +5,13 @@
 
 void* allocate_memory(size_t size) {
     if (!size) {
-        print_error_and_exit("Memory allocation: no memory block size!\n", 0);
+        clisp_exit("Memory allocation: no memory block size!\n");
     }
 
     void* ptr = malloc(size);
 
     if (!ptr) {
-        print_error_and_exit("malloc", 1);
+        clisp_exit_errno("malloc");
     }
 
     return ptr;
@@ -19,13 +19,13 @@ void* allocate_memory(size_t size) {
 
 void* reallocate_memory(void* ptr, size_t size) {
     if (!size) {
-        print_error_and_exit("Memory reallocation: no memory block size!\n", 0);
+        clisp_exit("Memory reallocation: no memory block size!\n");
     }
 
     void* new_ptr = realloc(ptr, size);
 
     if (!new_ptr) {
-        print_error_and_exit("realloc", 1);
+        clisp_exit_errno("realloc");
     }
 
     return new_ptr;

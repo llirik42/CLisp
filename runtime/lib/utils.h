@@ -1,12 +1,16 @@
 #pragma once
 #include "core.h"
 
+#define ERROR_BUF_SIZE 256
+
 enum CountCheckingMode {
     EQUAL,
     GREATER,
 };
 
-void print_error_and_exit(char* message, unsigned char use_perror);
+void clisp_exit(char* message);
+
+void clisp_exit_errno(char* message);
 
 void check_func_arguments_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CountCheckingMode mode);
 
