@@ -9,7 +9,7 @@ class ProcedureCallCode(Code):
         Initial args is an empty list.
         """
 
-        super().__init__(**kwargs)
+        super().__init__(required_params=["var", "func"], **kwargs)
 
     def update_data(
         self,

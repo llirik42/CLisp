@@ -9,7 +9,7 @@ class MakeEnvironmentCode(Code):
         Initial capacity is zero, and initial parent in NULL
         """
 
-        super().__init__(**kwargs)
+        super().__init__(required_params=["var"], **kwargs)
         self._update_main_data(parent="NULL")
 
     def update_data(

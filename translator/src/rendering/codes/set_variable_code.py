@@ -5,7 +5,7 @@ from .code import Code
 
 class SetVariableValueCode(Code):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(required_params=["env", "name", "value"], **kwargs)
 
     def update_data(
         self,

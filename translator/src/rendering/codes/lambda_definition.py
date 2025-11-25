@@ -5,7 +5,7 @@ from .code import Code
 
 class LambdaDefinitionCode(Code):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(required_params=["body", "ret_var", "func"], **kwargs)
 
     def update_data(
         self,

@@ -9,7 +9,7 @@ class MakeLambdaCode(Code):
         Initial environment is NULL.
         """
 
-        super().__init__(**kwargs)
+        super().__init__(required_params=["var", "func"], **kwargs)
         self._update_main_data(env="NULL")
 
     def update_data(

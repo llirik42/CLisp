@@ -56,14 +56,9 @@ class ASTVisitor(LispVisitor):
         self.__declaration_ctx = DeclarationsContext()
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
-        global_env_creation_func = "create_global_env"
-
         global_env_var = self.__variable_manager.create_environment_name()
         main_code = self.__code_creator.get_global_environment()
-        main_code.update_data(
-            var=global_env_var,
-            get_func=global_env_creation_func,
-        )
+        main_code.update_data(var=global_env_var)
 
         # Обход выражений программы
         with self.__environment_ctx:

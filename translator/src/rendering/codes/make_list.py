@@ -9,7 +9,7 @@ class MakeListCode(Code):
         Initial element count is zero and element pointer is NULL (the list will be empty).
         """
 
-        super().__init__(**kwargs)
+        super().__init__(required_params=["var"], **kwargs)
         self._update_main_data(count=0, elements="NULL")
 
     def update_data(

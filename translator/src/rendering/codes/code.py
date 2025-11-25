@@ -4,6 +4,12 @@ from typing import Optional, Callable, Any
 from jinja2 import Template
 
 
+def check_required(data: dict[str, Any], *args) -> None:
+    for r in args:
+        if r not in data:
+            raise KeyError(f'"{r}" is required')
+
+
 class Code(ABC):
     def __init__(
         self,
@@ -11,9 +17,9 @@ class Code(ABC):
         secondary_template: Optional[Template] = None,
         main_data: Optional[dict] = None,
         secondary_data: Optional[dict] = None,
-        main_validate: Optional[Callable[[dict], None]] = None,
         secondary_validate: Optional[Callable[[dict], None]] = None,
         empty: bool = False,
+        required_params: Optional[list] = None,
         **kwargs,
     ):
         """
@@ -32,6 +38,9 @@ class Code(ABC):
         :param kwargs: initial data.
         """
 
+        if required_params is None:
+            required_params = []
+
         if main_data is None:
             main_data = {}
 
@@ -49,8 +58,7 @@ class Code(ABC):
         self.__secondary_template = secondary_template
         self.__final = False
         self.__final_final = False
-        self.__main_validate = main_validate
-        self.__secondary_validate = secondary_validate
+        self.__main_validate = lambda data: check_required(data, *required_params)
         self.__empty = empty
 
     @property
@@ -137,9 +145,6 @@ class Code(ABC):
         """
         Renders and returns secondary part.
         """
-
-        if self.__secondary_validate:
-            self.__secondary_validate(self.__secondary_data)
 
         rendered = self.__secondary_prolog
 

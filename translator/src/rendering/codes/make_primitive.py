@@ -5,7 +5,7 @@ from .code import Code
 
 class MakePrimitiveCode(Code):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(required_params=["var", "value"], **kwargs)
 
     def update_data(
         self, var: Optional[str] = None, value: Optional[Union[str, int, float]] = None

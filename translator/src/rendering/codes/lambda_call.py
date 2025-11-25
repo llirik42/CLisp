@@ -9,7 +9,7 @@ class LambdaCallCode(Code):
         Initial args is an empty list.
         """
 
-        super().__init__(**kwargs)
+        super().__init__(required_params=["var", "lambda_var"], **kwargs)
 
     def update_data(
         self,

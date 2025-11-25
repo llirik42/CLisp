@@ -5,7 +5,7 @@ from .code import Code
 
 class GetVariableValueCode(Code):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(required_params=["var", "env", "name"], **kwargs)
 
     def update_data(
         self,
