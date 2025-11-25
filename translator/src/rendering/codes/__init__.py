@@ -15,3 +15,4 @@ from .procedure_call import ProcedureCallCode
 from .program import ProgramCode
 from .set_variable_code import SetVariableValueCode
 from .update_variable_code import UpdateVariableValueCode
+from .make_primitive import MakePrimitiveCode

@@ -1,7 +1,9 @@
 import json
 from typing import Optional
 
+
 __all__ = ["Symbols"]
+
 
 SymbolSection = dict[str, str]
 
@@ -75,14 +77,6 @@ class Symbols:
         """
 
         return self.find_api_symbol(identifier) is not None
-
-    @property
-    def api_function_count(self) -> int:
-        """
-        Number of the symbols from API functions.
-        """
-
-        return len(self.__functions)
 
     @property
     def __functions(self) -> SymbolSection:

@@ -1,6 +1,3 @@
-__all__ = ["VariableManager"]
-
-
 class VariableManager:
     def __init__(self):
         """
@@ -11,12 +8,9 @@ class VariableManager:
         self.__environment_count = -1
         self.__function_count = 0
 
-    def reset_object_count(self):
-        self.__object_count = 0
-
     def create_object_name(self) -> str:
         """
-        Creates and returns a name of the variable with a new object.
+        Creates and returns a name of the variable for the new object.
         """
 
         self.__object_count += 1
@@ -24,7 +18,7 @@ class VariableManager:
 
     def create_environment_name(self) -> str:
         """
-        Creates and returns a name of the variable with a new environment
+        Creates and returns a name of the variable with a new environment.
         """
 
         self.__environment_count += 1

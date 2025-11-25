@@ -4,7 +4,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, Template
 
-from src.code_rendering.codes import (
+from src.rendering.codes import (
     EmptyCode,
     MakePrimitiveCode,
     MakeEvaluableCode,

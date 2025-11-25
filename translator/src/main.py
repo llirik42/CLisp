@@ -2,12 +2,8 @@ import argparse
 
 from src.ast_reading import read_ast_file, read_ast_stdin
 from src.ast_visiting import ASTVisitor
-from src.code_rendering import CodeCreator
-from src.environment import EnvironmentContext
-from src.evaluable_context import EvaluableContext
-from src.lambda_context import LambdaContext
+from src.rendering import CodeCreator
 from src.symbols import Symbols
-from src.variable_manager import VariableManager
 
 
 def write_generated_code(output_file: str, code: str) -> None:
@@ -45,10 +41,6 @@ def main():
     visitor = ASTVisitor(
         symbols=standard_elements,
         code_creator=code_creator,
-        variable_manager=VariableManager(),
-        evaluable_context=EvaluableContext(),
-        environment_context=EnvironmentContext(),
-        lambda_context=LambdaContext(),
     )
 
     output_code = visitor.visit(ast)
