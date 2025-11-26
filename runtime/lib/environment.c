@@ -54,24 +54,35 @@ Environment* clisp_make_environment_capacity(Environment* parent, size_t capacit
 }
 
 void clisp_destroy_environment(Environment* env) {
+    for (size_t i = 0; i < env->variables_count; i++) {
+        clisp_destroy_object(env->variables[i].val);
+    }
     free_memory(env->variables);
     free_memory(env);
 }
 
 void clisp_set_variable_value(Environment* env, char* name, Object* value) {
     if (!env) {
-        print_error_and_exit("Environment is NULL!\n", 0);
+        clisp_exit("Environment is NULL!\n");
         __builtin_unreachable();
     }
 
-    for (size_t i = 0; i < RESERVED_COUNT; i++) {
-        if (!strcmp(name, reserved[i].name)) {
-            print_error_and_exit("Variable name is reserved!\n", 0);
+    Environment* curr_env = env;
+    unsigned char found = FALSE;
+    while (curr_env && !found) {
+        for (size_t i = 0; i < curr_env->variables_count; i++) {
+            if (curr_env->variables[i].val == value) {
+                increase_refs_count(curr_env->variables[i].val);
+                found = TRUE;
+                break;
+            }
         }
+        curr_env = curr_env->parent;
     }
 
     for (size_t i = 0; i < env->variables_count; i++) {
         if (!strcmp(name, env->variables[i].key)) {
+            clisp_destroy_object(env->variables[i].val);
             env->variables[i].val = value;
             return;
         }
@@ -88,38 +99,43 @@ void clisp_set_variable_value(Environment* env, char* name, Object* value) {
 
 Object* clisp_update_variable_value(Environment* env, char* name, Object* value) {
     if (!env) {
-        print_error_and_exit("Environment is NULL!\n", 0);
+        clisp_exit("Environment is NULL!\n");
         __builtin_unreachable();
     }
 
-    for (size_t i = 0; i < RESERVED_COUNT; i++) {
-        if (!strcmp(name, reserved[i].name)) {
-            print_error_and_exit("Variable name is reserved!\n", 0);
+    Environment* curr_env = env;
+
+    while (curr_env) {
+        for (size_t i = 0; i < curr_env->variables_count; i++) {
+            if (!strcmp(name, curr_env->variables[i].key)) {
+                clisp_destroy_object(curr_env->variables[i].val);
+                curr_env->variables[i].val = value;
+                return clisp_make_unspecified();
+            }
         }
+
+        curr_env = curr_env->parent;
     }
 
-    for (size_t i = 0; i < env->variables_count; i++) {
-        if (!strcmp(name, env->variables[i].key)) {
-            env->variables[i].val = value;
-            return clisp_make_unspecified();
-        }
-    }
-    return clisp_update_variable_value(env->parent, name, value);
+    clisp_exit("No value in environment!\n");
+    __builtin_unreachable();
 }
 
 Object* clisp_get_variable_value(Environment* env, char* name) {
-    if (!env) {
-        print_error_and_exit("Environment is NULL!\n", 0);
-        __builtin_unreachable();
+    Environment* curr_env = env;
+
+    while (curr_env) {
+        for (size_t i = 0; i < curr_env->variables_count; i++) {
+            if (!strcmp(name, curr_env->variables[i].key)) {
+                return curr_env->variables[i].val;
+            }
+        }
+
+        curr_env = curr_env->parent;
     }
 
-    for (size_t i = 0; i < env->variables_count; i++) {
-        Variable var = env->variables[i];
-        if (!strcmp(name, var.key)) {
-            return var.val;
-        }
-    }
-    return clisp_get_variable_value(env->parent, name);
+    clisp_exit("No value in environment!\n");
+    __builtin_unreachable();
 }
 
 static void set_reserved_variable(Environment* env, const char* name, Object* value) {
@@ -137,9 +153,5 @@ Environment* clisp_make_global_environment() {
 }
 
 void clisp_destroy_global_environment(Environment* env) {
-    for (size_t i = 0; i < RESERVED_COUNT; i++) {
-        clisp_destroy_object(env->variables[i].val);
-    }
-
     clisp_destroy_environment(env);
 }

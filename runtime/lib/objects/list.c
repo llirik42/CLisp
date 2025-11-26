@@ -22,7 +22,7 @@ Object* clisp_make_list_capacity(size_t size) {
 
 void clisp_list_append(Object* list, Object* obj) {
     const ListObject* list_object = (ListObject*)list;
-    da_push_back(list_object->list, obj);
+    da_append(list_object->list, obj);
 }
 
 Object* clisp_list_at(Object* list, size_t index) {
@@ -44,7 +44,7 @@ Object* clisp_make_list_from_array(unsigned int size, Object** array) {
     list_object->list = da_create(size);
 
     for (size_t i = 0; i < size; i++) {
-        da_push_back(list_object->list, array[i]);
+        da_append(list_object->list, array[i]);
     }
 
     return (Object*)list_object;
