@@ -19,7 +19,6 @@ from .codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
-    DestroyObjectCode,
 )
 from src.symbols import Symbols
 
@@ -29,27 +28,36 @@ class CodeCreator:
         """
         Class represents a creator for objects of Code.
 
+        :param symbols: symbols that are used for code generating.
         :param templates_folder_path: path to the directory with templates for code.
         :raises FileNotFoundError: the directory not found.
         """
 
-        self.__symbols = symbols
+        self.__OBJECT_TYPE = symbols.find_internal_type("object")
+        self.__ENVIRONMENT_TYPE = symbols.find_internal_type("environment")
+        self.__DESTROY_OBJECT = symbols.find_internal_function("~object")
+        self.__CREATE_INTEGER = symbols.find_internal_function("integer")
+        self.__CREATE_FLOAT = symbols.find_internal_function("float")
+        self.__CREATE_STRING = symbols.find_internal_function("string")
+        self.__CREATE_CHARACTER = symbols.find_internal_function("character")
+        self.__CREATE_BOOLEAN = symbols.find_internal_function("boolean")
+        self.__CREATE_EVALUABLE = symbols.find_internal_function("evaluable")
+        self.__CREATE_LAMBDA = symbols.find_internal_function("lambda")
+        self.__CREATE_LIST = symbols.find_internal_function("list")
+        self.__CREATE_ENVIRONMENT = symbols.find_internal_function("environment")
+        self.__DESTROY_ENVIRONMENT = symbols.find_internal_function("~environment")
+        self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
+            "environment_global"
+        )
+        self.__GET_VARIABLE_VALUE = symbols.find_internal_function("get_variable_value")
+        self.__SET_VARIABLE_VALUE = symbols.find_internal_function("set_variable_value")
+        self.__UPDATE_VARIABLE_VALUE = symbols.find_internal_function(
+            "update_variable_value"
+        )
+        self.__CALL_LAMBDA = symbols.find_internal_function("lambda_call")
+        self.__FUNCTION_ARGS_VAR = "args"
+        self.__FUNCTION_PARAMS = symbols.find_internal_type("lambda_function_params")
 
-        self.__OBJECT_TYPE = self.__symbols.find_internal_type("object")
-        self.__ENVIRONMENT_TYPE = self.__symbols.find_internal_type("environment")
-        self.__DESTROY_OBJECT = self.__symbols.find_internal_function("~object")
-        self.__CREATE_INTEGER = self.__symbols.find_internal_function("integer")
-        self.__CREATE_FLOAT = self.__symbols.find_internal_function("float")
-        self.__CREATE_STRING = self.__symbols.find_internal_function("string")
-        self.__CREATE_CHARACTER = self.__symbols.find_internal_function("character")
-        self.__CREATE_BOOLEAN = self.__symbols.find_internal_function("boolean")
-        self.__CREATE_EVALUABLE = self.__symbols.find_internal_function("evaluable")
-        self.__CREATE_LAMBDA = self.__symbols.find_internal_function("lambda")
-        self.__CREATE_LIST = self.__symbols.find_internal_function("list")
-        self.__CREATE_ENVIRONMENT = self.__symbols.find_internal_function("environment")
-        self.__DESTROY_ENVIRONMENT = self.__symbols.find_internal_function("~environment")
-
-        self.__env = Environment(loader=FileSystemLoader(templates_folder_path))
         self.__load_templates(templates_folder_path)
 
     def empty(self) -> EmptyCode:
@@ -57,14 +65,6 @@ class CodeCreator:
         c.make_final_final()
 
         return c
-
-    def destroy_object(self) -> DestroyObjectCode:
-        return DestroyObjectCode(
-            main_template=self.__get_template("destroy_object"),
-            main_data={
-                "func": self.__DESTROY_OBJECT,
-            },
-        )
 
     def make_int(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_INTEGER)
@@ -111,7 +111,9 @@ class CodeCreator:
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_LIST,
             },
-            secondary_data={"func": self.__DESTROY_OBJECT,},
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
         )
 
     def make_environment(self) -> MakeEnvironmentCode:
@@ -122,9 +124,7 @@ class CodeCreator:
                 "type": self.__ENVIRONMENT_TYPE,
                 "func": self.__CREATE_ENVIRONMENT,
             },
-            secondary_data={
-                "func": self.__DESTROY_ENVIRONMENT
-            },
+            secondary_data={"func": self.__DESTROY_ENVIRONMENT},
         )
 
     def get_global_environment(self) -> GetGlobalEnvironmentCode:
@@ -133,11 +133,9 @@ class CodeCreator:
             secondary_template=self.__get_template("destroy_environment"),
             main_data={
                 "type": self.__ENVIRONMENT_TYPE,
-                "func": self.__symbols.find_internal_function("environment_global"),
+                "func": self.__GET_GLOBAL_ENVIRONMENT,
             },
-            secondary_data={
-                "func": self.__DESTROY_ENVIRONMENT
-            },
+            secondary_data={"func": self.__DESTROY_ENVIRONMENT},
         )
 
     def get_variable_value(self) -> GetVariableValueCode:
@@ -145,7 +143,7 @@ class CodeCreator:
             main_template=self.__get_template("get_variable_value"),
             main_data={
                 "type": self.__OBJECT_TYPE,
-                "func": self.__symbols.find_internal_function("get_variable_value"),
+                "func": self.__GET_VARIABLE_VALUE,
             },
         )
 
@@ -154,7 +152,7 @@ class CodeCreator:
             main_template=self.__get_template("set_variable_value"),
             main_data={
                 "type": self.__OBJECT_TYPE,
-                "func": self.__symbols.find_internal_function("set_variable_value"),
+                "func": self.__SET_VARIABLE_VALUE,
             },
         )
 
@@ -164,9 +162,11 @@ class CodeCreator:
             secondary_template=self.__get_destroy_object_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
-                "func": self.__symbols.find_internal_function("update_variable_value"),
+                "func": self.__UPDATE_VARIABLE_VALUE,
             },
-            secondary_data={"func": self.__DESTROY_OBJECT,},
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
         )
 
     def get_function_argument(self) -> GetFunctionArgumentCode:
@@ -174,7 +174,7 @@ class CodeCreator:
             main_template=self.__get_template("get_function_argument"),
             main_data={
                 "type": self.__OBJECT_TYPE,
-                "args": "args",
+                "args": self.__FUNCTION_ARGS_VAR,
             },
         )
 
@@ -182,24 +182,22 @@ class CodeCreator:
         return ProcedureCallCode(
             main_template=self.__get_template("procedure_call"),
             secondary_template=self.__get_destroy_object_template(),
-            main_data={
-                "type": self.__OBJECT_TYPE,
-            },
-            secondary_data={"func": self.__DESTROY_OBJECT,},
+            main_data={"type": self.__OBJECT_TYPE},
+            secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
     def lambda_call(self) -> LambdaCallCode:
-        object_type = self.__OBJECT_TYPE,
-
         return LambdaCallCode(
             main_template=self.__get_template("lambda_call"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "type": object_type,
-                "args_type": object_type,
-                "func": self.__symbols.find_internal_function("lambda_call"),
+                "type": self.__OBJECT_TYPE,
+                "args_type": self.__OBJECT_TYPE,
+                "func": self.__CALL_LAMBDA,
             },
-            secondary_data={"func": self.__DESTROY_OBJECT,},
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
         )
 
     def lambda_definition(self) -> LambdaDefinitionCode:
@@ -207,7 +205,7 @@ class CodeCreator:
             main_template=self.__get_template("lambda_definition"),
             main_data={
                 "ret_type": self.__OBJECT_TYPE,
-                "params": self.__symbols.find_internal_type("lambda_function_params"),
+                "params": self.__FUNCTION_PARAMS,
             },
         )
 
@@ -224,7 +222,9 @@ class CodeCreator:
                 "type": self.__OBJECT_TYPE,
                 "func": creation_function,
             },
-            secondary_data={"func": self.__DESTROY_OBJECT,},
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
         )
 
     def __get_destroy_object_template(self) -> Template:
@@ -247,7 +247,9 @@ class CodeCreator:
         :raises FileNotFoundError: the directory not found.
         """
 
+        env = Environment(loader=FileSystemLoader(templates_folder_path))
+
         self.__templates = {
-            Path(name).stem: self.__env.get_template(name)
+            Path(name).stem: env.get_template(name)
             for name in os.listdir(templates_folder_path)
         }

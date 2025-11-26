@@ -1,5 +1,4 @@
 from .code import Code
-from .destroy_object import DestroyObjectCode
 from .empty import EmptyCode
 from .get_function_argument import GetFunctionArgumentCode
 from .get_global_environment import GetGlobalEnvironmentCode
