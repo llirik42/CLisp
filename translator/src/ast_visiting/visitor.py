@@ -15,6 +15,7 @@ from .environment_context import EnvironmentContext
 from .evaluable_context import EvaluableContext
 from .lambda_context import LambdaContext
 from src.symbols import Symbols
+from .let_type_context import LetTypeContext, LetType
 from .variable_manager import VariableManager
 from .exceptions import (
     UnexpectedIdentifierException,
@@ -78,6 +79,7 @@ class ASTVisitor(LispVisitor):
         self.__environment_ctx = EnvironmentContext()
         self.__lambda_ctx = LambdaContext()
         self.__declaration_ctx = DeclarationsContext()
+        self.__let_type_ctx = LetTypeContext()
 
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
         global_env_var = self.__variable_manager.create_environment_name()
@@ -185,31 +187,35 @@ class ASTVisitor(LispVisitor):
         return expr_code
 
     def visitLet(self, ctx: LispParser.LetContext) -> ExpressionVisitResult:
-        # TODO: добавить различия между let, let* и letrec
+        return self.__visit_let(let_type=LetType.LET, ctx=ctx)
 
-        env = self.__environment_ctx.env
+    def visitLetAsterisk(
+        self, ctx: LispParser.LetAsteriskContext
+    ) -> ExpressionVisitResult:
+        return self.__visit_let(let_type=LetType.LET_ASTERISK, ctx=ctx)
 
-        new_env_var = self.__variable_manager.create_environment_name()
-        new_env_code = self.__code_creator.make_environment()
-        new_env_code.update_data(var=new_env_var, parent=env.name)
-
-        binding_list = ctx.bindingList()
-
-        with self.__environment_ctx:
-            self.__environment_ctx.init(code=new_env_code, name=new_env_var)
-
-            bindings_codes = [c for c in self.visit(binding_list)]
-            body_var, body_code = self.visit(ctx.environmentBody())
-
-            joined_bindings_codes = join_codes(bindings_codes).replace("\n\n", "\n")
-            new_env_code.add_main_epilog(f"{joined_bindings_codes}\n{body_code}")
-
-        return body_var, new_env_code
+    def visitLetRec(self, ctx: LispParser.LetRecContext) -> ExpressionVisitResult:
+        return self.__visit_let(let_type=LetType.LET_REC, ctx=ctx)
 
     def visitBindingList(
         self, ctx: LispParser.BindingListContext
     ) -> list[BindingVisitResult]:
-        return [self.visit(b) for b in ctx.binding()]
+        result = [self.visit(b) for b in ctx.binding()]
+        if not self.__let_type_ctx.inside_let:
+            # All variables have already been added to the environment (let*, letrec)
+            return result
+
+        # No variables were added (let)
+        env = self.__environment_ctx.env
+        for b in ctx.binding():
+            variable_name = b.variable().getText()
+
+            if env.has_variable(variable_name):
+                raise DuplicatedBindingException(variable_name, ctx)
+
+            env.add_variable(variable_name)
+
+        return result
 
     def visitBinding(self, ctx: LispParser.BindingContext) -> BindingVisitResult:
         env = self.__environment_ctx.env
@@ -223,9 +229,21 @@ class ASTVisitor(LispVisitor):
             raise DuplicatedBindingException(variable_name, ctx)
 
         expression = ctx.expression()
-        expr_var, expr_code = self.visit(expression)
+
+        expr_code = expr_var = None
+        match self.__let_type_ctx.type_:
+            case LetType.LET:
+                expr_var, expr_code = self.visit(expression)
+            case LetType.LET_ASTERISK:
+                expr_var, expr_code = self.visit(expression)
+                env.add_variable(variable_name)
+            case LetType.LET_REC:
+                env.add_variable(variable_name)
+                expr_var, expr_code = self.visit(expression)
+            case _:
+                raise RuntimeError("Unknown type of let")
+
         expr_code.remove_first_secondary_line()
-        env.add_variable(variable_name)
 
         binding_code = self.__code_creator.set_variable_value()
         binding_code.update_data(
@@ -631,6 +649,44 @@ class ASTVisitor(LispVisitor):
         )
 
         return assignment_var, wrap_codes(assignment_code, expr_code)
+
+    def __visit_let(
+        self,
+        let_type: LetType,
+        ctx: Union[
+            LispParser.LetContext,
+            LispParser.LetAsteriskContext,
+            LispParser.LetRecContext,
+        ],
+    ) -> ExpressionVisitResult:
+        env = self.__environment_ctx.env
+
+        new_env_var = self.__variable_manager.create_environment_name()
+        new_env_code = self.__code_creator.make_environment()
+        new_env_code.update_data(var=new_env_var, parent=env.name)
+
+        binding_list = ctx.bindingList()
+
+        with self.__environment_ctx:
+            self.__environment_ctx.init(code=new_env_code, name=new_env_var)
+            self.__let_type_ctx.visit(let_type)
+
+            bindings_codes = [c for c in self.visit(binding_list)]
+            body_var, body_code = self.visit(ctx.environmentBody())
+
+            joined_bindings_codes = join_codes(bindings_codes).replace("\n\n", "\n")
+            new_env_code.add_main_epilog(f"{joined_bindings_codes}\n{body_code}")
+
+        return body_var, new_env_code
+
+    def __visit_let_binding(self):
+        pass
+
+    def __visit_letrec_binding(self):
+        pass
+
+    def __visit_let_asterisk_binding(self):
+        pass
 
     def __visit_constant(
         self, code: MakePrimitiveCode, value: Union[str, int, float]
