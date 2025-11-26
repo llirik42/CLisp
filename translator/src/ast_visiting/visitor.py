@@ -22,6 +22,7 @@ from .exceptions import (
     ParamNameConflictException,
 )
 from src.rendering.codes import MakePrimitiveCode, Code
+from ..environment import Environment
 
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
@@ -62,7 +63,9 @@ class ASTVisitor(LispVisitor):
 
         # Обход выражений программы
         with self.__environment_ctx:
-            self.__environment_ctx.init(code=main_code, name=global_env_var)
+            self.__environment_ctx.init(
+                code=main_code, name=global_env_var, is_global=True
+            )
             env = self.__environment_ctx.env
 
             # Добавление функций стандартной библиотеки в глобальный контекст
@@ -93,43 +96,43 @@ class ASTVisitor(LispVisitor):
 
         expr_var, expr_code = self.visit(expression)
         expr_code.remove_newlines()
-        self.__lambda_ctx.add_param(variable.getText(), expr_var)
+        self.__lambda_ctx.set_param_var(variable.getText(), expr_var)
 
         return expr_code
 
     def visitAssignment(
         self, ctx: LispParser.AssignmentContext
     ) -> ExpressionVisitResult:
+        expression = ctx.expression()
         variable_name = ctx.variable().getText()
+        env = self.__environment_ctx.env
+        is_env_top_level_lambda = (
+            env.parent.is_global and self.__lambda_ctx.inside_lambda
+        )
+
+        # Change lambda param
+        if is_env_top_level_lambda and self.__lambda_ctx.has_param(variable_name):
+            return self.__visit_lambda_param_assignment(
+                param_name=variable_name, expression=expression
+            )
+
+        if env.has_variable_recursively(variable_name):
+            return self.__visit_environment_variable_assignment(
+                env=env, variable_name=variable_name, expression=expression
+            )
 
         if self.__lambda_ctx.inside_lambda and self.__lambda_ctx.has_param(
             variable_name
         ):
-            # TODO: set! on lambda param
-            raise RuntimeError("Not supported!")
+            return self.__visit_lambda_param_assignment(
+                param_name=variable_name, expression=expression
+            )
 
-        env = self.__environment_ctx.env
-
-        if not env.has_variable_recursively(variable_name):
-            raise UnexpectedIdentifierException(variable_name, ctx)
-
-        expression = ctx.expression()
-        expr_var, expr_code = self.visit(expression)
-
-        expr_code.remove_first_secondary_line()
-
-        assignment_var = self.__variable_manager.create_object_name()
-        assignment_code = self.__code_creator.update_variable_value()
-        assignment_code.update_data(
-            var=assignment_var,
-            env=env.name,
-            name=f'"{variable_name}"',
-            value=expr_var,
-        )
-
-        return assignment_var, wrap_codes(assignment_code, expr_code)
+        raise UnexpectedIdentifierException(variable_name, ctx)
 
     def visitLet(self, ctx: LispParser.LetContext) -> ExpressionVisitResult:
+        # TODO: добавить различия между let, let* и letrec
+
         env = self.__environment_ctx.env
 
         new_env_var = self.__variable_manager.create_environment_name()
@@ -232,7 +235,9 @@ class ASTVisitor(LispVisitor):
 
         return expr_vars[-1], join_codes(body_codes)
 
-    def visitEnvironmentBodyDefinition(self, ctx:LispParser.EnvironmentBodyDefinitionContext) -> ExpressionVisitResult:
+    def visitEnvironmentBodyDefinition(
+        self, ctx: LispParser.EnvironmentBodyDefinitionContext
+    ) -> ExpressionVisitResult:
         env = self.__environment_ctx.env
 
         variable_name = ctx.definition().variable().getText()
@@ -370,9 +375,6 @@ class ASTVisitor(LispVisitor):
         else:
             body = ""
 
-        print(body_code_text)
-        print("!")
-
         if body_code_text == "":
             body += formals_text_after
         else:
@@ -414,7 +416,9 @@ class ASTVisitor(LispVisitor):
 
             current_arg_getting_code.remove_newlines()
             codes.append(current_arg_getting_code)
-            self.__lambda_ctx.add_param(param_name=param_lisp_name, param_var=param_var)
+            self.__lambda_ctx.set_param_var(
+                param_name=param_lisp_name, param_var=param_var
+            )
 
         return join_codes(codes), ""
 
@@ -436,7 +440,7 @@ class ASTVisitor(LispVisitor):
         secondary = arg_getting_code.render_secondary() + "\n"
         arg_getting_code.clear_secondary()
 
-        self.__lambda_ctx.add_param(param_name=param_lisp_name, param_var=arg_var)
+        self.__lambda_ctx.set_param_var(param_name=param_lisp_name, param_var=arg_var)
 
         return arg_getting_code.render(), secondary
 
@@ -467,7 +471,7 @@ class ASTVisitor(LispVisitor):
 
             current_arg_getting_code.remove_newlines()
             codes_to_join.append(current_arg_getting_code)
-            self.__lambda_ctx.add_param(
+            self.__lambda_ctx.set_param_var(
                 param_name=param_lisp_name, param_var=current_arg_var
             )
 
@@ -487,8 +491,9 @@ class ASTVisitor(LispVisitor):
         )
         variadic_arg_getting_code.remove_newlines()
 
-        self.__lambda_ctx.add_param(
-            param_name=variadic_lisp_name, param_var=variadic_arg_var
+        self.__lambda_ctx.set_param_var(
+            param_name=variadic_lisp_name,
+            param_var=variadic_arg_var,
         )
 
         secondary = variadic_arg_getting_code.render_secondary() + "\n"
@@ -542,6 +547,35 @@ class ASTVisitor(LispVisitor):
         code = self.__code_creator.make_float()
 
         return self.__visit_constant(code=code, value=float(ctx.getText()))
+
+    def __visit_lambda_param_assignment(
+        self, param_name: str, expression: LispParser.ExpressionContext
+    ) -> ExpressionVisitResult:
+        expr_var, expr_code = self.visit(expression)
+        expr_code.remove_first_secondary_line()
+        self.__lambda_ctx.set_param_var(param_name=param_name, param_var=expr_var)
+        return expr_var, wrap_codes(self.__code_creator.empty(), expr_code)
+
+    def __visit_environment_variable_assignment(
+        self,
+        env: Environment,
+        variable_name: str,
+        expression: LispParser.ExpressionContext,
+    ) -> ExpressionVisitResult:
+        expr_var, expr_code = self.visit(expression)
+
+        expr_code.remove_first_secondary_line()
+
+        assignment_var = self.__variable_manager.create_object_name()
+        assignment_code = self.__code_creator.update_variable_value()
+        assignment_code.update_data(
+            var=assignment_var,
+            env=env.name,
+            name=f'"{variable_name}"',
+            value=expr_var,
+        )
+
+        return assignment_var, wrap_codes(assignment_code, expr_code)
 
     def __visit_constant(
         self, code: MakePrimitiveCode, value: Union[str, int, float]

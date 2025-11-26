@@ -60,6 +60,8 @@ class Code(ABC):
         self.__main_validate = lambda data: check_required(data, *required_params)
 
     def remove_first_secondary_line(self) -> None:
+        # TODO: this should be removed
+
         old_secondary = self.render_secondary()
         self.clear_secondary()
         new_secondary = "\n" + "\n".join(old_secondary.split("\n")[2:])

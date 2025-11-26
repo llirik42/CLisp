@@ -21,7 +21,7 @@ class LambdaContext:
         """
         return self.__counter > 0
 
-    def add_param(self, param_name: str, param_var: str) -> None:
+    def set_param_var(self, param_name: str, param_var: str) -> None:
         """
         Adds a parameter to the current lambda.
 
@@ -36,10 +36,13 @@ class LambdaContext:
         Returns parameter's variable in the current lambda.
 
         :param param_name: name of the parameter
-        :raises KeyError:  current lambda doesn't have parameter with given name
+        :raises KeyError: current lambda doesn't have parameter with given name
         """
 
-        return self.__params[param_name]
+        param = self.__params[param_name]
+        param_var = param[0]
+
+        return param_var
 
     def has_param(self, param_name: str) -> bool:
         """
@@ -47,3 +50,7 @@ class LambdaContext:
         """
 
         return self.__params.get(param_name, None) is not None
+
+    @property
+    def params(self):
+        return self.__params

@@ -28,16 +28,19 @@ class EnvironmentContext:
     def __init__(self):
         self.__env = None
 
-    def init(self, name: str, code: Code):
+    def init(self, name: str, code: Code, is_global: bool = False):
         """
         Creates new environment with given name and code, sets current environment to new one and remembers previous one as parent.
 
         :param name: name of the environment
         :param code: code of the environment
+        :param is_global: whether this environment is global or not
         """
 
         parent = self.__env
-        self.__env = Environment(name=name, code=code, parent=parent)
+        self.__env = Environment(
+            name=name, code=code, parent=parent, is_global=is_global
+        )
 
     def __enter__(self):
         pass
