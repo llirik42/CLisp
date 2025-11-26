@@ -486,8 +486,9 @@ class ASTVisitor(LispVisitor):
 
         function_name = self.__variable_manager.create_function_name()
 
-        body = formals_text_before + "\n" if formals_text_after else ""
+        body = formals_text_before + "\n" if formals_text_before else ""
         body += body_code_text
+        body += formals_text_after
 
         function_code.update_data(
             func=function_name,
