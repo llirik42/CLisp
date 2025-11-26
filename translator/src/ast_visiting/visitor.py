@@ -1,5 +1,7 @@
 from typing import Union
 
+from antlr4 import ParserRuleContext
+
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
 from src.rendering import (
@@ -50,6 +52,12 @@ LambdaDefinitionsVisitResult = tuple[list[str], list[Code]]
 
 # (variable of the last expression, list of the codes for each expression)
 LambdaExpressionsVisitResult = tuple[str, list[Code]]
+
+# Codes for every fixed formal
+FixedFormalsVisitResult = list[Code]
+
+# (code of the formal without secondary, secondary part of the code)
+VariadicFormalVisitResult = tuple[Code, str]
 
 
 class ASTVisitor(LispVisitor):
@@ -113,109 +121,34 @@ class ASTVisitor(LispVisitor):
         return lambda_var, lambda_creation_code
 
     def visitFixedFormals(self, ctx: LispParser.FixedFormalsContext) -> tuple[str, str]:
-        variables = ctx.variable()
-
-        codes = []
-        lisp_names = []
-        for i, v in enumerate(variables):
-            param_lisp_name = v.getText()
-            if param_lisp_name in lisp_names:
-                raise DuplicatedParamException(param_lisp_name, ctx)
-            if self.__symbols.has_api_symbol(param_lisp_name):
-                raise ParamNameConflictException(param_lisp_name, ctx)
-            lisp_names.append(param_lisp_name)
-
-            param_var = self.__variable_manager.create_object_name()
-            current_arg_getting_code = self.__code_creator.get_function_argument()
-            current_arg_getting_code.update_data(index=i, var=param_var)
-
-            current_arg_getting_code.remove_newlines()
-            codes.append(current_arg_getting_code)
-            self.__lambda_ctx.set_param_var(
-                param_name=param_lisp_name, param_var=param_var
-            )
+        codes = self.__visit_scalar_formals(ctx.variable(), ctx)
 
         return join_codes(codes), ""
 
     def visitListFormals(self, ctx: LispParser.ListFormalsContext) -> tuple[str, str]:
-        # variables that store number of args and the args in the lambda function (from the template)
-        count = "count"
-        args = "args"
+        code, secondary = self.__visit_variadic_formal(
+            ctx.variable(), ctx, start_index=0
+        )
 
-        param_lisp_name = ctx.variable().getText()
-        if self.__symbols.has_api_symbol(param_lisp_name):
-            raise ParamNameConflictException(param_lisp_name, ctx)
-
-        arg_var = self.__variable_manager.create_object_name()
-        arg_getting_code = self.__code_creator.make_list()
-        arg_getting_code.update_data(var=arg_var, count=count, elements=args)
-
-        arg_getting_code.remove_newlines()
-
-        secondary = arg_getting_code.render_secondary() + "\n"
-        arg_getting_code.clear_secondary()
-
-        self.__lambda_ctx.set_param_var(param_name=param_lisp_name, param_var=arg_var)
-
-        return arg_getting_code.render(), secondary
+        return code.render(), secondary
 
     def visitVariadicFormals(
         self, ctx: LispParser.VariadicFormalsContext
     ) -> tuple[str, str]:
-        # variables that store number of args and the args in the lambda function (from the template)
-        count = "count"
-        args = "args"
-
         fixed_variables = ctx.variable()[:-1]
         variadic_variable = ctx.variable()[-1]
 
-        codes_to_join = []
-        lisp_names = []
-
-        for i, v in enumerate(fixed_variables):
-            param_lisp_name = v.getText()
-            if param_lisp_name in lisp_names:
-                raise DuplicatedParamException(param_lisp_name, ctx)
-            if self.__symbols.has_api_symbol(param_lisp_name):
-                raise ParamNameConflictException(param_lisp_name, ctx)
-            lisp_names.append(param_lisp_name)
-
-            current_arg_var = self.__variable_manager.create_object_name()
-            current_arg_getting_code = self.__code_creator.get_function_argument()
-            current_arg_getting_code.update_data(index=i, var=current_arg_var)
-
-            current_arg_getting_code.remove_newlines()
-            codes_to_join.append(current_arg_getting_code)
-            self.__lambda_ctx.set_param_var(
-                param_name=param_lisp_name, param_var=current_arg_var
-            )
-
-        # Variadic
-        variadic_lisp_name = variadic_variable.getText()
-        if variadic_lisp_name in lisp_names:
-            raise DuplicatedParamException(variadic_lisp_name, ctx)
-        if self.__symbols.has_api_symbol(variadic_lisp_name):
-            raise ParamNameConflictException(variadic_lisp_name, ctx)
-
-        variadic_arg_var = self.__variable_manager.create_object_name()
-        variadic_arg_getting_code = self.__code_creator.make_list()
-        variadic_arg_getting_code.update_data(
-            var=variadic_arg_var,
-            count=f"{count}-{len(fixed_variables)}",
-            elements=f"{args}+{len(fixed_variables)}",
+        fixed_formals_codes = self.__visit_scalar_formals(
+            variables=fixed_variables, ctx=ctx
         )
-        variadic_arg_getting_code.remove_newlines()
-
-        self.__lambda_ctx.set_param_var(
-            param_name=variadic_lisp_name,
-            param_var=variadic_arg_var,
+        variadic_formal_code, list_formal_secondary = self.__visit_variadic_formal(
+            variable=variadic_variable, ctx=ctx, start_index=len(fixed_variables)
         )
 
-        secondary = variadic_arg_getting_code.render_secondary() + "\n"
-        variadic_arg_getting_code.clear_secondary()
-        codes_to_join.append(variadic_arg_getting_code)
-
-        return join_codes(codes_to_join), secondary
+        return (
+            join_codes(fixed_formals_codes + [variadic_formal_code]),
+            list_formal_secondary,
+        )
 
     def visitProcedureBody(
         self, ctx: LispParser.ProcedureBodyContext
@@ -566,6 +499,69 @@ class ASTVisitor(LispVisitor):
         self.__declaration_ctx.add_declaration(function_code)
 
         return function_name
+
+    def __visit_scalar_formals(
+        self, variables: list[LispParser.VariableContext], ctx: ParserRuleContext
+    ) -> FixedFormalsVisitResult:
+        codes = []
+        visited_params = []
+
+        for i, v in enumerate(variables):
+            param_lisp_name = v.getText()
+
+            if param_lisp_name in visited_params:
+                raise DuplicatedParamException(param_lisp_name, ctx)
+            if self.__symbols.has_api_symbol(param_lisp_name):
+                raise ParamNameConflictException(param_lisp_name, ctx)
+
+            visited_params.append(param_lisp_name)
+
+            param_var = self.__variable_manager.create_object_name()
+            current_arg_getting_code = self.__code_creator.get_function_argument()
+            current_arg_getting_code.update_data(index=i, var=param_var)
+
+            current_arg_getting_code.remove_newlines()
+            codes.append(current_arg_getting_code)
+            self.__lambda_ctx.set_param_var(
+                param_name=param_lisp_name, param_var=param_var
+            )
+
+        return codes
+
+    def __visit_variadic_formal(
+        self,
+        variable: LispParser.VariableContext,
+        ctx: ParserRuleContext,
+        start_index: int,
+    ) -> VariadicFormalVisitResult:
+        # variables that store number of args and the args in the lambda function (from the template)
+        count_name = "count"
+        args_name = "args"
+
+        param_lisp_name = variable.getText()
+        if self.__symbols.has_api_symbol(param_lisp_name):
+            raise ParamNameConflictException(param_lisp_name, ctx)
+
+        arg_var = self.__variable_manager.create_object_name()
+        code = self.__code_creator.make_list()
+
+        if start_index:
+            count = f"{count_name}-{start_index}"
+            elements = f"{args_name}+{start_index}"
+        else:
+            count = count_name
+            elements = args_name
+
+        code.update_data(var=arg_var, count=count, elements=elements)
+
+        code.remove_newlines()
+
+        secondary = code.render_secondary() + "\n"
+        code.clear_secondary()
+
+        self.__lambda_ctx.set_param_var(param_name=param_lisp_name, param_var=arg_var)
+
+        return code, secondary
 
     def __visit_lambda_definitions(
         self, definitions: list[LispParser.ProcedureBodyDefinitionContext]
