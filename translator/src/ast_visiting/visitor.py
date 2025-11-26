@@ -201,7 +201,7 @@ class ASTVisitor(LispVisitor):
         self, ctx: LispParser.BindingListContext
     ) -> list[BindingVisitResult]:
         result = [self.visit(b) for b in ctx.binding()]
-        if not self.__let_type_ctx.inside_let:
+        if self.__let_type_ctx.type_ != LetType.LET:
             # All variables have already been added to the environment (let*, letrec)
             return result
 
@@ -308,7 +308,7 @@ class ASTVisitor(LispVisitor):
         variable_name = ctx.variable().getText()
         env = self.__environment_ctx.env
         is_env_top_level_lambda = (
-            env.parent.is_global and self.__lambda_ctx.inside_lambda
+            env.parent and env.parent.is_global and self.__lambda_ctx.inside_lambda
         )
 
         # Attempt of changing lambda param
