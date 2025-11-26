@@ -39,10 +39,7 @@ class LambdaContext:
         :raises KeyError: current lambda doesn't have parameter with given name
         """
 
-        param = self.__params[param_name]
-        param_var = param[0]
-
-        return param_var
+        return self.__params[param_name]
 
     def has_param(self, param_name: str) -> bool:
         """
