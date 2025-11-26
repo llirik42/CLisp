@@ -200,6 +200,8 @@ class ASTVisitor(LispVisitor):
     def visitBindingList(
         self, ctx: LispParser.BindingListContext
     ) -> list[BindingVisitResult]:
+        # TODO: fix copy-paste with visitBinding()
+
         result = [self.visit(b) for b in ctx.binding()]
         if self.__let_type_ctx.type_ != LetType.LET:
             # All variables have already been added to the environment (let*, letrec)
@@ -678,15 +680,6 @@ class ASTVisitor(LispVisitor):
             new_env_code.add_main_epilog(f"{joined_bindings_codes}\n{body_code}")
 
         return body_var, new_env_code
-
-    def __visit_let_binding(self):
-        pass
-
-    def __visit_letrec_binding(self):
-        pass
-
-    def __visit_let_asterisk_binding(self):
-        pass
 
     def __visit_constant(
         self, code: MakePrimitiveCode, value: Union[str, int, float]
