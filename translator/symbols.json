@@ -42,7 +42,7 @@
     "types": {
       "object": "Object*",
       "environment": "Environment*",
-      "lambda_function_params": ["unsigned int count", "Object** args", "Environment* env"]
+      "lambda_function_params": ["Environment* env", "unsigned int count", "Object** args"]
     }
   }
 }
