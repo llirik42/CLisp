@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Optional, Callable, Any
+from typing import Optional, Any
 
 from jinja2 import Template
 
@@ -17,10 +17,7 @@ class Code(ABC):
         secondary_template: Optional[Template] = None,
         main_data: Optional[dict] = None,
         secondary_data: Optional[dict] = None,
-        secondary_validate: Optional[Callable[[dict], None]] = None,
-        empty: bool = False,
         required_params: Optional[list] = None,
-        **kwargs,
     ):
         """
         Class represents a template-code that can be rendered with given data.
@@ -35,7 +32,9 @@ class Code(ABC):
 
         :param main_template: main template of code.
         :param secondary_template: template of code that will be inserted after the main one and rendered with it.
-        :param kwargs: initial data.
+        :main_data: data that will be inserted in the main template
+        :secondary_data: data that will be inserted in the secondary template
+        :required_params: params that must be present in the main template
         """
 
         if required_params is None:
@@ -56,14 +55,9 @@ class Code(ABC):
         )
         self.__template = main_template
         self.__secondary_template = secondary_template
-        self.__final = False
-        self.__final_final = False
+        self.__is_newline_transferred = False
+        self.__are_newlines_removed = False
         self.__main_validate = lambda data: check_required(data, *required_params)
-        self.__empty = empty
-
-    @property
-    def final(self) -> bool:
-        return self.__final
 
     def remove_first_secondary_line(self) -> None:
         old_secondary = self.render_secondary()
@@ -74,32 +68,21 @@ class Code(ABC):
 
         self.add_secondary_prolog(new_secondary)
 
-    def make_final(self) -> None:
+    def transfer_newline(self) -> None:
         """
-        Makes the code "final". Being "final" means that there will be no newline in the end of the main part and will be additional newline in the end of the secondary part. Thus, the code will consist of
-
-        * main template
-        * main epilog
-        * secondary prolog
-        * secondary template
-        * \\\\n
+        Removes newline after the end of the main part and add one in the end of the secondary part. Thus, the code will consist of
         """
 
-        self.__final = True
+        self.__is_newline_transferred = True
 
-    def make_final_final(self) -> None:
-        self.__final_final = True
+    def remove_newlines(self) -> None:
+        """
+        Removes newlines between main template and main epilog, secondary prolog and secondary template. Thus, the code will consist of
+        """
 
-    # def update_data(self, **kwargs) -> None:
-    #     """
-    #     Update data that will be used for rendering.
-    #
-    #     :param kwargs: data to update.
-    #     """
-    #
-    #     self.__common_data.update(kwargs)
+        self.__are_newlines_removed = True
 
-    def add_main_epilog(self, text: str):
+    def add_main_epilog(self, text: str) -> None:
         """
         Adds text to the end of the main epilog.
 
@@ -108,7 +91,7 @@ class Code(ABC):
 
         self.__main_epilog += text
 
-    def add_secondary_prolog(self, text: str):
+    def add_secondary_prolog(self, text: str) -> None:
         """
         Inserts text to the beginning of the secondary prolog.
 
@@ -125,18 +108,19 @@ class Code(ABC):
         if self.__main_validate:
             self.__main_validate(self.__main_data)
 
-        result = self.__main_epilog
+        epilog = self.__main_epilog
 
-        tmp = ""
-        if self.__template:
-            tmp = self.__template.render(self.__main_data)
+        rendered_template = (
+            self.__template.render(self.__main_data) if self.__template else ""
+        )
 
-        if self.__final_final:
-            rendered = f"{tmp}{result}"
-        else:
-            rendered = f"{tmp}\n{result}"
+        rendered = (
+            f"{rendered_template}{epilog}"
+            if self.__are_newlines_removed
+            else f"{rendered_template}\n{epilog}"
+        )
 
-        if self.__final:
+        if self.__is_newline_transferred:
             return rendered[:-1]  # remove trailing \n
 
         return rendered
@@ -149,14 +133,14 @@ class Code(ABC):
         rendered = self.__secondary_prolog
 
         if self.__secondary_template:
-            if self.__final_final:
-                rendered += f"{self.__secondary_template.render(self.__secondary_data)}"
-            else:
-                rendered += (
-                    f"\n{self.__secondary_template.render(self.__secondary_data)}"
-                )
+            rendered_template = self.__secondary_template.render(self.__secondary_data)
 
-        if self.__final:
+            if self.__are_newlines_removed:
+                rendered += f"{rendered_template}"
+            else:
+                rendered += f"\n{rendered_template}"
+
+        if self.__is_newline_transferred:
             return f"{rendered}\n"
 
         return rendered
@@ -169,26 +153,17 @@ class Code(ABC):
         return f"{self.render_main()}{self.render_secondary()}"
 
     def clear_main(self) -> None:
+        """
+        Removes main template and clears main epilog.
+        """
+
         self.__main_epilog = ""
         self.__template = None
 
     def clear_secondary(self) -> None:
         """
-        Completely cleanses the secondary part (template + prolog).
+        Removes secondary template and clears secondary prolog.
         """
-
-        self.__secondary_prolog = ""
-        self.__secondary_template = None
-
-    @property
-    def is_empty(self) -> bool:
-        return self.__empty
-
-    def get_main_data(self, key: str) -> Any:
-        return self.__main_data.get(key, None)
-
-    def get_main_secondary(self, key: str) -> Any:
-        return self.__secondary_data.get(key, None)
 
     def _update_main_data(self, **kwargs) -> None:
         for k, v in kwargs.items():

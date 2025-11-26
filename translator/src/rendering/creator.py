@@ -62,7 +62,7 @@ class CodeCreator:
 
     def empty(self) -> EmptyCode:
         c = EmptyCode(empty=True)
-        c.make_final_final()
+        c.remove_newlines()
 
         return c
 

@@ -70,7 +70,7 @@ class ASTVisitor(LispVisitor):
                 env.add_variable(lisp_name)
             elements_codes = [self.visit(e)[1] for e in ctx.programElement()]
         for c in elements_codes:
-            c.make_final()
+            c.transfer_newline()
         if len(elements_codes) != 0:
             main_code.add_main_epilog(f"\n{join_codes(elements_codes)}")
 
@@ -88,9 +88,9 @@ class ASTVisitor(LispVisitor):
     def visitDefinition(
         self, ctx: LispParser.DefinitionContext
     ) -> ExpressionVisitResult:
-        env = self.__environment_ctx.env
+        # TODO: change when adding internal definitions (in let and in body of lambda)
 
-        # TODO: change when addint internal definitions (in let and in body of lambda)
+        env = self.__environment_ctx.env
 
         variable_name = ctx.variable().getText()
         if self.__symbols.has_api_symbol(variable_name):
@@ -115,8 +115,6 @@ class ASTVisitor(LispVisitor):
     def visitAssignment(
         self, ctx: LispParser.AssignmentContext
     ) -> ExpressionVisitResult:
-        # TODO: обработать ситуацию, когда меняется аргумент функции
-
         variable_name = ctx.variable().getText()
 
         if self.__lambda_ctx.inside_lambda and self.__lambda_ctx.has_param(
@@ -199,7 +197,7 @@ class ASTVisitor(LispVisitor):
     def visitProcedureBody(
         self, ctx: LispParser.ProcedureBodyContext
     ) -> BodyVisitResult:
-        # TODO: visit definitions
+        # TODO: add internal definitions
 
         expressions = ctx.expression()
 
@@ -209,11 +207,11 @@ class ASTVisitor(LispVisitor):
         for i, e in enumerate(expressions):
             e_var, e_code = self.visit(e)
 
-            # TODO: fix
-            if i == len(expressions) - 1:
-                e_code.remove_first_secondary_line()
+            is_expression_last = i == len(expressions) - 1
+            if is_expression_last:
+                e_code.remove_first_secondary_line()  # Remove destroying result of the procedure
 
-            e_code.make_final()
+            e_code.transfer_newline()
             expr_vars.append(e_var)
             expr_codes.append(e_code)
 
@@ -222,7 +220,7 @@ class ASTVisitor(LispVisitor):
     def visitEnvironmentBody(
         self, ctx: LispParser.EnvironmentBodyContext
     ) -> BodyVisitResult:
-        # TODO: visit internal definitions
+        # TODO: add internal definitions
 
         env = self.__environment_ctx.env
 
@@ -320,8 +318,7 @@ class ASTVisitor(LispVisitor):
     def visitProcedureCall(
         self, ctx: LispParser.ProcedureCallContext
     ) -> ExpressionVisitResult:
-        # TODO: add support of calling lambdas
-        # TODO: если if, то получения значения должно быть evaluable (и не должно проверяться на этапе компиляции)
+        # TODO: wrap lambda call into evaluable in if, and, or.
 
         operator_var, operator_code = self.visit(ctx.operator())
         operand_vars, operand_codes = self.__visit_operands(ctx.operand())
@@ -335,9 +332,8 @@ class ASTVisitor(LispVisitor):
         return expr_var, wrapped_expr_code
 
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
+        env_var = "env" # variable that stores environment in the lambda function (from the template)
         env = self.__environment_ctx.env
-
-        env_var = "env"  # TODO: прибито (из шаблона)
 
         formals = ctx.formals()
         body = ctx.procedureBody()
@@ -368,7 +364,7 @@ class ASTVisitor(LispVisitor):
             body=body,
         )
 
-        function_code.make_final()
+        function_code.transfer_newline()
         self.__declaration_ctx.add_declaration(function_code)
 
         lambda_var = self.__variable_manager.create_object_name()
@@ -396,14 +392,14 @@ class ASTVisitor(LispVisitor):
             current_arg_getting_code = self.__code_creator.get_function_argument()
             current_arg_getting_code.update_data(index=i, var=param_var)
 
-            current_arg_getting_code.make_final_final()
+            current_arg_getting_code.remove_newlines()
             codes.append(current_arg_getting_code)
             self.__lambda_ctx.add_param(param_name=param_lisp_name, param_var=param_var)
 
         return join_codes(codes), ""
 
     def visitListFormals(self, ctx: LispParser.ListFormalsContext) -> tuple[str, str]:
-        # TODO: прибито
+        # variables that store number of args and the args in the lambda function (from the template)
         count = "count"
         args = "args"
 
@@ -415,7 +411,7 @@ class ASTVisitor(LispVisitor):
         arg_getting_code = self.__code_creator.make_list()
         arg_getting_code.update_data(var=arg_var, count=count, elements=args)
 
-        arg_getting_code.make_final_final()
+        arg_getting_code.remove_newlines()
 
         secondary = arg_getting_code.render_secondary() + "\n"
         arg_getting_code.clear_secondary()
@@ -427,7 +423,7 @@ class ASTVisitor(LispVisitor):
     def visitVariadicFormals(
         self, ctx: LispParser.VariadicFormalsContext
     ) -> tuple[str, str]:
-        # TODO: прибито
+        # variables that store number of args and the args in the lambda function (from the template)
         count = "count"
         args = "args"
 
@@ -449,7 +445,7 @@ class ASTVisitor(LispVisitor):
             current_arg_getting_code = self.__code_creator.get_function_argument()
             current_arg_getting_code.update_data(index=i, var=current_arg_var)
 
-            current_arg_getting_code.make_final_final()
+            current_arg_getting_code.remove_newlines()
             codes_to_join.append(current_arg_getting_code)
             self.__lambda_ctx.add_param(
                 param_name=param_lisp_name, param_var=current_arg_var
@@ -469,7 +465,7 @@ class ASTVisitor(LispVisitor):
             count=f"{count}-{len(fixed_variables)}",
             elements=f"{args}+{len(fixed_variables)}",
         )
-        variadic_arg_getting_code.make_final_final()
+        variadic_arg_getting_code.remove_newlines()
 
         self.__lambda_ctx.add_param(
             param_name=variadic_lisp_name, param_var=variadic_arg_var
