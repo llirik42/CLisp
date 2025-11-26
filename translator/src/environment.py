@@ -12,7 +12,7 @@ class Environment:
     def __init__(self, name: str, code: Code, parent: "Environment"):
         self.__name = name
         self.__code = code
-        self.__variables = []
+        self.__variables = set()
         self.__parent = parent
 
     @property
@@ -50,9 +50,7 @@ class Environment:
         :param name: the name of the variable.
         """
 
-        assert name not in self.__variables
-
-        self.__variables.append(name)
+        self.__variables.add(name)
 
     @property
     def name(self) -> str:

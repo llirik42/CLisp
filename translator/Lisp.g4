@@ -4,9 +4,7 @@ program : programElement* EOF ;
 
 programElement
     : expression
-    | programDefinition ;
-
-programDefinition : definition ;
+    | environmentBodyDefinition ;
 
 expression
     : literal

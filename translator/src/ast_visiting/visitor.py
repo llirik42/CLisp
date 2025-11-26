@@ -85,31 +85,6 @@ class ASTVisitor(LispVisitor):
 
         return program_code.render()
 
-    def visitProgramDefinition(
-        self, ctx: LispParser.ProgramDefinitionContext
-    ) -> ExpressionVisitResult:
-        env = self.__environment_ctx.env
-
-        variable_name = ctx.definition().variable().getText()
-        if self.__symbols.has_api_symbol(variable_name):
-            raise FunctionRedefineException(variable_name, ctx)
-
-        expression = ctx.definition().expression()
-        expr_var, expr_code = self.visit(expression)
-
-        expr_code.remove_first_secondary_line()
-        env.add_variable(variable_name)
-
-        definition_code = self.__code_creator.set_variable_value()
-        definition_code.update_data(
-            env=env.name,
-            name=f'"{variable_name}"',
-            value=expr_var,
-        )
-
-        # First element is ignored and needed to unify the processing of expressions and definitions
-        return "", wrap_codes(definition_code, expr_code)
-
     def visitProcedureBodyDefinition(
         self, ctx: LispParser.ProcedureBodyDefinitionContext
     ) -> Code:
@@ -238,23 +213,47 @@ class ASTVisitor(LispVisitor):
     def visitEnvironmentBody(
         self, ctx: LispParser.EnvironmentBodyContext
     ) -> BodyVisitResult:
-        # TODO: add internal definitions
+        body_codes = []
+
+        for d in ctx.environmentBodyDefinition():
+            _, d_code = self.visit(d)
+            body_codes.append(d_code)
 
         env = self.__environment_ctx.env
-
         expressions = ctx.expression()
-
         expr_vars = []
-        expr_codes = []
 
         for e in expressions:
             e_var, e_code = self.visit(e)
             transfer_secondary(e_code, env.code)
 
             expr_vars.append(e_var)
-            expr_codes.append(e_code)
+            body_codes.append(e_code)
 
-        return expr_vars[-1], join_codes(expr_codes)
+        return expr_vars[-1], join_codes(body_codes)
+
+    def visitEnvironmentBodyDefinition(self, ctx:LispParser.EnvironmentBodyDefinitionContext) -> ExpressionVisitResult:
+        env = self.__environment_ctx.env
+
+        variable_name = ctx.definition().variable().getText()
+        if self.__symbols.has_api_symbol(variable_name):
+            raise FunctionRedefineException(variable_name, ctx)
+
+        expression = ctx.definition().expression()
+        expr_var, expr_code = self.visit(expression)
+
+        expr_code.remove_first_secondary_line()
+        env.add_variable(variable_name)
+
+        definition_code = self.__code_creator.set_variable_value()
+        definition_code.update_data(
+            env=env.name,
+            name=f'"{variable_name}"',
+            value=expr_var,
+        )
+
+        # First element is ignored and needed to unify the processing of expressions and definitions
+        return "", wrap_codes(definition_code, expr_code)
 
     def visitVariable(self, ctx: LispParser.VariableContext) -> ExpressionVisitResult:
         variable_name = ctx.getText()
