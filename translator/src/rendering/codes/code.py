@@ -165,6 +165,9 @@ class Code(ABC):
         Removes secondary template and clears secondary prolog.
         """
 
+        self.__secondary_prolog = ""
+        self.__secondary_template = None
+
     def _update_main_data(self, **kwargs) -> None:
         for k, v in kwargs.items():
             if v is not None:

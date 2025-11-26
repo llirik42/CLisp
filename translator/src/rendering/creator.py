@@ -61,8 +61,7 @@ class CodeCreator:
         self.__load_templates(templates_folder_path)
 
     def empty(self) -> EmptyCode:
-        c = EmptyCode(empty=True)
-        c.remove_newlines()
+        c = EmptyCode()
 
         return c
 

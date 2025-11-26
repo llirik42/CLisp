@@ -85,18 +85,16 @@ class ASTVisitor(LispVisitor):
 
         return program_code.render()
 
-    def visitDefinition(
-        self, ctx: LispParser.DefinitionContext
+    def visitProgramDefinition(
+        self, ctx: LispParser.ProgramDefinitionContext
     ) -> ExpressionVisitResult:
-        # TODO: change when adding internal definitions (in let and in body of lambda)
-
         env = self.__environment_ctx.env
 
-        variable_name = ctx.variable().getText()
+        variable_name = ctx.definition().variable().getText()
         if self.__symbols.has_api_symbol(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
 
-        expression = ctx.expression()
+        expression = ctx.definition().expression()
         expr_var, expr_code = self.visit(expression)
 
         expr_code.remove_first_secondary_line()
@@ -111,6 +109,18 @@ class ASTVisitor(LispVisitor):
 
         # First element is ignored and needed to unify the processing of expressions and definitions
         return "", wrap_codes(definition_code, expr_code)
+
+    def visitProcedureBodyDefinition(
+        self, ctx: LispParser.ProcedureBodyDefinitionContext
+    ) -> Code:
+        expression = ctx.definition().expression()
+        variable = ctx.definition().variable()
+
+        expr_var, expr_code = self.visit(expression)
+        expr_code.remove_newlines()
+        self.__lambda_ctx.add_param(variable.getText(), expr_var)
+
+        return expr_code
 
     def visitAssignment(
         self, ctx: LispParser.AssignmentContext
@@ -197,13 +207,17 @@ class ASTVisitor(LispVisitor):
     def visitProcedureBody(
         self, ctx: LispParser.ProcedureBodyContext
     ) -> BodyVisitResult:
-        # TODO: add internal definitions
+        body_codes = []
+        definitions_secondary = []
+
+        for d in ctx.procedureBodyDefinition():
+            d_code: Code = self.visit(d)
+            definitions_secondary.append(d_code.render_secondary())
+            d_code.clear_secondary()
+            body_codes.append(d_code)
 
         expressions = ctx.expression()
-
-        expr_vars = []
-        expr_codes = []
-
+        last_expr_var = ""
         for i, e in enumerate(expressions):
             e_var, e_code = self.visit(e)
 
@@ -212,10 +226,14 @@ class ASTVisitor(LispVisitor):
                 e_code.remove_first_secondary_line()  # Remove destroying result of the procedure
 
             e_code.transfer_newline()
-            expr_vars.append(e_var)
-            expr_codes.append(e_code)
+            last_expr_var = e_var
+            body_codes.append(e_code)
 
-        return expr_vars[-1], join_codes(expr_codes)
+        definitions_secondary_text = (
+            "\n".join(definitions_secondary) + "\n" if definitions_secondary else ""
+        )
+
+        return last_expr_var, join_codes(body_codes) + definitions_secondary_text
 
     def visitEnvironmentBody(
         self, ctx: LispParser.EnvironmentBodyContext
@@ -332,7 +350,7 @@ class ASTVisitor(LispVisitor):
         return expr_var, wrapped_expr_code
 
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
-        env_var = "env" # variable that stores environment in the lambda function (from the template)
+        env_var = "env"  # variable that stores environment in the lambda function (from the template)
         env = self.__environment_ctx.env
 
         formals = ctx.formals()
@@ -349,9 +367,12 @@ class ASTVisitor(LispVisitor):
         function_name = self.__variable_manager.create_function_name()
 
         if formals_text_before:
-            body = formals_text_before + "\n\n"
+            body = formals_text_before + "\n"
         else:
             body = ""
+
+        print(body_code_text)
+        print("!")
 
         if body_code_text == "":
             body += formals_text_after

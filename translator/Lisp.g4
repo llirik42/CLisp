@@ -4,9 +4,9 @@ program : programElement* EOF ;
 
 programElement
     : expression
-    | definition ;
+    | programDefinition ;
 
-definition : LBRACKET DEFINE variable expression RBRACKET ;
+programDefinition : definition ;
 
 expression
     : literal
@@ -46,7 +46,8 @@ formals
 fixedFormals : LBRACKET variable* RBRACKET ;
 listFormals : variable ;
 variadicFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
-procedureBody : definition* expression+ ;
+procedureBody : procedureBodyDefinition* expression+ ;
+procedureBodyDefinition : definition ;
 
 assignment : LBRACKET SET variable expression RBRACKET ;
 
@@ -55,7 +56,8 @@ letAsterisk : LBRACKET LET_ASTERISK bindingList environmentBody RBRACKET ;
 letRec : LBRACKET LET_REC bindingList environmentBody RBRACKET ;
 bindingList : LBRACKET binding* RBRACKET ;
 binding : LBRACKET variable expression RBRACKET ;
-environmentBody : definition* expression+ ;
+environmentBody : environmentBodyDefinition* expression+ ;
+environmentBodyDefinition : definition ;
 
 constant
     : boolConstant
@@ -69,6 +71,8 @@ characterConstant : CHARACTER ;
 stringConstant : STRING ;
 integerConstant : INTEGER ;
 floatConstant : FLOAT ;
+
+definition : LBRACKET DEFINE variable expression RBRACKET ;
 
 TRUE: '#t' ;
 FALSE: '#f' ;
