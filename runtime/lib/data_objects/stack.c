@@ -24,7 +24,7 @@ void* stack_pop(Stack *stack) {
     }
 
     void* data = da_get(stack->data, --stack->top);
-    da_prepend(stack->data);
+    da_pop(stack->data);
     return data;
 }
 

@@ -11,7 +11,7 @@ DynamicArray* da_create(unsigned short capacity);
 
 void da_append(DynamicArray *da, void *element);
 
-void da_prepend(DynamicArray *da);
+void da_pop(DynamicArray *da);
 
 void* da_get(DynamicArray *da, size_t index);
 

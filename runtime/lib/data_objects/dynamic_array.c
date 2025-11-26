@@ -30,7 +30,7 @@ void da_append(DynamicArray *da, void *element) {
     da->data[da->size++] = element;
 }
 
-void da_prepend(DynamicArray *da) {
+void da_pop(DynamicArray *da) {
     if (da->size <= 0) {
         clisp_exit("Dynamic Array underflow\n");
         __builtin_unreachable();
