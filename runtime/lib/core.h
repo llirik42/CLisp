@@ -1,5 +1,8 @@
 #pragma once
 
+#define TRUE 1
+#define FALSE 0
+
 enum ObjectType {
     INTEGER,
     DOUBLE,
@@ -7,6 +10,8 @@ enum ObjectType {
     EVALUABLE,
     STRING,
     CHAR,
+    LIST,
+    LAMBDA,
     UNSPECIFIED,
 };
 
@@ -19,6 +24,8 @@ typedef struct {
 
 #define CLISP_FUNC_PARAMS unsigned int count, Object** args
 #define CLISP_FUNC_PARAMS_WITHOUT_TYPES count, args
+
+typedef Object*(*clisp_func)(CLISP_FUNC_PARAMS);
 
 enum ObjectType get_object_type(Object* obj);
 

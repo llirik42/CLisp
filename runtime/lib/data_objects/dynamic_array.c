@@ -1,6 +1,7 @@
 #include "dynamic_array.h"
 
 #include <math.h>
+#include <stdio.h>
 
 #include "memory.h"
 #include "utils.h"
@@ -8,15 +9,19 @@
 #define BASIC_DA_CAPACITY 10
 #define CAPACITY_MULTIPLIER 1.5
 
-DynamicArray* da_create() {
+DynamicArray* da_create(unsigned short capacity) {
     DynamicArray *da = allocate_memory(sizeof(DynamicArray));
-    da->capacity = BASIC_DA_CAPACITY;
+    if (!capacity) {
+        da->capacity = BASIC_DA_CAPACITY;
+    } else {
+        da->capacity = capacity;
+    }
     da->size = 0;
     da->data = allocate_memory(sizeof(void*) * da->capacity);
     return da;
 }
 
-void da_push_back(DynamicArray *da, void *element) {
+void da_append(DynamicArray *da, void *element) {
     if (da->size >= da->capacity) {
         da->capacity = (int)ceil((double)da->capacity * CAPACITY_MULTIPLIER);
         da->data = reallocate_memory(da->data, sizeof(void*) * da->capacity);
@@ -25,9 +30,18 @@ void da_push_back(DynamicArray *da, void *element) {
     da->data[da->size++] = element;
 }
 
+void da_pop(DynamicArray *da) {
+    if (da->size <= 0) {
+        clisp_exit("Dynamic Array underflow\n");
+        __builtin_unreachable();
+    }
+
+    da->size--;
+}
+
 void* da_get(DynamicArray *da, size_t index) {
     if (index >= da->size) {
-        print_error_and_exit("Index out of dynamic array size", 0);
+        clisp_exit("Index out of dynamic array size");
     }
 
     return da->data[index];

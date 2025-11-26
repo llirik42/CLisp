@@ -7,9 +7,11 @@ typedef struct {
     size_t capacity;
 } DynamicArray;
 
-DynamicArray* da_create();
+DynamicArray* da_create(unsigned short capacity);
 
-void da_push_back(DynamicArray *da, void *element);
+void da_append(DynamicArray *da, void *element);
+
+void da_pop(DynamicArray *da);
 
 void* da_get(DynamicArray *da, size_t index);
 

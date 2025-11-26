@@ -1,8 +1,10 @@
 #include "core.h"
-
-#include "primitive.h"
-#include "evaluable.h"
 #include "memory.h"
+
+#include "objects/primitive.h"
+#include "objects/evaluable.h"
+#include "objects/lambda.h"
+#include "objects/list.h"
 
 Object* clisp_make_unspecified() {
     Object* obj = allocate_memory(sizeof(Object));
@@ -48,8 +50,14 @@ void clisp_destroy_object(Object* obj) {
         case CHAR:
             destroy_char(obj);
             break;
+        case LIST:
+            destroy_list(obj);
+            break;
         case EVALUABLE:
             destroy_evaluable(obj);
+            break;
+        case LAMBDA:
+            destroy_lambda(obj);
             break;
         case UNSPECIFIED:
             destroy_unspecified(obj);
@@ -71,6 +79,10 @@ char* get_object_type_name(enum ObjectType type) {
             return "STRING";
         case CHAR:
             return "CHAR";
+        case LIST:
+            return "LIST";
+        case LAMBDA:
+            return "LAMBDA";
         case UNSPECIFIED:
             return "UNSPECIFIED";
     }

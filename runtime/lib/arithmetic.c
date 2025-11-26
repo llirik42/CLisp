@@ -2,9 +2,9 @@
 
 #include <stddef.h>
 
-#include "primitive.h"
+#include "objects/primitive.h"
 #include "utils.h"
-#include "primitive_types.h"
+#include "objects/primitive_types.h"
 
 static void set_int_value(Object* obj, int new_value) {
     IntObject* int_object = (IntObject*)obj;
@@ -122,7 +122,7 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
         CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
 
         if (unwrap_numeric_to_double(operand) == 0) {
-            print_error_and_exit("Dividing by zero!\n", 0);
+            clisp_exit("Dividing by zero!\n");
         }
 
         enum ObjectType type = get_object_type(operand);
@@ -159,7 +159,7 @@ Object* clisp_div(CLISP_FUNC_PARAMS) {
     CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand2));
 
     if (unwrap_numeric_to_double(operand2) == 0) {
-        print_error_and_exit("Dividing by zero!\n", 0);
+        clisp_exit("Dividing by zero!\n");
     }
 
     Object* result = NULL;

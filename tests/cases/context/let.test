@@ -1,0 +1,14 @@
+******************[TESTING CODE]******************
+(display (let ((x 40)) x))
+(display (let ((x 40)) (+ 10 x)))
+(display (let ((x 40) (y 60)) (+ x y)))
+(display (let ((x 40) (y 60)) (display (+ x y)) x ))
+(display (let ((x 10)) (let ((x 100)) (display x)) x ))
+******************[EXPECTED OUT]******************
+40
+50
+100
+100
+40
+100
+10

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "primitive.h"
+#include "objects/primitive.h"
 #include "utils.h"
 
 typedef unsigned int (*comparison_fn)(double, double);
@@ -91,7 +91,7 @@ Object *clisp_equal(CLISP_FUNC_PARAMS) {
             }
             break;
         default:
-            print_error_and_exit("Unexpected terminal type in clisp_equal\n", 0);
+            clisp_exit("Unexpected terminal type in clisp_equal\n");
     }
 
     destroy_if_unwrapped(args[0], left_term);

@@ -3,7 +3,7 @@
 #include "data_objects/dynamic_array.h"
 
 typedef struct {
-    char* key;
+    const char* key;
     Object* val;
 } Variable;
 
@@ -14,7 +14,9 @@ typedef struct Environment {
     size_t capacity;
 } Environment;
 
-Environment* clisp_make_environment(Environment* parent, size_t capacity);
+Environment* clisp_make_environment(Environment* parent);
+
+Environment* clisp_make_environment_capacity(Environment* parent, size_t capacity);
 
 void clisp_destroy_environment(Environment* env);
 
@@ -23,3 +25,7 @@ void clisp_set_variable_value(Environment* env, char* name, Object* value);
 Object* clisp_update_variable_value(Environment* env, char* name, Object* value);
 
 Object* clisp_get_variable_value(Environment* env, char* name);
+
+Environment* clisp_make_global_environment();
+
+void clisp_destroy_global_environment(Environment* env);

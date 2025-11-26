@@ -46,7 +46,7 @@ void destroy_double(Object* obj) {
 
 Object* clisp_make_boolean(unsigned char value) {
     if (value != 0 && value != 1) {
-        print_error_and_exit("Boolean value must be 0 or 1!\n", 0);
+        clisp_exit("Boolean value must be 0 or 1!\n");
     }
 
     BooleanObject* boolean_object = allocate_memory(sizeof(BooleanObject));
