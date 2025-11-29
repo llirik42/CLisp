@@ -1,6 +1,6 @@
 from typing import Union
 
-from .code import Code
+from src.rendering.codes.code import Code
 
 
 def wrap_codes(code: Code, wrapping: Union[Code, list[Code]]) -> Code:
@@ -168,7 +168,8 @@ def join_codes(codes: list[Code]) -> str:
     :param codes: codes to join.
     """
 
-    rendered = [c.render() for c in codes]
+    rendered = list(filter(lambda r: not r.isspace(), [c.render() for c in codes]))
+
     return "\n".join(rendered)
 
 

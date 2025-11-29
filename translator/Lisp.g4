@@ -4,11 +4,7 @@ program : programElement* EOF ;
 
 programElement
     : expression
-    | definition ;
-
-body : expression+ ;
-
-definition : LBRACKET DEFINE variable expression RBRACKET ;
+    | environmentBodyDefinition ;
 
 expression
     : literal
@@ -39,24 +35,27 @@ procedureCall : LBRACKET operator operand* RBRACKET ;
 operator : expression ;
 operand : expression ;
 
-procedure : LBRACKET LAMBDA formals body RBRACKET ;
+procedure : LBRACKET LAMBDA formals procedureBody RBRACKET ;
 formals
     : fixedFormals
     | variadicFormals
-    | periodFormals
+    | listFormals
     ;
-
 fixedFormals : LBRACKET variable* RBRACKET ;
-variadicFormals : variable ;
-periodFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
+listFormals : variable ;
+variadicFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
+procedureBody : procedureBodyDefinition* expression+ ;
+procedureBodyDefinition : definition ;
 
 assignment : LBRACKET SET variable expression RBRACKET ;
 
-let : LBRACKET LET bindingList body RBRACKET ;
-letAsterisk : LBRACKET LET_ASTERISK bindingList body RBRACKET ;
-letRec : LBRACKET LET_REC bindingList body RBRACKET ;
+let : LBRACKET LET bindingList environmentBody RBRACKET ;
+letAsterisk : LBRACKET LET_ASTERISK bindingList environmentBody RBRACKET ;
+letRec : LBRACKET LET_REC bindingList environmentBody RBRACKET ;
 bindingList : LBRACKET binding* RBRACKET ;
 binding : LBRACKET variable expression RBRACKET ;
+environmentBody : environmentBodyDefinition* expression+ ;
+environmentBodyDefinition : definition ;
 
 constant
     : boolConstant
@@ -70,6 +69,8 @@ characterConstant : CHARACTER ;
 stringConstant : STRING ;
 integerConstant : INTEGER ;
 floatConstant : FLOAT ;
+
+definition : LBRACKET DEFINE variable expression RBRACKET ;
 
 TRUE: '#t' ;
 FALSE: '#f' ;

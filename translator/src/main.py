@@ -2,11 +2,8 @@ import argparse
 
 from src.ast_reading import read_ast_file, read_ast_stdin
 from src.ast_visiting import ASTVisitor
-from src.code_rendering import CodeCreator
-from src.environment import EnvironmentContext
-from src.evaluable_context import EvaluableContext
-from src.function_table import FunctionTable
-from src.variable_manager import VariableManager
+from src.rendering import CodeCreator
+from src.symbols import Symbols
 
 
 def write_generated_code(output_file: str, code: str) -> None:
@@ -32,20 +29,18 @@ def main():
         "-f", "--input_file", action="store", help="Read Lisp-Code from the file"
     )
     parser.add_argument("-o", "--output-file", default="output.c")
-    parser.add_argument("-p", "--procedure-table", default="function_table.json")
+    parser.add_argument("-p", "--procedure-table", default="symbols.json")
     parser.add_argument("-t", "--templates", default="code_templates")
     args = parser.parse_args()
 
     ast = read_ast_stdin() if args.input_stdin else read_ast_file(args.input_file)
 
-    code_creator = CodeCreator(args.templates)
-    function_table = FunctionTable(args.procedure_table)
+    standard_elements = Symbols(args.procedure_table)
+    code_creator = CodeCreator(standard_elements, args.templates)
+
     visitor = ASTVisitor(
-        function_table=function_table,
+        symbols=standard_elements,
         code_creator=code_creator,
-        variable_manager=VariableManager(),
-        evaluable_context=EvaluableContext(),
-        environment_context=EnvironmentContext(),
     )
 
     output_code = visitor.visit(ast)

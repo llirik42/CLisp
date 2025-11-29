@@ -1,0 +1,48 @@
+{
+  "api": {
+    "functions": {
+      "display": "clisp_display",
+      "+": "clisp_add",
+      "-": "clisp_sub",
+      "*": "clisp_mul",
+      "/": "clisp_div",
+      ">": "clisp_greater",
+      ">=": "clisp_greater_or_equal",
+      "<": "clisp_less",
+      "<=": "clisp_less_or_equal",
+      "==": "clisp_equal",
+      "not": "clisp_not"
+    },
+    "macros": {
+      "if": "clisp_if",
+      "and": "clisp_and",
+      "or": "clisp_or"
+    }
+  },
+  "internal": {
+    "functions": {
+      "integer" : "clisp_make_int",
+      "boolean" : "clisp_make_boolean",
+      "character" : "clisp_make_char",
+      "string" : "clisp_make_string",
+      "float" : "clisp_make_double",
+      "list": "clisp_make_list_from_array",
+      "unspecified": "clisp_make_unspecified",
+      "evaluable": "clisp_make_evaluable",
+      "lambda": "clisp_make_lambda",
+      "~object": "clisp_destroy_object",
+      "environment": "clisp_make_environment",
+      "environment_global": "clisp_make_global_environment",
+      "~environment": "clisp_destroy_environment",
+      "set_variable_value": "clisp_set_variable_value",
+      "update_variable_value": "clisp_update_variable_value",
+      "get_variable_value": "clisp_get_variable_value",
+      "lambda_call": "clisp_lambda_call"
+    },
+    "types": {
+      "object": "Object*",
+      "environment": "Environment*",
+      "lambda_function_params": ["Environment* env", "unsigned int count", "Object** args"]
+    }
+  }
+}

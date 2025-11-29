@@ -1,1 +1,1 @@
-clisp_destroy_object({{ var }});
+{{ func }}({{ var }});

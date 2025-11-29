@@ -18,9 +18,9 @@ class VisitingException(Exception):
         return self.__ctx
 
 
-class UnexpectedVariableException(VisitingException):
-    def __init__(self, variable_name: str, ctx: ParserRuleContext):
-        super().__init__(f'Unexpected variable "{variable_name}"', ctx)
+class UnexpectedIdentifierException(VisitingException):
+    def __init__(self, identifier: str, ctx: ParserRuleContext):
+        super().__init__(f'Unexpected identifier "{identifier}"', ctx)
 
 
 class FunctionRedefineException(VisitingException):
@@ -39,4 +39,18 @@ class DuplicatedBindingException(VisitingException):
     def __init__(self, variable_name: str, ctx: ParserRuleContext):
         super().__init__(
             f'Variable "{variable_name}" appeared more than once in the bindings', ctx
+        )
+
+
+class DuplicatedParamException(VisitingException):
+    def __init__(self, param_name: str, ctx: ParserRuleContext):
+        super().__init__(
+            f'Param "{param_name}" appeared more than once in the lambda', ctx
+        )
+
+
+class ParamNameConflictException(VisitingException):
+    def __init__(self, param_name: str, ctx: ParserRuleContext):
+        super().__init__(
+            f'Param "{param_name}" conflicts with the standard library function', ctx
         )
