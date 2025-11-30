@@ -14,13 +14,13 @@
   },
   "internal": {
     "functions": {
+      "unspecified": "clisp_make_unspecified",
       "integer" : "clisp_make_int",
       "boolean" : "clisp_make_boolean",
       "character" : "clisp_make_char",
       "string" : "clisp_make_string",
       "float" : "clisp_make_double",
       "list": "clisp_make_list_from_array",
-      "unspecified": "clisp_make_unspecified",
       "lambda": "clisp_make_lambda",
       "~object": "clisp_destroy_object",
       "environment": "clisp_make_environment",

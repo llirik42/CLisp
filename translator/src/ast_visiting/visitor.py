@@ -354,8 +354,14 @@ class ASTVisitor(LispVisitor):
         if alternate is not None:
             alternate_var, alternate_code = self.visit(alternate)
             alternate_code.remove_first_secondary_line()
-            condition_code.set_alternate_body(alternate_code.render())
-            condition_code.update_data(alternate_var=alternate_var)
+        else:
+            alternate_var = self.__variable_manager.create_object_name()
+            alternate_code = self.__code_creator.make_unspecified()
+            alternate_code.update_data(var=alternate_var)
+            alternate_code.clear_secondary()
+
+        condition_code.set_alternate_body(alternate_code.render())
+        condition_code.update_data(alternate_var=alternate_var)
 
         return condition_var, condition_code
 

@@ -18,7 +18,7 @@ from .codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
-    ConditionCode,
+    ConditionCode, MakeUnspecifiedCode,
 )
 from src.symbols import Symbols
 
@@ -36,6 +36,7 @@ class CodeCreator:
         self.__OBJECT_TYPE = symbols.find_internal_type("object")
         self.__ENVIRONMENT_TYPE = symbols.find_internal_type("environment")
         self.__DESTROY_OBJECT = symbols.find_internal_function("~object")
+        self.__CREATE_UNSPECIFIED = symbols.find_internal_function("unspecified")
         self.__CREATE_INTEGER = symbols.find_internal_function("integer")
         self.__CREATE_FLOAT = symbols.find_internal_function("float")
         self.__CREATE_STRING = symbols.find_internal_function("string")
@@ -62,6 +63,19 @@ class CodeCreator:
 
     def empty(self) -> EmptyCode:
         return EmptyCode()
+
+    def make_unspecified(self) -> MakeUnspecifiedCode:
+        return MakeUnspecifiedCode(
+            main_template=self.__get_template("make_primitive"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_UNSPECIFIED,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
+        )
 
     def make_int(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_INTEGER)
