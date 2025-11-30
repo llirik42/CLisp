@@ -11,3 +11,5 @@ BUILD_PATH = pathlib.Path(__file__).parent / "build"
 CASES_PATH = pathlib.Path(__file__).parent / "cases"
 
 COMPILE_SCRIPT_PATH = pathlib.Path(__file__).parent / "compile.sh"
+
+INSTALL_SCRIPT = pathlib.Path(__file__).parent / "install.sh"

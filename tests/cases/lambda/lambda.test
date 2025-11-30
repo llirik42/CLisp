@@ -1,0 +1,9 @@
+******************[TESTING CODE]******************
+(define dec (lambda (x) (- x 1)))
+(display (dec 20))
+
+(define lambda-with-let (lambda () (let ((x 30)) (set! x 60) (+ x 50))))
+(display (lambda-with-let))
+******************[EXPECTED OUT]******************
+19
+110

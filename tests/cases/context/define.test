@@ -10,9 +10,16 @@
 (define x 100)
 
 (display x)
+
+;; Defining a local variable in a let redefine a local variable.
+(display (let ((x 30)) (define x 10) (+ x x)))
+
+(display x)
 ******************[EXPECTED OUT]******************
 20
 30
 60
 60
+100
+20
 100
