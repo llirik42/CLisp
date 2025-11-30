@@ -41,7 +41,7 @@ CL_Object* cl_add(CL_FUNC_PARAMS) {
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = cl_get_int_value(result);
-            cl_destroy_object(result);
+            cl_destroy_obj(result);
             result = cl_make_double(prev_value);
             result_type = cl_get_obj_type(result);
         }
@@ -86,14 +86,14 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
         enum CL_ObjectType result_type = cl_get_obj_type(result);
 
         if (cl_unwrap_numeric_to_double(operand) == 0) {
-            cl_destroy_object(result);
+            cl_destroy_obj(result);
             cl_destroy_if_unwrapped(args[i], operand);
             return cl_make_int(0);
         }
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = cl_get_int_value(result);
-            cl_destroy_object(result);
+            cl_destroy_obj(result);
             result = cl_make_double(prev_value);
             result_type = cl_get_obj_type(result);
         }

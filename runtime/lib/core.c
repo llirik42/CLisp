@@ -25,7 +25,7 @@ static void destroy_unspecified(CL_Object* obj) {
     free_memory(obj);
 }
 
-void cl_destroy_object(CL_Object* obj) {
+void cl_destroy_obj(CL_Object* obj) {
     if (!obj || !obj->ref_count) {
         return;
     }

@@ -30,7 +30,7 @@ static const NamedFunc reserved[] = {
     {">=", cl_greater_or_equal},
     {"<", cl_less},
     {"<=", cl_less_or_equal},
-    {"==", cl_equal},
+    {"=", cl_equal},
     {"not", cl_not},
 };
 
@@ -55,7 +55,7 @@ CL_Environment* cl_make_env_capacity(CL_Environment* parent, size_t capacity) {
 
 void cl_destroy_env(CL_Environment* env) {
     for (size_t i = 0; i < env->variables_count; i++) {
-        cl_destroy_object(env->variables[i].val);
+        cl_destroy_obj(env->variables[i].val);
     }
     free_memory(env->variables);
     free_memory(env);
@@ -82,7 +82,7 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
 
     for (size_t i = 0; i < env->variables_count; i++) {
         if (!strcmp(name, env->variables[i].key)) {
-            cl_destroy_object(env->variables[i].val);
+            cl_destroy_obj(env->variables[i].val);
             env->variables[i].val = value;
             return;
         }
@@ -108,7 +108,7 @@ CL_Object* cl_update_variable_value(CL_Environment* env, char* name, CL_Object* 
     while (curr_env) {
         for (size_t i = 0; i < curr_env->variables_count; i++) {
             if (!strcmp(name, curr_env->variables[i].key)) {
-                cl_destroy_object(curr_env->variables[i].val);
+                cl_destroy_obj(curr_env->variables[i].val);
                 curr_env->variables[i].val = value;
                 return cl_make_unspecified();
             }
