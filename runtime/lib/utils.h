@@ -1,33 +1,33 @@
 #pragma once
 #include "core.h"
 
-#define ERROR_BUF_SIZE 256
+#define CL_ERROR_BUF_SIZE 256
 
-enum CountCheckingMode {
+enum CL_CountCheckingMode {
     EQUAL,
     GREATER,
 };
 
-void clisp_exit(char* message);
+void cl_abort(char* message);
 
-void clisp_exit_errno(char* message);
+void cl_abort_errno(char* message);
 
-void check_func_arguments_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CountCheckingMode mode);
+void cl_check_func_args_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CL_CountCheckingMode mode);
 
-void check_func_argument_type(const char* func_name, enum ObjectType type, enum ObjectType expected_type);
+void cl_check_func_arg_type(const char* func_name, enum CL_ObjectType type, enum CL_ObjectType expected_type);
 
-void check_func_argument_numeric_type(const char* func_name, enum ObjectType type);
+void cl_check_func_arg_numeric_type(const char* func_name, enum CL_ObjectType type);
 
-double unwrap_numeric_to_double(Object* numeric);
+double cl_unwrap_numeric_to_double(CL_Object* numeric);
 
-unsigned char obj_to_boolean(Object* obj);
+unsigned char cl_obj_to_boolean(CL_Object* obj);
 
-Object* unwrap_object(Object* obj);
+CL_Object* cl_unwrap_obj(CL_Object* obj);
 
-void destroy_if_unwrapped(Object* origin, Object* unwrapped);
+void cl_destroy_if_unwrapped(CL_Object* origin, CL_Object* unwrapped);
 
-#define CHECK_FUNC_ARGUMENTS_COUNT(args_count, expected_count, mode) check_func_arguments_count(__func__, args_count, expected_count, mode)
+#define CL_CHECK_FUNC_ARGS_COUNT(args_count, expected_count, mode) cl_check_func_args_count(__func__, args_count, expected_count, mode)
 
-#define CHECK_FUNC_ARGUMENT_TYPE(type, expected_type) check_func_argument_type(__func__, type, expected_type)
+#define CL_CHECK_FUNC_ARG_TYPE(type, expected_type) cl_check_func_arg_type(__func__, type, expected_type)
 
-#define CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(type) check_func_argument_numeric_type(__func__, type)
+#define CL_CHECK_FUNC_ARG_NUMERIC_TYPE(type) cl_check_func_arg_numeric_type(__func__, type)

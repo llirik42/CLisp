@@ -2,38 +2,38 @@
 
 #include "lib/core.h"
 
-Object* clisp_make_int(int value);
+CL_Object* cl_make_int(int value);
 
-int get_int_value(Object* obj);
+int cl_get_int_value(CL_Object* obj);
 
-void destroy_int(Object* obj);
+void cl_destroy_int(CL_Object* obj);
 
-Object* clisp_make_double(double value);
+CL_Object* cl_make_double(double value);
 
-double get_double_value(Object* obj);
+double cl_get_double_value(CL_Object* obj);
 
-void destroy_double(Object* obj);
+void cl_destroy_double(CL_Object* obj);
 
-Object* clisp_make_boolean(unsigned char value);
+CL_Object* cl_make_boolean(unsigned char value);
 
-Object* make_true();
+CL_Object* cl_make_true();
 
-Object* make_false();
+CL_Object* cl_make_false();
 
-unsigned char get_boolean_value(Object* obj);
+unsigned char cl_get_boolean_value(CL_Object* obj);
 
-void destroy_boolean(Object* obj);
+void cl_destroy_boolean(CL_Object* obj);
 
-Object* clisp_make_string(char* value);
+CL_Object* cl_make_string(char* value);
 
-char* get_string_value(Object* obj);
+char* cl_get_string_value(CL_Object* obj);
 
-unsigned int get_string_length(Object* obj);
+unsigned int cl_get_string_length(CL_Object* obj);
 
-void destroy_string(Object* obj);
+void cl_destroy_string(CL_Object* obj);
 
-Object* clisp_make_char(char value);
+CL_Object* cl_make_char(char value);
 
-char get_char_value(Object* obj);
+char cl_get_char_value(CL_Object* obj);
 
-void destroy_char(Object* obj);
+void cl_destroy_char(CL_Object* obj);

@@ -4,28 +4,28 @@
 
 typedef struct {
     const char* key;
-    Object* val;
-} Variable;
+    CL_Object* val;
+} CL_Variable;
 
 typedef struct Environment {
     struct Environment* parent;
-    Variable* variables;
+    CL_Variable* variables;
     size_t variables_count;
     size_t capacity;
-} Environment;
+} CL_Environment;
 
-Environment* clisp_make_environment(Environment* parent);
+CL_Environment* cl_make_env(CL_Environment* parent);
 
-Environment* clisp_make_environment_capacity(Environment* parent, size_t capacity);
+CL_Environment* cl_make_env_capacity(CL_Environment* parent, size_t capacity);
 
-void clisp_destroy_environment(Environment* env);
+void cl_destroy_env(CL_Environment* env);
 
-void clisp_set_variable_value(Environment* env, char* name, Object* value);
+void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value);
 
-Object* clisp_update_variable_value(Environment* env, char* name, Object* value);
+CL_Object* cl_update_variable_value(CL_Environment* env, char* name, CL_Object* value);
 
-Object* clisp_get_variable_value(Environment* env, char* name);
+CL_Object* cl_get_variable_value(CL_Environment* env, char* name);
 
-Environment* clisp_make_global_environment();
+CL_Environment* cl_make_global_env();
 
-void clisp_destroy_global_environment(Environment* env);
+void cl_destroy_global_env(CL_Environment* env);

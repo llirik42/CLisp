@@ -4,16 +4,16 @@
 #include "dynamic_array.h"
 
 typedef struct {
-    DynamicArray* data;
+    CL_DynamicArray* data;
     size_t top;
-} Stack;
+} CL_Stack;
 
-Stack* stack_create();
+CL_Stack* cl_stack_create();
 
-void stack_push(Stack *stack, void *data);
+void cl_stack_push(CL_Stack *stack, void *data);
 
-void* stack_pop(Stack *stack);
+void* cl_stack_pop(CL_Stack *stack);
 
-void* stack_peek(Stack *stack);
+void* cl_stack_peek(CL_Stack *stack);
 
-void stack_destroy(Stack *stack);
+void cl_stack_destroy(CL_Stack *stack);

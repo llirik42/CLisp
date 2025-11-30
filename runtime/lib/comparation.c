@@ -12,90 +12,90 @@ static unsigned int greater_or_equal_than(double a, double b) { return a >= b; }
 static unsigned int less_than(double a, double b) { return a < b; }
 static unsigned int less_or_equal_than(double a, double b) { return a <= b; }
 
-static Object* numeric_comparison(CLISP_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
-    check_func_arguments_count(func_name, count, 2, EQUAL);
+static CL_Object* numeric_comparison(CL_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
+    cl_check_func_args_count(func_name, count, 2, EQUAL);
 
-    Object* left_term = unwrap_object(args[0]);
-    Object* right_term = unwrap_object(args[1]);
+    CL_Object* left_term = cl_unwrap_obj(args[0]);
+    CL_Object* right_term = cl_unwrap_obj(args[1]);
 
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(left_term));
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(right_term));
+    CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(left_term));
+    CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(right_term));
 
     unsigned char result = 0;
 
-    if (compare(unwrap_numeric_to_double(left_term), unwrap_numeric_to_double(right_term))) {
+    if (compare(cl_unwrap_numeric_to_double(left_term), cl_unwrap_numeric_to_double(right_term))) {
         result = 1;
     }
-    destroy_if_unwrapped(args[0], left_term);
-    destroy_if_unwrapped(args[1], right_term);
+    cl_destroy_if_unwrapped(args[0], left_term);
+    cl_destroy_if_unwrapped(args[1], right_term);
 
-    return clisp_make_boolean(result);
+    return cl_make_boolean(result);
 }
 
-Object* clisp_greater(CLISP_FUNC_PARAMS) {
-    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, greater_than);
+CL_Object* cl_greater(CL_FUNC_PARAMS) {
+    return numeric_comparison(CL_FUNC_PARAMS_WITHOUT_TYPES, __func__, greater_than);
 }
 
-Object* clisp_greater_or_equal(CLISP_FUNC_PARAMS) {
-    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, greater_or_equal_than);
+CL_Object* cl_greater_or_equal(CL_FUNC_PARAMS) {
+    return numeric_comparison(CL_FUNC_PARAMS_WITHOUT_TYPES, __func__, greater_or_equal_than);
 }
 
-Object* clisp_less(CLISP_FUNC_PARAMS) {
-    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, less_than);
+CL_Object* cl_less(CL_FUNC_PARAMS) {
+    return numeric_comparison(CL_FUNC_PARAMS_WITHOUT_TYPES, __func__, less_than);
 }
 
-Object* clisp_less_or_equal(CLISP_FUNC_PARAMS) {
-    return numeric_comparison(CLISP_FUNC_PARAMS_WITHOUT_TYPES, __func__, less_or_equal_than);
+CL_Object* cl_less_or_equal(CL_FUNC_PARAMS) {
+    return numeric_comparison(CL_FUNC_PARAMS_WITHOUT_TYPES, __func__, less_or_equal_than);
 }
 
-Object *clisp_equal(CLISP_FUNC_PARAMS) {
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 2, EQUAL);
+CL_Object *cl_equal(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(count, 2, EQUAL);
 
-    Object* left_term = unwrap_object(args[0]);
-    Object* right_term = unwrap_object(args[1]);
+    CL_Object* left_term = cl_unwrap_obj(args[0]);
+    CL_Object* right_term = cl_unwrap_obj(args[1]);
 
-    if (is_numeric(get_object_type(left_term)) && is_numeric(get_object_type(right_term))) {
-        double left_double_value = unwrap_numeric_to_double(left_term);
-        double right_double_value = unwrap_numeric_to_double(right_term);
-        destroy_if_unwrapped(args[0], left_term);
-        destroy_if_unwrapped(args[1], right_term);
-        return clisp_make_boolean(left_double_value == right_double_value);
+    if (cl_is_numeric(cl_get_obj_type(left_term)) && cl_is_numeric(cl_get_obj_type(right_term))) {
+        double left_double_value = cl_unwrap_numeric_to_double(left_term);
+        double right_double_value = cl_unwrap_numeric_to_double(right_term);
+        cl_destroy_if_unwrapped(args[0], left_term);
+        cl_destroy_if_unwrapped(args[1], right_term);
+        return cl_make_boolean(left_double_value == right_double_value);
     }
 
-    if (get_object_type(left_term) != get_object_type(right_term)) {
-        destroy_if_unwrapped(args[0], left_term);
-        destroy_if_unwrapped(args[1], right_term);
-        return make_false();
+    if (cl_get_obj_type(left_term) != cl_get_obj_type(right_term)) {
+        cl_destroy_if_unwrapped(args[0], left_term);
+        cl_destroy_if_unwrapped(args[1], right_term);
+        return cl_make_false();
     }
 
     unsigned char result = 0;
 
-    switch (get_object_type(left_term)) {
+    switch (cl_get_obj_type(left_term)) {
         case INTEGER:
-            result = get_int_value(left_term) == get_int_value(right_term);
+            result = cl_get_int_value(left_term) == cl_get_int_value(right_term);
             break;
         case BOOLEAN:
-            result = get_boolean_value(left_term) == get_boolean_value(right_term);
+            result = cl_get_boolean_value(left_term) == cl_get_boolean_value(right_term);
             break;
         case DOUBLE:
-            result = get_double_value(left_term) == get_double_value(right_term);
+            result = cl_get_double_value(left_term) == cl_get_double_value(right_term);
             break;
         case CHAR:
-            result = get_char_value(left_term) == get_char_value(right_term);
+            result = cl_get_char_value(left_term) == cl_get_char_value(right_term);
             break;
         case STRING:
-            if (!strcmp(get_string_value(left_term), get_string_value(right_term))) {
+            if (!strcmp(cl_get_string_value(left_term), cl_get_string_value(right_term))) {
                 result = 1;
             } else {
                 result = 0;
             }
             break;
         default:
-            clisp_exit("Unexpected terminal type in clisp_equal\n");
+            cl_abort("Unexpected terminal type in clisp_equal\n");
     }
 
-    destroy_if_unwrapped(args[0], left_term);
-    destroy_if_unwrapped(args[1], right_term);
+    cl_destroy_if_unwrapped(args[0], left_term);
+    cl_destroy_if_unwrapped(args[1], right_term);
 
-    return clisp_make_boolean(result);
+    return cl_make_boolean(result);
 }

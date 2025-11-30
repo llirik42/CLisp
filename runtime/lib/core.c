@@ -6,26 +6,26 @@
 #include "objects/lambda.h"
 #include "objects/list.h"
 
-Object* clisp_make_unspecified() {
-    Object* obj = allocate_memory(sizeof(Object));
-    init_object(obj, UNSPECIFIED);
+CL_Object* cl_make_unspecified() {
+    CL_Object* obj = cl_allocate_memory(sizeof(CL_Object));
+    cl_init_obj(obj, UNSPECIFIED);
     return obj;
 }
 
-void init_object(Object* obj, enum ObjectType type) {
+void cl_init_obj(CL_Object* obj, enum CL_ObjectType type) {
     obj->type = type;
     obj->ref_count = 1;
 }
 
-void increase_refs_count(Object* obj) {
+void cl_increase_refs_count(CL_Object* obj) {
     obj->ref_count++;
 }
 
-static void destroy_unspecified(Object* obj) {
-    free_memory(obj);
+static void destroy_unspecified(CL_Object* obj) {
+    cl_free_memory(obj);
 }
 
-void clisp_destroy_object(Object* obj) {
+void cl_destroy_obj(CL_Object* obj) {
     if (!obj || !obj->ref_count) {
         return;
     }
@@ -34,30 +34,30 @@ void clisp_destroy_object(Object* obj) {
         return;
     }
 
-    switch (get_object_type(obj)) {
+    switch (cl_get_obj_type(obj)) {
         case INTEGER:
-            destroy_int(obj);
+            cl_destroy_int(obj);
             break;
         case DOUBLE:
-            destroy_double(obj);
+            cl_destroy_double(obj);
             break;
         case BOOLEAN:
-            destroy_boolean(obj);
+            cl_destroy_boolean(obj);
             break;
         case STRING:
-            destroy_string(obj);
+            cl_destroy_string(obj);
             break;
         case CHAR:
-            destroy_char(obj);
+            cl_destroy_char(obj);
             break;
         case LIST:
-            destroy_list(obj);
+            cl_destroy_list(obj);
             break;
         case EVALUABLE:
-            destroy_evaluable(obj);
+            cl_destroy_evaluable(obj);
             break;
         case LAMBDA:
-            destroy_lambda(obj);
+            cl_destroy_lambda(obj);
             break;
         case UNSPECIFIED:
             destroy_unspecified(obj);
@@ -65,7 +65,7 @@ void clisp_destroy_object(Object* obj) {
     }
 }
 
-char* get_object_type_name(enum ObjectType type) {
+char* get_obj_type_name(enum CL_ObjectType type) {
     switch(type) {
         case INTEGER:
             return "INTEGER";
@@ -89,10 +89,10 @@ char* get_object_type_name(enum ObjectType type) {
     return "UNKNOWN";
 }
 
-enum ObjectType get_object_type(Object* obj) {
+enum CL_ObjectType cl_get_obj_type(CL_Object* obj) {
     return obj->type;
 }
 
-unsigned char is_numeric(enum ObjectType type) {
+unsigned char cl_is_numeric(enum CL_ObjectType type) {
     return type == INTEGER || type == DOUBLE;
 }

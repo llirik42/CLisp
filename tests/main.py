@@ -57,7 +57,7 @@ if __name__ == '__main__':
             path = CASES_PATH / directory_path
             for file_path in path.rglob("*.test"):
                 try:
-                    tests_files_paths.remove(str(path))
+                    tests_files_paths.remove(str(file_path))
                 except ValueError:
                     pass
 
