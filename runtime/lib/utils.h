@@ -20,8 +20,6 @@ void cl_check_func_arg_numeric_type(const char* func_name, enum CL_ObjectType ty
 
 double cl_unwrap_numeric_to_double(CL_Object* numeric);
 
-unsigned char cl_obj_to_boolean(CL_Object* obj);
-
 CL_Object* cl_unwrap_obj(CL_Object* obj);
 
 void cl_destroy_if_unwrapped(CL_Object* origin, CL_Object* unwrapped);

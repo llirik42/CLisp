@@ -1,6 +1,5 @@
 #include "utils.h"
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -71,16 +70,6 @@ double cl_unwrap_numeric_to_double(CL_Object* numeric) {
             cl_abort("Failed to unwrap numeric value. Invalid type.\n");
             __builtin_unreachable();
     }
-}
-
-unsigned char cl_obj_to_boolean(CL_Object* obj) {
-    assert(cl_get_obj_type(obj) != EVALUABLE);
-
-    if (cl_get_obj_type(obj) == BOOLEAN) {
-        return cl_get_boolean_value(obj);
-    }
-
-    return 1;
 }
 
 // Unwrap non-constant type. If evaluable - returns evaluated. If lambda - returns evaluated lambda.

@@ -38,3 +38,5 @@ CL_Object* cl_make_unspecified();
 void cl_destroy_obj(CL_Object* obj);
 
 unsigned char cl_is_numeric(enum CL_ObjectType type);
+
+unsigned char cl_obj_to_boolean(CL_Object* obj);
