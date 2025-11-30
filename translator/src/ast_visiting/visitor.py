@@ -760,6 +760,9 @@ class ASTVisitor(LispVisitor):
         var = self.__variable_manager.create_object_name()
 
         test_var, test_code = op1_var, op1_code
+        consequent_code = self.__code_creator.increase_ref_count()
+        consequent_code.set_var(var=test_var)
+
         alternate_var, alternate_code = op2_var, op2_code
 
         alternate_code.remove_first_secondary_line()
@@ -767,7 +770,7 @@ class ASTVisitor(LispVisitor):
         code = self.__code_creator.and_()
         code.set_test_pre(test_code.render_main())
         code.set_test_after(test_code.render_secondary())
-        code.set_consequent_body("")
+        code.set_consequent_body(consequent_code.render())
         code.set_alternate_body(alternate_code.render())
 
         code.update_data(var=var, test_var=test_var, consequent_var=test_var, alternate_var=alternate_var)

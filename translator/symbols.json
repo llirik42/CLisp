@@ -31,7 +31,9 @@
       "set_variable_value": "cl_set_variable_value",
       "update_variable_value": "cl_update_variable_value",
       "get_variable_value": "cl_get_variable_value",
-      "lambda_call": "cl_lambda_call"
+      "lambda_call": "cl_lambda_call",
+      "to_boolean": "cl_obj_to_boolean",
+      "ref_count++": "cl_increase_refs_count"
     },
     "types": {
       "object": "CL_Object*",

@@ -21,7 +21,7 @@ from .codes import (
     ConditionCode,
     MakeUnspecifiedCode,
     MakeTrueCode,
-    MakeFalseCode,
+    MakeFalseCode, IncreaseRefCountCode,
 )
 from src.symbols import Symbols
 
@@ -49,7 +49,6 @@ class CodeCreator:
         self.__CREATE_LAMBDA = symbols.find_internal_function("lambda")
         self.__CREATE_LIST = symbols.find_internal_function("list")
         self.__OBJECT_TO_BOOLEAN = symbols.find_internal_function("to_boolean")
-        self.__GET_BOOLEAN_VALUE = symbols.find_internal_function("get_boolean_value")
         self.__CREATE_ENVIRONMENT = symbols.find_internal_function("environment")
         self.__DESTROY_ENVIRONMENT = symbols.find_internal_function("~environment")
         self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
@@ -61,6 +60,7 @@ class CodeCreator:
             "update_variable_value"
         )
         self.__CALL_LAMBDA = symbols.find_internal_function("lambda_call")
+        self.__INCREASE_REF_COUNT = symbols.find_internal_function("ref_count++")
         self.__FUNCTION_ARGS_VAR = "args"
         self.__FUNCTION_PARAMS = symbols.find_internal_type("lambda_function_params")
 
@@ -148,7 +148,7 @@ class CodeCreator:
         return ConditionCode(
             main_template=self.__get_template("condition"),
             secondary_template=self.__get_destroy_object_template(),
-            main_data={"type": self.__OBJECT_TYPE, "func": self.__GET_BOOLEAN_VALUE},
+            main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
             secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
@@ -156,8 +156,16 @@ class CodeCreator:
         return ConditionCode(
             main_template=self.__get_template("condition"),
             secondary_template=self.__get_destroy_object_template(),
-            main_data={"type": self.__OBJECT_TYPE, "func": self.__GET_BOOLEAN_VALUE},
+            main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
             secondary_data={"func": self.__DESTROY_OBJECT},
+        )
+
+    def increase_ref_count(self) -> IncreaseRefCountCode:
+        return IncreaseRefCountCode(
+            main_template=self.__get_template("increase_ref_count"),
+            main_data={
+                "func": self.__INCREASE_REF_COUNT
+            }
         )
 
     def make_environment(self) -> MakeEnvironmentCode:
