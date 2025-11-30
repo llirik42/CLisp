@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-void* allocate_memory(size_t size) {
+void* cl_allocate_memory(size_t size) {
     if (!size) {
         cl_abort("Memory allocation: no memory block size!\n");
     }
@@ -17,7 +17,7 @@ void* allocate_memory(size_t size) {
     return ptr;
 }
 
-void* reallocate_memory(void* ptr, size_t size) {
+void* cl_reallocate_memory(void* ptr, size_t size) {
     if (!size) {
         cl_abort("Memory reallocation: no memory block size!\n");
     }
@@ -31,7 +31,7 @@ void* reallocate_memory(void* ptr, size_t size) {
     return new_ptr;
 }
 
-void free_memory(void* ptr) {
+void cl_free_memory(void* ptr) {
     if (!ptr) {
         return;
     }

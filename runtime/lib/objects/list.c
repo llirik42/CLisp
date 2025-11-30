@@ -5,7 +5,7 @@
 #define UNDEFINED_SIZE 0
 
 static CL_Object* make_list(size_t size) {
-    CL_ListObject* list_object = allocate_memory(sizeof(CL_ListObject));
+    CL_ListObject* list_object = cl_allocate_memory(sizeof(CL_ListObject));
     cl_init_obj((CL_Object*)list_object, LIST);
 
     list_object->list = cl_da_create(size);
@@ -38,7 +38,7 @@ size_t cl_list_length(CL_Object* list) {
 }
 
 CL_Object* cl_make_list_from_array(unsigned int size, CL_Object** array) {
-    CL_ListObject* list_object = allocate_memory(sizeof(CL_ListObject));
+    CL_ListObject* list_object = cl_allocate_memory(sizeof(CL_ListObject));
     cl_init_obj((CL_Object*)list_object, LIST);
 
     list_object->list = cl_da_create(size);
@@ -53,5 +53,5 @@ CL_Object* cl_make_list_from_array(unsigned int size, CL_Object** array) {
 void cl_destroy_list(CL_Object* obj) {
     const CL_ListObject* list_object = (CL_ListObject*)obj;
     cl_da_destroy(list_object->list);
-    free_memory(obj);
+    cl_free_memory(obj);
 }

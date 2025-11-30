@@ -3,7 +3,7 @@
 #include "lib/memory.h"
 
 CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
-    CL_LambdaObject* lambda_object = allocate_memory(sizeof(CL_LambdaObject));
+    CL_LambdaObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaObject));
     cl_init_obj((CL_Object*)lambda_object, LAMBDA);
 
     lambda_object->func.cl_func_with_env = func;
@@ -13,7 +13,7 @@ CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
 }
 
 CL_Object* cl_make_lambda_without_env(cl_func func) {
-    CL_LambdaObject* lambda_object = allocate_memory(sizeof(CL_LambdaObject));
+    CL_LambdaObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaObject));
     cl_init_obj((CL_Object*)lambda_object, LAMBDA);
 
     lambda_object->func.cl_func = func;
@@ -22,7 +22,7 @@ CL_Object* cl_make_lambda_without_env(cl_func func) {
 }
 
 void cl_destroy_lambda(CL_Object* obj) {
-    free_memory(obj);
+    cl_free_memory(obj);
 }
 
 CL_Object* cl_lambda_call(CL_Object* obj, CL_FUNC_PARAMS) {

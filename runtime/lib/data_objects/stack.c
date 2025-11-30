@@ -6,7 +6,7 @@
 #define DEFAULT_STACK_SIZE 8
 
 CL_Stack* cl_stack_create() {
-    CL_Stack* stack = allocate_memory(sizeof(CL_Stack));
+    CL_Stack* stack = cl_allocate_memory(sizeof(CL_Stack));
     stack->data = cl_da_create(DEFAULT_STACK_SIZE);
     stack->top = 0;
     return stack;

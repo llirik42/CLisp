@@ -7,11 +7,11 @@
 #include "primitive_types.h"
 
 static void destroy_simple_object(CL_Object* obj) {
-    free_memory(obj);
+    cl_free_memory(obj);
 }
 
 CL_Object* cl_make_int(int value) {
-    CL_IntObject* int_object = allocate_memory(sizeof(CL_IntObject));
+    CL_IntObject* int_object = cl_allocate_memory(sizeof(CL_IntObject));
     cl_init_obj((CL_Object*)int_object, INTEGER);
     int_object->value = value;
 
@@ -28,7 +28,7 @@ void cl_destroy_int(CL_Object* obj) {
 }
 
 CL_Object* cl_make_double(double value) {
-    CL_DoubleObject* double_object = allocate_memory(sizeof(CL_DoubleObject));
+    CL_DoubleObject* double_object = cl_allocate_memory(sizeof(CL_DoubleObject));
     cl_init_obj((CL_Object*)double_object, DOUBLE);
     double_object->value = value;
 
@@ -49,7 +49,7 @@ CL_Object* cl_make_boolean(unsigned char value) {
         cl_abort("Boolean value must be 0 or 1!\n");
     }
 
-    CL_BooleanObject* boolean_object = allocate_memory(sizeof(CL_BooleanObject));
+    CL_BooleanObject* boolean_object = cl_allocate_memory(sizeof(CL_BooleanObject));
     cl_init_obj((CL_Object*)boolean_object, BOOLEAN);
     boolean_object->value = value;
 
@@ -74,11 +74,11 @@ void cl_destroy_boolean(CL_Object* obj) {
 }
 
 CL_Object* cl_make_string(char* value) {
-    CL_StringObject* string_object = allocate_memory(sizeof(CL_StringObject));
+    CL_StringObject* string_object = cl_allocate_memory(sizeof(CL_StringObject));
     cl_init_obj((CL_Object*)string_object, STRING);
     string_object->length = strlen(value);
 
-    char* container = allocate_memory(sizeof(char) * (string_object->length + 1));
+    char* container = cl_allocate_memory(sizeof(char) * (string_object->length + 1));
     strcpy(container, value);
     string_object->value = container;
 
@@ -97,12 +97,12 @@ unsigned int cl_get_string_length(CL_Object* obj) {
 
 void cl_destroy_string(CL_Object* obj) {
     char* container = cl_get_string_value(obj);
-    free_memory(container);
+    cl_free_memory(container);
     destroy_simple_object(obj);
 }
 
 CL_Object* cl_make_char(char value) {
-    CL_CharObject* char_object = allocate_memory(sizeof(CL_CharObject));
+    CL_CharObject* char_object = cl_allocate_memory(sizeof(CL_CharObject));
     cl_init_obj((CL_Object*)char_object, CHAR);
     char_object->value = value;
 

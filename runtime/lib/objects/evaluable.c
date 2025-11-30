@@ -3,7 +3,7 @@
 #include "memory.h"
 
 CL_Object* cl_make_evaluable(cl_func func, CL_FUNC_PARAMS) {
-    CL_EvaluableObject* evaluable_object = allocate_memory(sizeof(CL_EvaluableObject));
+    CL_EvaluableObject* evaluable_object = cl_allocate_memory(sizeof(CL_EvaluableObject));
     cl_init_obj((CL_Object*)evaluable_object, EVALUABLE);
 
     evaluable_object->args_count = count;
@@ -14,7 +14,7 @@ CL_Object* cl_make_evaluable(cl_func func, CL_FUNC_PARAMS) {
 }
 
 void cl_destroy_evaluable(CL_Object* obj) {
-    free_memory(obj);
+    cl_free_memory(obj);
 }
 
 CL_Object* cl_evaluate(CL_Object* obj) {

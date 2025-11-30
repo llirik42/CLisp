@@ -7,7 +7,7 @@
 #include "objects/list.h"
 
 CL_Object* cl_make_unspecified() {
-    CL_Object* obj = allocate_memory(sizeof(CL_Object));
+    CL_Object* obj = cl_allocate_memory(sizeof(CL_Object));
     cl_init_obj(obj, UNSPECIFIED);
     return obj;
 }
@@ -22,7 +22,7 @@ void cl_increase_refs_count(CL_Object* obj) {
 }
 
 static void destroy_unspecified(CL_Object* obj) {
-    free_memory(obj);
+    cl_free_memory(obj);
 }
 
 void cl_destroy_obj(CL_Object* obj) {

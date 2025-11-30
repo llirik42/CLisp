@@ -37,11 +37,11 @@ static const NamedFunc reserved[] = {
 #define RESERVED_COUNT sizeof(reserved) / sizeof(NamedFunc)
 
 static CL_Environment* make_environment(CL_Environment* parent, size_t capacity) {
-    CL_Environment* env = allocate_memory(sizeof(CL_Environment));
+    CL_Environment* env = cl_allocate_memory(sizeof(CL_Environment));
     env->parent = parent;
     env->capacity = capacity;
     env->variables_count = 0;
-    env->variables = allocate_memory(sizeof(CL_Variable) * capacity);
+    env->variables = cl_allocate_memory(sizeof(CL_Variable) * capacity);
     return env;
 }
 
@@ -57,8 +57,8 @@ void cl_destroy_env(CL_Environment* env) {
     for (size_t i = 0; i < env->variables_count; i++) {
         cl_destroy_obj(env->variables[i].val);
     }
-    free_memory(env->variables);
-    free_memory(env);
+    cl_free_memory(env->variables);
+    cl_free_memory(env);
 }
 
 void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
@@ -90,7 +90,7 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
 
     if (env->variables_count >= env->capacity) {
         env->capacity = (int)ceil((double)env->capacity * CAPACITY_MULTIPLIER);
-        env->variables = reallocate_memory(env->variables, sizeof(CL_Variable) * env->capacity);
+        env->variables = cl_reallocate_memory(env->variables, sizeof(CL_Variable) * env->capacity);
     }
 
     CL_Variable var = {name, value};
