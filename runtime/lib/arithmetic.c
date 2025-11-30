@@ -6,215 +6,215 @@
 #include "utils.h"
 #include "objects/primitive_types.h"
 
-static void set_int_value(Object* obj, int new_value) {
-    IntObject* int_object = (IntObject*)obj;
+static void set_int_value(CL_Object* obj, int new_value) {
+    CL_IntObject* int_object = (CL_IntObject*)obj;
     int_object->value = new_value;
 }
 
-static void set_double_value(Object* obj, double new_value) {
-    DoubleObject* double_object = (DoubleObject*)obj;
+static void set_double_value(CL_Object* obj, double new_value) {
+    CL_DoubleObject* double_object = (CL_DoubleObject*)obj;
     double_object->value = new_value;
 }
 
-Object* clisp_add(CLISP_FUNC_PARAMS) {
+CL_Object* cl_add(CL_FUNC_PARAMS) {
     if (count == 0) {
-        return clisp_make_int(0);
+        return cl_make_int(0);
     }
 
     if (count == 1) {
-        Object* operand = unwrap_object(args[0]);
-        CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
+        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
         if (operand == args[0]) {
-            increase_refs_count(operand);
+            cl_increase_refs_count(operand);
         }
         return operand;
     }
 
-    Object* result = clisp_make_int(0);
+    CL_Object* result = cl_make_int(0);
 
     for (unsigned int i = 0; i < count; i++) {
-        Object* operand = unwrap_object(args[i]);
-        CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
+        CL_Object* operand = cl_unwrap_obj(args[i]);
+        CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
-        enum ObjectType operand_type = get_object_type(operand);
-        enum ObjectType result_type = get_object_type(result);
+        enum CL_ObjectType operand_type = cl_get_obj_type(operand);
+        enum CL_ObjectType result_type = cl_get_obj_type(result);
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
-            double prev_value = get_int_value(result);
-            clisp_destroy_object(result);
-            result = clisp_make_double(prev_value);
-            result_type = get_object_type(result);
+            double prev_value = cl_get_int_value(result);
+            cl_destroy_object(result);
+            result = cl_make_double(prev_value);
+            result_type = cl_get_obj_type(result);
         }
 
         double op_value = operand_type == INTEGER
-                         ? get_int_value(operand)
-                         : get_double_value(operand);
+                         ? cl_get_int_value(operand)
+                         : cl_get_double_value(operand);
 
         if (result_type == DOUBLE) {
-            set_double_value(result, get_double_value(result) + op_value);
+            set_double_value(result, cl_get_double_value(result) + op_value);
         } else {
-            set_int_value(result, get_int_value(result) + (int)op_value);
+            set_int_value(result, cl_get_int_value(result) + (int)op_value);
         }
 
-        destroy_if_unwrapped(args[i], operand);
+        cl_destroy_if_unwrapped(args[i], operand);
     }
 
     return result;
 }
 
-Object* clisp_mul(CLISP_FUNC_PARAMS) {
+CL_Object* cl_mul(CL_FUNC_PARAMS) {
     if (count == 0) {
-        return clisp_make_int(1);
+        return cl_make_int(1);
     }
 
     if (count == 1) {
-        Object* operand = unwrap_object(args[0]);
-        CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
+        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
         if (operand == args[0]) {
-            increase_refs_count(operand);
+            cl_increase_refs_count(operand);
         }
         return operand;
     }
 
-    Object* result = clisp_make_int(1);
+    CL_Object* result = cl_make_int(1);
 
     for (unsigned int i = 0; i < count; i++) {
-        Object* operand = unwrap_object(args[i]);
-        CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
+        CL_Object* operand = cl_unwrap_obj(args[i]);
+        CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
-        enum ObjectType operand_type = get_object_type(operand);
-        enum ObjectType result_type = get_object_type(result);
+        enum CL_ObjectType operand_type = cl_get_obj_type(operand);
+        enum CL_ObjectType result_type = cl_get_obj_type(result);
 
-        if (unwrap_numeric_to_double(operand) == 0) {
-            clisp_destroy_object(result);
-            destroy_if_unwrapped(args[i], operand);
-            return clisp_make_int(0);
+        if (cl_unwrap_numeric_to_double(operand) == 0) {
+            cl_destroy_object(result);
+            cl_destroy_if_unwrapped(args[i], operand);
+            return cl_make_int(0);
         }
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
-            double prev_value = get_int_value(result);
-            clisp_destroy_object(result);
-            result = clisp_make_double(prev_value);
-            result_type = get_object_type(result);
+            double prev_value = cl_get_int_value(result);
+            cl_destroy_object(result);
+            result = cl_make_double(prev_value);
+            result_type = cl_get_obj_type(result);
         }
 
         double op_value = operand_type == INTEGER
-                         ? get_int_value(operand)
-                         : get_double_value(operand);
+                         ? cl_get_int_value(operand)
+                         : cl_get_double_value(operand);
 
         if (result_type == DOUBLE) {
-            set_double_value(result, get_double_value(result) * op_value);
+            set_double_value(result, cl_get_double_value(result) * op_value);
         } else {
-            set_int_value(result, get_int_value(result) * (int)op_value);
+            set_int_value(result, cl_get_int_value(result) * (int)op_value);
         }
 
-        destroy_if_unwrapped(args[i], operand);
+        cl_destroy_if_unwrapped(args[i], operand);
     }
 
     return result;
 }
 
-Object* clisp_div(CLISP_FUNC_PARAMS) {
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 0, GREATER);
+CL_Object* cl_div(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(count, 0, GREATER);
 
     if (count == 1) {
-        Object* operand = unwrap_object(args[0]);
-        CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
+        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
-        if (unwrap_numeric_to_double(operand) == 0) {
-            clisp_exit("Dividing by zero!\n");
+        if (cl_unwrap_numeric_to_double(operand) == 0) {
+            cl_abort("Dividing by zero!\n");
         }
 
-        enum ObjectType type = get_object_type(operand);
+        enum CL_ObjectType type = cl_get_obj_type(operand);
 
         // 1 / (+-1) = +- 1
         if (type == DOUBLE) {
-            double double_value = get_double_value(operand);
+            double double_value = cl_get_double_value(operand);
             if (double_value == 1 || double_value == -1) {
                 if (operand == args[0]) {
-                    increase_refs_count(operand);
+                    cl_increase_refs_count(operand);
                 }
                 return operand;
             }
         }
 
         if (type == INTEGER) {
-            double int_value = get_int_value(operand);
+            double int_value = cl_get_int_value(operand);
             if (int_value == 1 || int_value == -1) {
                 if (operand == args[0]) {
-                    increase_refs_count(operand);
+                    cl_increase_refs_count(operand);
                 }
                 return operand;
             }
         }
 
-        Object* result = clisp_make_double(1 / unwrap_numeric_to_double(operand));
-        destroy_if_unwrapped(args[0], operand);
+        CL_Object* result = cl_make_double(1 / cl_unwrap_numeric_to_double(operand));
+        cl_destroy_if_unwrapped(args[0], operand);
         return result;
     }
 
-    Object* operand1 = unwrap_object(args[0]);
-    Object* operand2 = unwrap_object(args[1]);
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand1));
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand2));
+    CL_Object* operand1 = cl_unwrap_obj(args[0]);
+    CL_Object* operand2 = cl_unwrap_obj(args[1]);
+    CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand1));
+    CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand2));
 
-    if (unwrap_numeric_to_double(operand2) == 0) {
-        clisp_exit("Dividing by zero!\n");
+    if (cl_unwrap_numeric_to_double(operand2) == 0) {
+        cl_abort("Dividing by zero!\n");
     }
 
-    Object* result = NULL;
+    CL_Object* result = NULL;
 
-    if (get_object_type(operand1) == DOUBLE ||  get_object_type(operand2) == DOUBLE) {
-        result = clisp_make_double(unwrap_numeric_to_double(operand1) / unwrap_numeric_to_double(operand2));
+    if (cl_get_obj_type(operand1) == DOUBLE ||  cl_get_obj_type(operand2) == DOUBLE) {
+        result = cl_make_double(cl_unwrap_numeric_to_double(operand1) / cl_unwrap_numeric_to_double(operand2));
     } else {
-        if (get_int_value(operand1) % get_int_value(operand2) == 0) {
-            result = clisp_make_int(get_int_value(operand1) / get_int_value(operand2));
+        if (cl_get_int_value(operand1) % cl_get_int_value(operand2) == 0) {
+            result = cl_make_int(cl_get_int_value(operand1) / cl_get_int_value(operand2));
         } else {
-            result = clisp_make_double(get_int_value(operand1) * 1.0 / get_int_value(operand2));
+            result = cl_make_double(cl_get_int_value(operand1) * 1.0 / cl_get_int_value(operand2));
         }
     }
 
-    destroy_if_unwrapped(args[0], operand1);
-    destroy_if_unwrapped(args[1], operand2);
+    cl_destroy_if_unwrapped(args[0], operand1);
+    cl_destroy_if_unwrapped(args[1], operand2);
 
     return result;
 }
 
-Object* clisp_sub(CLISP_FUNC_PARAMS) {
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 0, GREATER);
+CL_Object* cl_sub(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(count, 0, GREATER);
 
     if (count == 1) {
-        Object* operand = unwrap_object(args[0]);
-        CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand));
+        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
-        enum ObjectType type = get_object_type(operand);
+        enum CL_ObjectType type = cl_get_obj_type(operand);
 
         if (type == INTEGER) {
-            set_int_value(operand, -1 * get_int_value(operand));
+            set_int_value(operand, -1 * cl_get_int_value(operand));
         } else {
-            set_double_value(operand, -1 * get_double_value(operand));
+            set_double_value(operand, -1 * cl_get_double_value(operand));
         }
         if (operand == args[0]) {
-            increase_refs_count(operand);
+            cl_increase_refs_count(operand);
         }
         return operand;
     }
 
-    Object* operand1 = unwrap_object(args[0]);
-    Object* operand2 = unwrap_object(args[1]);
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand1));
-    CHECK_FUNC_ARGUMENT_NUMERIC_TYPE(get_object_type(operand2));
+    CL_Object* operand1 = cl_unwrap_obj(args[0]);
+    CL_Object* operand2 = cl_unwrap_obj(args[1]);
+    CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand1));
+    CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand2));
 
-    Object* result = NULL;
+    CL_Object* result = NULL;
 
-    if (get_object_type(operand1) == DOUBLE ||  get_object_type(operand2) == DOUBLE) {
-        result = clisp_make_double(unwrap_numeric_to_double(operand1) - unwrap_numeric_to_double(operand2));
+    if (cl_get_obj_type(operand1) == DOUBLE ||  cl_get_obj_type(operand2) == DOUBLE) {
+        result = cl_make_double(cl_unwrap_numeric_to_double(operand1) - cl_unwrap_numeric_to_double(operand2));
     } else {
-        result = clisp_make_int(get_int_value(operand1) - get_int_value(operand2));
+        result = cl_make_int(cl_get_int_value(operand1) - cl_get_int_value(operand2));
     }
 
-    destroy_if_unwrapped(args[0], operand1);
-    destroy_if_unwrapped(args[1], operand2);
+    cl_destroy_if_unwrapped(args[0], operand1);
+    cl_destroy_if_unwrapped(args[1], operand2);
 
     return result;
 }

@@ -5,38 +5,38 @@
 
 #define DEFAULT_STACK_SIZE 8
 
-Stack* stack_create() {
-    Stack* stack = allocate_memory(sizeof(Stack));
-    stack->data = da_create(DEFAULT_STACK_SIZE);
+CL_Stack* cl_stack_create() {
+    CL_Stack* stack = allocate_memory(sizeof(CL_Stack));
+    stack->data = cl_da_create(DEFAULT_STACK_SIZE);
     stack->top = 0;
     return stack;
 }
 
-void stack_push(Stack *stack, void *data) {
-    da_append(stack->data, data);
+void cl_stack_push(CL_Stack *stack, void *data) {
+    cl_da_append(stack->data, data);
     stack->top++;
 }
 
-void* stack_pop(Stack *stack) {
+void* cl_stack_pop(CL_Stack *stack) {
     if (stack->top == 0) {
-        clisp_exit("Stack underflow!\n");
+        cl_abort("Stack underflow!\n");
         __builtin_unreachable();
     }
 
-    void* data = da_get(stack->data, --stack->top);
-    da_pop(stack->data);
+    void* data = cl_da_get(stack->data, --stack->top);
+    cl_da_pop(stack->data);
     return data;
 }
 
-void* stack_peek(Stack *stack) {
+void* cl_stack_peek(CL_Stack *stack) {
     if (stack->top <= 0) {
-        clisp_exit("Stack underflow!\n");
+        cl_abort("Stack underflow!\n");
         __builtin_unreachable();
     }
 
-    return da_get(stack->data, stack->top - 1);
+    return cl_da_get(stack->data, stack->top - 1);
 }
 
-void stack_destroy(Stack *stack) {
-    da_destroy(stack->data);
+void cl_stack_destroy(CL_Stack *stack) {
+    cl_da_destroy(stack->data);
 }

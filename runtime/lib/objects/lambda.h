@@ -2,23 +2,23 @@
 #include "lib/environment.h"
 #include "lib/core.h"
 
-typedef Object*(*clisp_func_with_env)(Environment* env, CLISP_FUNC_PARAMS);
+typedef CL_Object*(*cl_func_with_env)(CL_Environment* env, CL_FUNC_PARAMS);
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
     union {
-        clisp_func clisp_func;
-        clisp_func_with_env clisp_func_with_env;
+        cl_func cl_func;
+        cl_func_with_env cl_func_with_env;
     } func;
     unsigned char with_env;
-    Environment* environment;
-} LambdaObject;
+    CL_Environment* environment;
+} CL_LambdaObject;
 
-Object* clisp_make_lambda(clisp_func_with_env func, Environment* environment);
+CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment);
 
-Object* clisp_make_lambda_without_env(clisp_func func);
+CL_Object* cl_make_lambda_without_env(cl_func func);
 
-void destroy_lambda(Object* object);
+void cl_destroy_lambda(CL_Object* object);
 
-Object* clisp_lambda_call(Object* obj, CLISP_FUNC_PARAMS);
+CL_Object* cl_lambda_call(CL_Object* obj, CL_FUNC_PARAMS);

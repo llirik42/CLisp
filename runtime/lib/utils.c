@@ -7,17 +7,17 @@
 #include "objects/primitive.h"
 #include "objects/evaluable.h"
 
-void clisp_exit(char* message) {
+void cl_abort(char* message) {
     fprintf(stderr, "%s", message);
     abort();
 }
 
-void clisp_exit_errno(char* message) {
+void cl_abort_errno(char* message) {
     perror(message);
     abort();
 }
 
-void check_func_arguments_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CountCheckingMode mode) {
+void cl_check_func_args_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CountCheckingMode mode) {
     const char* format_str = NULL;
     int condition = 0;
 
@@ -31,65 +31,65 @@ void check_func_arguments_count(const char* func_name, unsigned int args_count, 
             condition = args_count <= expected_count;
             break;
         default:
-            clisp_exit("Unknown count checking mode.");
+            cl_abort("Unknown count checking mode.");
     }
 
     if (condition) {
-        char error_str[ERROR_BUF_SIZE];
+        char error_str[CL_ERROR_BUF_SIZE];
         snprintf(error_str, sizeof(error_str), format_str, func_name, expected_count, args_count);
-        clisp_exit(error_str);
+        cl_abort(error_str);
     }
 }
 
-void check_func_argument_type(const char* func_name, enum ObjectType type, enum ObjectType expected_type) {
+void cl_check_func_arg_type(const char* func_name, enum CL_ObjectType type, enum CL_ObjectType expected_type) {
     if (type != expected_type) {
-        char error_str[ERROR_BUF_SIZE];
+        char error_str[CL_ERROR_BUF_SIZE];
         snprintf(error_str, sizeof(error_str), "Wrong argument type in %s! Must be equal %s. Got %s.\n",
-            func_name, get_object_type_name(expected_type), get_object_type_name(type));
-        clisp_exit(error_str);
+            func_name, get_obj_type_name(expected_type), get_obj_type_name(type));
+        cl_abort(error_str);
     }
 }
 
-void check_func_argument_numeric_type(const char* func_name, enum ObjectType type) {
-    if (!is_numeric(type)) {
-        char error_str[ERROR_BUF_SIZE];
+void cl_check_func_arg_numeric_type(const char* func_name, enum CL_ObjectType type) {
+    if (!cl_is_numeric(type)) {
+        char error_str[CL_ERROR_BUF_SIZE];
         snprintf(error_str, sizeof(error_str), "Wrong argument type in %s! Must be numeric. Got %s.\n",
-            func_name, get_object_type_name(type));
-        clisp_exit(error_str);
+            func_name, get_obj_type_name(type));
+        cl_abort(error_str);
     }
 }
 
-double unwrap_numeric_to_double(Object* numeric) {
-    switch (get_object_type(numeric)) {
+double cl_unwrap_numeric_to_double(CL_Object* numeric) {
+    switch (cl_get_obj_type(numeric)) {
         case INTEGER: {
-            return get_int_value(numeric);
+            return cl_get_int_value(numeric);
         }
         case DOUBLE: {
-            return get_double_value(numeric);
+            return cl_get_double_value(numeric);
         }
         default:
-            clisp_exit("Failed to unwrap numeric value. Invalid type.\n");
+            cl_abort("Failed to unwrap numeric value. Invalid type.\n");
             __builtin_unreachable();
     }
 }
 
-unsigned char obj_to_boolean(Object* obj) {
-    assert(get_object_type(obj) != EVALUABLE);
+unsigned char cl_obj_to_boolean(CL_Object* obj) {
+    assert(cl_get_obj_type(obj) != EVALUABLE);
 
-    if (get_object_type(obj) == BOOLEAN) {
-        return get_boolean_value(obj);
+    if (cl_get_obj_type(obj) == BOOLEAN) {
+        return cl_get_boolean_value(obj);
     }
 
     return 1;
 }
 
 // Unwrap non-constant type. If evaluable - returns evaluated. If lambda - returns evaluated lambda.
-Object* unwrap_object(Object* obj) {
-    return evaluate(obj);
+CL_Object* cl_unwrap_obj(CL_Object* obj) {
+    return cl_evaluate(obj);
 }
 
-void destroy_if_unwrapped(Object* origin, Object* unwrapped) {
-    if (get_object_type(origin) == EVALUABLE) {
-        destroy_evaluable(unwrapped);
+void cl_destroy_if_unwrapped(CL_Object* origin, CL_Object* unwrapped) {
+    if (cl_get_obj_type(origin) == EVALUABLE) {
+        cl_destroy_evaluable(unwrapped);
     }
 }

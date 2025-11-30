@@ -7,24 +7,24 @@
 #include "utils.h"
 #include "lib/objects/list.h"
 
-static void display_one_object(Object* obj) {
-    Object* to_display = unwrap_object(obj);
+static void display_one_object(CL_Object* obj) {
+    CL_Object* to_display = cl_unwrap_obj(obj);
 
-    switch (get_object_type(to_display)) {
+    switch (cl_get_obj_type(to_display)) {
         case INTEGER:
-            printf("%d", get_int_value(to_display));
+            printf("%d", cl_get_int_value(to_display));
             break;
         case DOUBLE:
-            printf("%g", get_double_value(to_display));
+            printf("%g", cl_get_double_value(to_display));
             break;
         case STRING:
-            printf("%s", get_string_value(to_display));
+            printf("%s", cl_get_string_value(to_display));
             break;
         case CHAR:
-            printf("%c", get_char_value(to_display));
+            printf("%c", cl_get_char_value(to_display));
             break;
         case BOOLEAN:
-            if (get_boolean_value(to_display)) {
+            if (cl_get_boolean_value(to_display)) {
                 printf("true");
             } else {
                 printf("false");
@@ -32,9 +32,9 @@ static void display_one_object(Object* obj) {
             break;
         case LIST:
             printf("%s", "list(");
-            for (size_t i = 0; i < clisp_list_length(to_display); i++) {
-                display_one_object(clisp_list_at(to_display, i));
-                if (i != clisp_list_length(to_display) - 1) {
+            for (size_t i = 0; i < cl_list_length(to_display); i++) {
+                display_one_object(cl_list_at(to_display, i));
+                if (i != cl_list_length(to_display) - 1) {
                     putchar(' ');
                 }
             }
@@ -47,11 +47,11 @@ static void display_one_object(Object* obj) {
             printf("Undisplayable type");
     }
 
-    destroy_if_unwrapped(obj, to_display);
+    cl_destroy_if_unwrapped(obj, to_display);
 }
 
-Object* clisp_display(CLISP_FUNC_PARAMS) {
-    CHECK_FUNC_ARGUMENTS_COUNT(count, 0, GREATER);
+CL_Object* cl_display(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(count, 0, GREATER);
 
     for (unsigned int i = 0; i < count; i++) {
         display_one_object(args[i]);
@@ -62,5 +62,5 @@ Object* clisp_display(CLISP_FUNC_PARAMS) {
 
     putchar('\n');
 
-    return clisp_make_unspecified();
+    return cl_make_unspecified();
 }

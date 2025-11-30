@@ -3,7 +3,7 @@
 #define TRUE 1
 #define FALSE 0
 
-enum ObjectType {
+enum CL_ObjectType {
     INTEGER,
     DOUBLE,
     BOOLEAN,
@@ -15,26 +15,26 @@ enum ObjectType {
     UNSPECIFIED,
 };
 
-char* get_object_type_name(enum ObjectType type);
+char* get_obj_type_name(enum CL_ObjectType type);
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
-} Object;
+} CL_Object;
 
-#define CLISP_FUNC_PARAMS unsigned int count, Object** args
-#define CLISP_FUNC_PARAMS_WITHOUT_TYPES count, args
+#define CL_FUNC_PARAMS unsigned int count, CL_Object** args
+#define CL_FUNC_PARAMS_WITHOUT_TYPES count, args
 
-typedef Object*(*clisp_func)(CLISP_FUNC_PARAMS);
+typedef CL_Object*(*cl_func)(CL_FUNC_PARAMS);
 
-enum ObjectType get_object_type(Object* obj);
+enum CL_ObjectType cl_get_obj_type(CL_Object* obj);
 
-void init_object(Object* obj, enum ObjectType type);
+void cl_init_obj(CL_Object* obj, enum CL_ObjectType type);
 
-void increase_refs_count(Object* obj);
+void cl_increase_refs_count(CL_Object* obj);
 
-Object* clisp_make_unspecified();
+CL_Object* cl_make_unspecified();
 
-void clisp_destroy_object(Object* obj);
+void cl_destroy_object(CL_Object* obj);
 
-unsigned char is_numeric(enum ObjectType type);
+unsigned char cl_is_numeric(enum CL_ObjectType type);
