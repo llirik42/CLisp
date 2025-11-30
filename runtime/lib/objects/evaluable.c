@@ -2,27 +2,27 @@
 
 #include "memory.h"
 
-Object* clisp_make_evaluable(clisp_func func, CLISP_FUNC_PARAMS) {
-    EvaluableObject* evaluable_object = allocate_memory(sizeof(EvaluableObject));
-    init_object((Object*)evaluable_object, EVALUABLE);
+CL_Object* cl_make_evaluable(cl_func func, CL_FUNC_PARAMS) {
+    CL_EvaluableObject* evaluable_object = cl_allocate_memory(sizeof(CL_EvaluableObject));
+    cl_init_obj((CL_Object*)evaluable_object, EVALUABLE);
 
     evaluable_object->args_count = count;
     evaluable_object->function = func;
     evaluable_object->args = args;
 
-    return (Object*)evaluable_object;
+    return (CL_Object*)evaluable_object;
 }
 
-void destroy_evaluable(Object* obj) {
-    free_memory(obj);
+void cl_destroy_evaluable(CL_Object* obj) {
+    cl_free_memory(obj);
 }
 
-Object* evaluate(Object* obj) {
-    if (get_object_type(obj) != EVALUABLE) {
+CL_Object* cl_evaluate(CL_Object* obj) {
+    if (cl_get_obj_type(obj) != EVALUABLE) {
         return obj;
     }
 
-    const EvaluableObject* evaluable_object = (EvaluableObject*)obj;
+    const CL_EvaluableObject* evaluable_object = (CL_EvaluableObject*)obj;
 
     return evaluable_object->function(evaluable_object->args_count, evaluable_object->args);
 }

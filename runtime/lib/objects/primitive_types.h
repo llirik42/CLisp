@@ -3,32 +3,32 @@
 #include "lib/core.h"
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
     int value;
-} IntObject;
+} CL_IntObject;
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
     double value;
-} DoubleObject;
+} CL_DoubleObject;
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
     unsigned char value;
-} BooleanObject;
+} CL_BooleanObject;
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
     char* value;
     unsigned int length;
-} StringObject;
+} CL_StringObject;
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
     char value;
-} CharObject;
+} CL_CharObject;

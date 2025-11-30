@@ -1,4 +1,4 @@
 #pragma once
 #include "core.h"
 
-Object* clisp_display(CLISP_FUNC_PARAMS);
+CL_Object* cl_display(CL_FUNC_PARAMS);

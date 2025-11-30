@@ -1,0 +1,29 @@
+******************[TESTING CODE]******************
+(define make-adder (lambda (n)
+  (lambda (x)
+    (+ x n))))
+
+(define add5 (make-adder 5))
+(display (add5 1))
+(display (add5 2))
+
+(define add7 (make-adder 7))
+(display (add7 10))
+(display (add7 20))
+
+(define salt 21)
+
+(define make-adder-salt (lambda (n)
+  (lambda (x)
+    (+ x salt n))))
+
+(define adder-salt (make-adder-salt 10))
+(display (adder-salt 10))
+(display (adder-salt 20))
+******************[EXPECTED OUT]******************
+6
+7
+17
+27
+41
+51

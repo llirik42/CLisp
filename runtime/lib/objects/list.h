@@ -3,21 +3,21 @@
 #include "lib/core.h"
 
 typedef struct {
-    enum ObjectType type;
+    enum CL_ObjectType type;
     unsigned short ref_count;
-    DynamicArray* list;
-} ListObject;
+    CL_DynamicArray* list;
+} CL_ListObject;
 
-Object* clisp_make_list();
+CL_Object* cl_make_list();
 
-Object* clisp_make_list_capacity(size_t size);
+CL_Object* cl_make_list_capacity(size_t size);
 
-void clisp_list_append(Object* list, Object* obj);
+void cl_list_append(CL_Object* list, CL_Object* obj);
 
-Object* clisp_list_at(Object* list, size_t index);
+CL_Object* cl_list_at(CL_Object* list, size_t index);
 
-size_t clisp_list_length(Object* list);
+size_t cl_list_length(CL_Object* list);
 
-Object* clisp_make_list_from_array(unsigned int size, Object** array);
+CL_Object* cl_make_list_from_array(unsigned int size, CL_Object** array);
 
-void destroy_list(Object* obj);
+void cl_destroy_list(CL_Object* obj);

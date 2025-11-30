@@ -1,141 +1,84 @@
+import argparse
 import os
 import subprocess
-from pathlib import Path
-from subprocess import CompletedProcess
-
 import pytest
 
-from config import (
-    TRANSLATOR_PATH,
-    TRANSLATOR_BASE_DIR,
-    TRANSLATOR_PYTHON_EXECUTABLE_PATH,
-    CASES_PATH,
-    BUILD_PATH,
-    COMPILE_SCRIPT_PATH,
-)
+from config import INSTALL_SCRIPT, BUILD_PATH, CASES_PATH
+from utils import delete_all_files_in_dir, copy_directory_structure
 
+parser = argparse.ArgumentParser(description='This is a set of integration tests for CLisp.'
+                                             ' For each Scheme file in the ./cases/* directory, it performs the following pipeline:'
+                                             'translates the Scheme code to C, compiles the C code into an '
+                                             'executable, runs the executable, and compares its output to the '
+                                             'expected result.')
+parser.add_argument('-wd', '--with-directories', nargs='+', help='Apply tests only to files in specified directories relative ./cases')
+parser.add_argument('-wf', '--with-files', nargs='+', help='Apply tests only to files relative ./cases.'
+                                                           ' Merges with -wd.')
+parser.add_argument('-ed', '--exclude-directories', nargs='+', help='Exclude all tests in specified directories relative ./cases')
+parser.add_argument('-ef', '--exclude-files', nargs='+', help='Exclude tests only to files relative ./cases.'
+                                                           ' Merges with -ed.')
+parser.add_argument('-c', '--clear', action='store_true', default=False, help='Clear ./build directory after running tests.')
 
-@pytest.fixture(scope="session")
-def run_translator():
+args = parser.parse_args()
 
-    def _run_translator(args="", input_text="", cwd=None):
-        """
-        Launching translator with args.
-
-        Args:
-            args: command line args string.
-            input_text: text for stdin.
-            cwd: current working directory of translator script.
-        """
-
-        if cwd is None:
-            cwd = TRANSLATOR_BASE_DIR
-
-        command = [
-            str(TRANSLATOR_PYTHON_EXECUTABLE_PATH),
-            "-m",
-            TRANSLATOR_PATH,
-        ] + args.split()
-        _env = os.environ
-        _env["PYTHONPATH"] = str(TRANSLATOR_BASE_DIR)
-
-        result = subprocess.run(
-            command,
+if __name__ == '__main__':
+    try:
+        subprocess.run(
+            [str(INSTALL_SCRIPT)],
             capture_output=True,
-            text=True,
-            input=input_text,
-            cwd=cwd,
             check=True,
-            env=_env,
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(
+            f"Error during launching install script. Stderr:\n{e.stderr}"
         )
 
-        return result
+    tests_files_paths = []
 
-    return _run_translator
+    if args.with_directories:
+        for directory_path in args.with_directories:
+            path = CASES_PATH / directory_path
+            for file_path in path.rglob("*.test"):
+                tests_files_paths.append(str(file_path))
+
+    if args.with_files:
+        for file_path in args.with_files:
+            path = CASES_PATH / file_path
+            if not path.exists():
+                raise FileNotFoundError(f'File not found: {str(path)}')
+            tests_files_paths.append(str(path))
+
+    if len(tests_files_paths) == 0:
+        for file_path in CASES_PATH.rglob("*.test"):
+            tests_files_paths.append(str(file_path))
+
+    if args.exclude_directories:
+        for directory_path in args.exclude_directories:
+            path = CASES_PATH / directory_path
+            for file_path in path.rglob("*.test"):
+                try:
+                    tests_files_paths.remove(str(file_path))
+                except ValueError:
+                    pass
+
+    if args.exclude_files:
+        for file_path in args.exclude_files:
+            path = CASES_PATH / file_path
+            try:
+                tests_files_paths.remove(str(path))
+            except ValueError:
+                pass
 
 
-def copy_directory_structure(source_dir, target_dir):
-    source_path = Path(source_dir)
-    target_path = Path(target_dir)
+    if len(tests_files_paths) == 0:
+        raise ValueError('No test files found!')
 
-    target_path.mkdir(exist_ok=True)
-
-    for dir_path in source_path.rglob("*"):
-        if dir_path.is_dir():
-            relative_path = dir_path.relative_to(source_path)
-            new_dir = target_path / relative_path
-            new_dir.mkdir(exist_ok=True)
-
-
-def test_all_cases(run_translator):
+    os.environ['TEST_FILES'] = os.pathsep.join(tests_files_paths)
     copy_directory_structure(CASES_PATH, BUILD_PATH)
-    for file_path in CASES_PATH.rglob("*.test"):
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                lines = [line.strip() for line in f.readlines()]
-        except Exception as e:
-            print(f"File reading error {file_path}: {e}")
+    delete_all_files_in_dir(BUILD_PATH)
 
-        if lines[0] != "******************[TESTING CODE]******************":
-            raise ValueError(
-                f"Case: {file_path} wrong file format: no testing code block."
-            )
-        curr_line = 1
-        program_code = ""
-        while lines[curr_line] != "******************[EXPECTED OUT]******************":
-            if curr_line == len(lines):
-                raise ValueError(
-                    f"Case: {file_path} wrong file format: no expecting out block."
-                )
-            program_code += lines[curr_line] + "\n"
-            curr_line += 1
+    pytest.main(["test.py::test_with_path_env", "-v", "-s"])
 
-        file_path_raw = file_path.relative_to(CASES_PATH).with_suffix("")
+    if args.clear:
+        delete_all_files_in_dir(BUILD_PATH)
 
-        try:
-            run_translator(
-                f"-i -o ../tests/build/{file_path_raw}.c", input_text=program_code
-            )
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(
-                f"Case: {file_path} error during executing translator. Stderr:\n{e.stderr}"
-            )
-
-        try:
-            subprocess.run(
-                [str(COMPILE_SCRIPT_PATH), f"{file_path_raw}.c"],
-                capture_output=True,
-                check=True,
-            )
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(
-                f"Case: {file_path} error during compiling c program. Stderr:\n{e.stderr}"
-            )
-
-        program_result: CompletedProcess[str] = subprocess.run(
-            [f"{str(BUILD_PATH)}/{file_path_raw}.out"], capture_output=True, text=True
-        )
-
-        if program_result.returncode:
-            raise RuntimeError(
-                f"Case: {file_path} Error during execution program. Stderr:\n{program_result.stderr}."
-            )
-
-        out_lines = program_result.stdout.splitlines()
-
-        curr_line += 1
-        out_lines_pos = 0
-
-        if len(out_lines) != (len(lines) - curr_line):
-            raise RuntimeError(
-                f"Case: {file_path} count of program output lines is not equal to the expected line count in case file."
-                f" Expected {len(out_lines)}. Got {len(lines) - curr_line}."
-            )
-
-        while curr_line < len(lines):
-            assert lines[curr_line].strip() == out_lines[out_lines_pos].strip(), (
-                f"Case: {file_path} output line: {out_lines_pos + 1}. "
-                f"Expected {lines[curr_line]}. Got {out_lines[out_lines_pos]}"
-            )
-            out_lines_pos += 1
-            curr_line += 1

@@ -4,6 +4,12 @@
 (display (let ((x 40) (y 60)) (+ x y)))
 (display (let ((x 40) (y 60)) (display (+ x y)) x ))
 (display (let ((x 10)) (let ((x 100)) (display x)) x ))
+(display (let* ((x 10) (y x)) 10))
+(display (let* ((x 10) (y x) (z y)) 10))
+(display (let ((x 2) (y 3))
+         (let* ((x 7)
+         (z (+ x y)))
+         (* z x))))
 ******************[EXPECTED OUT]******************
 40
 50
@@ -12,3 +18,6 @@
 40
 100
 10
+10
+10
+70
