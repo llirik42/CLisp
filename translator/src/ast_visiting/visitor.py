@@ -334,64 +334,15 @@ class ASTVisitor(LispVisitor):
         raise UnexpectedIdentifierException(variable_name, ctx)
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> ExpressionVisitResult:
-        condition_var = self.__variable_manager.create_object_name()
-
-        test = ctx.test()
-        consequent = ctx.consequent()
-        alternate = ctx.alternate()
-
-        test_var, test_code = self.visit(test)
-        consequent_var, consequent_code = self.visit(consequent)
-        consequent_code.remove_first_secondary_line()
-
-        condition_code = self.__code_creator.condition()
-        condition_code.set_test_pre(test_code.render_main())
-        condition_code.set_consequent_body(consequent_code.render())
-        condition_code.set_alternate_body("")
-        condition_code.update_data(var=condition_var, test_var=test_var, consequent_var=consequent_var)
-        condition_code.set_test_after(test_code.render_secondary())
-
-        if alternate is not None:
-            alternate_var, alternate_code = self.visit(alternate)
-            alternate_code.remove_first_secondary_line()
-        else:
-            alternate_var = self.__variable_manager.create_object_name()
-            alternate_code = self.__code_creator.make_unspecified()
-            alternate_code.update_data(var=alternate_var)
-            alternate_code.clear_secondary()
-
-        condition_code.set_alternate_body(alternate_code.render())
-        condition_code.update_data(alternate_var=alternate_var)
-
-        return condition_var, condition_code
+        return self.__visit_condition(
+            test=ctx.test(), consequent=ctx.consequent(), alternate=ctx.alternate()
+        )
 
     def visitAnd(self, ctx: LispParser.AndContext) -> ExpressionVisitResult:
-        lisp_and = "and"
-        c_name = self.__symbols.find_api_symbol(lisp_and)
-        assert c_name is not None, f'Symbol "{lisp_and}" is not found'
-
-        with self.__evaluable_ctx:
-            operand_vars, operand_codes = self.__visit_operands(ctx.test())
-
-        return self.__visit_function(
-            function_name=c_name,
-            operand_names=operand_vars,
-            operand_codes=operand_codes,
-        )
+        return self.__visit_and(ctx.test())
 
     def visitOr(self, ctx: LispParser.OrContext) -> ExpressionVisitResult:
-        lisp_or = "or"
-        c_name = self.__symbols.find_api_symbol(lisp_or)
-        assert c_name is not None, f'Symbol "{lisp_or}" is not found'
-
-        with self.__evaluable_ctx:
-            operand_vars, operand_codes = self.__visit_operands(ctx.test())
-
-        return self.__visit_function(
-            function_name=c_name,
-            operand_names=operand_vars,
-            operand_codes=operand_codes,
-        )
+        return self.__visit_or(ctx.test())
 
     def visitProcedureCall(
         self, ctx: LispParser.ProcedureCallContext
@@ -434,14 +385,7 @@ class ASTVisitor(LispVisitor):
         self, ctx: LispParser.BoolConstantContext
     ) -> ExpressionVisitResult:
         lisp_true = "#t"
-
-        code = self.__code_creator.make_boolean()
-        value = 1 if ctx.getText() == lisp_true else 0
-
-        return self.__visit_constant(
-            code=code,
-            value=value,
-        )
+        return self.__visit_boolean(ctx.getText() == lisp_true)
 
     def visitCharacterConstant(
         self, ctx: LispParser.CharacterConstantContext
@@ -691,20 +635,6 @@ class ASTVisitor(LispVisitor):
 
         return expr_var, code
 
-    def __visit_function(
-        self, function_name: str, operand_names: list[str], operand_codes: list[Code]
-    ) -> ExpressionVisitResult:
-        if self.__evaluable_ctx.should_make_evaluable:
-            expr_code = self.__code_creator.make_evaluable()
-        else:
-            expr_code = self.__code_creator.procedure_call()
-
-        expr_var = self.__variable_manager.create_object_name()
-        expr_code.update_data(func=function_name, args=operand_names, var=expr_var)
-        wrapped_expr_code = wrap_codes(expr_code, operand_codes)
-
-        return expr_var, wrapped_expr_code
-
     def __visit_operands(self, operands) -> OperandsVisitResult:
         operand_vars = []
         operand_codes = []
@@ -715,3 +645,131 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(op_template)
 
         return operand_vars, operand_codes
+
+    def __visit_condition(
+        self,
+        test: ParserRuleContext,
+        consequent: ParserRuleContext,
+        alternate: ParserRuleContext,
+    ) -> ExpressionVisitResult:
+        var = self.__variable_manager.create_object_name()
+
+        test_var, test_code = self.visit(test)
+        consequent_var, consequent_code = self.visit(consequent)
+        consequent_code.remove_first_secondary_line()
+
+        code = self.__code_creator.if_()
+        code.set_test_pre(test_code.render_main())
+        code.set_consequent_body(consequent_code.render())
+        code.update_data(var=var, test_var=test_var, consequent_var=consequent_var)
+        code.set_test_after(test_code.render_secondary())
+
+        if alternate is not None:
+            alternate_var, alternate_code = self.visit(alternate)
+            alternate_code.remove_first_secondary_line()
+        else:
+            alternate_var = self.__variable_manager.create_object_name()
+            alternate_code = self.__code_creator.make_unspecified()
+            alternate_code.update_data(var=alternate_var)
+            alternate_code.clear_secondary()
+
+        code.set_alternate_body(alternate_code.render())
+        code.update_data(alternate_var=alternate_var)
+
+        return var, code
+
+    def __visit_boolean(self, value: bool) -> ExpressionVisitResult:
+        if value:
+            code = self.__code_creator.make_true()
+        else:
+            code = self.__code_creator.make_false()
+
+        var = self.__variable_manager.create_object_name()
+        code.set_var(var=var)
+
+        return var, code
+
+    def __visit_and(self, operands: list[LispParser.ExpressionContext]) -> ExpressionVisitResult:
+        if not operands:
+            var = self.__variable_manager.create_object_name()
+            code = self.__code_creator.make_true()
+            code.set_var(var=var)
+            return var, code
+
+        if len(operands) == 1:
+            return self.visit(operands[0])
+
+        if len(operands) == 2:
+            op1_var, op1_code = self.visit(operands[0])
+            op2_var, op2_code = self.visit(operands[1])
+            return self.__visit_and2(op1_var, op1_code, op2_var, op2_code)
+
+        op1_var, op1_code = self.visit(operands[0])
+        op2_var, op2_code = self.__visit_and(operands[1:])
+
+        return self.__visit_and2(op1_var, op1_code, op2_var, op2_code)
+
+    def __visit_and2(self,
+                     op1_var: str,
+                     op1_code: Code,
+                     op2_var: str,
+                     op2_code: Code) -> ExpressionVisitResult:
+        var = self.__variable_manager.create_object_name()
+
+        alternate_var, alternate_code = self.__visit_boolean(False)
+
+        op2_code.clear_secondary()
+        alternate_code.remove_first_secondary_line()
+
+        code = self.__code_creator.and_()
+        code.set_test_pre(op1_code.render_main())
+        code.set_consequent_body(op2_code.render())
+        code.update_data(var=var, test_var=op1_var, consequent_var=op2_var)
+        code.set_test_after(op1_code.render_secondary())
+
+        code.set_alternate_body(alternate_code.render())
+        code.update_data(alternate_var=alternate_var)
+
+        return var, code
+
+    def __visit_or(self, operands: list[LispParser.ExpressionContext]) -> ExpressionVisitResult:
+        if not operands:
+            var = self.__variable_manager.create_object_name()
+            code = self.__code_creator.make_false()
+            code.set_var(var=var)
+            return var, code
+
+        if len(operands) == 1:
+            return self.visit(operands[0])
+
+        if len(operands) == 2:
+            op1_var, op1_code = self.visit(operands[0])
+            op2_var, op2_code = self.visit(operands[1])
+            return self.__visit_or2(op1_var, op1_code, op2_var, op2_code)
+
+        op1_var, op1_code = self.visit(operands[0])
+        op2_var, op2_code = self.__visit_or(operands[1:])
+
+        return self.__visit_or2(op1_var, op1_code, op2_var, op2_code)
+
+    def __visit_or2(self,
+                     op1_var: str,
+                     op1_code: Code,
+                     op2_var: str,
+                     op2_code: Code) -> ExpressionVisitResult:
+        var = self.__variable_manager.create_object_name()
+
+        test_var, test_code = op1_var, op1_code
+        alternate_var, alternate_code = op2_var, op2_code
+
+        alternate_code.remove_first_secondary_line()
+
+        code = self.__code_creator.and_()
+        code.set_test_pre(test_code.render_main())
+        code.set_test_after(test_code.render_secondary())
+        code.set_consequent_body("")
+        code.set_alternate_body(alternate_code.render())
+
+        code.update_data(var=var, test_var=test_var, consequent_var=test_var, alternate_var=alternate_var)
+
+        return var, code

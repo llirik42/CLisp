@@ -16,7 +16,8 @@
     "functions": {
       "unspecified": "clisp_make_unspecified",
       "integer" : "clisp_make_int",
-      "boolean" : "clisp_make_boolean",
+      "true" : "make_true",
+      "false": "make_false",
       "character" : "clisp_make_char",
       "string" : "clisp_make_string",
       "float" : "clisp_make_double",
@@ -30,7 +31,7 @@
       "update_variable_value": "clisp_update_variable_value",
       "get_variable_value": "clisp_get_variable_value",
       "lambda_call": "clisp_lambda_call",
-      "to_boolean": "obj_to_boolean"
+      "get_boolean_value": "clisp_get_boolean_value"
     },
     "types": {
       "object": "Object*",

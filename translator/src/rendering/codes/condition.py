@@ -32,7 +32,11 @@ class ConditionCode(Code):
         self._update_main_data(alternate_body=body)
 
     def update_data(
-        self, test_var: Optional[str] = None, var: Optional[str] = None, consequent_var: Optional[str] = None, alternate_var: Optional[str] = None
+        self,
+        test_var: Optional[str] = None,
+        var: Optional[str] = None,
+        consequent_var: Optional[str] = None,
+        alternate_var: Optional[str] = None,
     ) -> None:
         self._update_main_data(
             test_var=test_var,

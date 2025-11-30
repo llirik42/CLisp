@@ -18,7 +18,10 @@ from .codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
-    ConditionCode, MakeUnspecifiedCode,
+    ConditionCode,
+    MakeUnspecifiedCode,
+    MakeTrueCode,
+    MakeFalseCode,
 )
 from src.symbols import Symbols
 
@@ -41,10 +44,12 @@ class CodeCreator:
         self.__CREATE_FLOAT = symbols.find_internal_function("float")
         self.__CREATE_STRING = symbols.find_internal_function("string")
         self.__CREATE_CHARACTER = symbols.find_internal_function("character")
-        self.__CREATE_BOOLEAN = symbols.find_internal_function("boolean")
+        self.__CREATE_TRUE = symbols.find_internal_function("true")
+        self.__CREATE_FALSE = symbols.find_internal_function("false")
         self.__CREATE_LAMBDA = symbols.find_internal_function("lambda")
         self.__CREATE_LIST = symbols.find_internal_function("list")
         self.__OBJECT_TO_BOOLEAN = symbols.find_internal_function("to_boolean")
+        self.__GET_BOOLEAN_VALUE = symbols.find_internal_function("get_boolean_value")
         self.__CREATE_ENVIRONMENT = symbols.find_internal_function("environment")
         self.__DESTROY_ENVIRONMENT = symbols.find_internal_function("~environment")
         self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
@@ -89,8 +94,31 @@ class CodeCreator:
     def make_character(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_CHARACTER)
 
-    def make_boolean(self) -> MakePrimitiveCode:
-        return self.__make_primitive(self.__CREATE_BOOLEAN)
+    def make_true(self) -> MakeTrueCode:
+        return MakeTrueCode(
+            main_template=self.__get_template("make_primitive"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_TRUE,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
+        )
+
+    def make_false(self) -> MakeFalseCode:
+        return MakeFalseCode(
+            main_template=self.__get_template("make_primitive"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_FALSE,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
+        )
 
     def make_lambda(self) -> MakeLambdaCode:
         return MakeLambdaCode(
@@ -116,11 +144,19 @@ class CodeCreator:
             },
         )
 
-    def condition(self) -> ConditionCode:
+    def if_(self) -> ConditionCode:
         return ConditionCode(
             main_template=self.__get_template("condition"),
             secondary_template=self.__get_destroy_object_template(),
-            main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
+            main_data={"type": self.__OBJECT_TYPE, "func": self.__GET_BOOLEAN_VALUE},
+            secondary_data={"func": self.__DESTROY_OBJECT},
+        )
+
+    def and_(self) -> ConditionCode:
+        return ConditionCode(
+            main_template=self.__get_template("condition"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={"type": self.__OBJECT_TYPE, "func": self.__GET_BOOLEAN_VALUE},
             secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
