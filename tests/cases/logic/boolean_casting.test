@@ -1,10 +1,22 @@
 ******************[TESTING CODE]******************
-(display (and ""))
 (display (and 1))
-(display (and 1.2))
-(display (and #\ ))
+(display (and "#$%"))
+(display (and 1 2))
+(display (and "a" "b" "c"))
+(display (and #t #t "w"))
+(display (or 2))
+(display (or 3 4))
+(display (or 5 6 7))
+(display (or #f "kish"))
+(display (or #f #f #f -1.5))
 ******************[EXPECTED OUT]******************
-true
-true
-true
-true
+1
+#$%
+2
+c
+w
+2
+3
+5
+kish
+-1.5
