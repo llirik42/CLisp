@@ -12,7 +12,6 @@ from src.rendering import (
 )
 from .declarations_context import DeclarationsContext
 from .environment_context import EnvironmentContext
-from .evaluable_context import EvaluableContext
 from .lambda_context import LambdaContext
 from src.symbols import Symbols
 from .let_type_context import LetTypeContext, LetType
@@ -75,7 +74,6 @@ class ASTVisitor(LispVisitor):
         self.__symbols = symbols
         self.__code_creator = code_creator
         self.__variable_manager = VariableManager()
-        self.__evaluable_ctx = EvaluableContext()
         self.__environment_ctx = EnvironmentContext()
         self.__lambda_ctx = LambdaContext()
         self.__declaration_ctx = DeclarationsContext()
@@ -336,32 +334,30 @@ class ASTVisitor(LispVisitor):
         raise UnexpectedIdentifierException(variable_name, ctx)
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> ExpressionVisitResult:
-        lisp_if = "if"
-        c_name = self.__symbols.find_api_symbol(lisp_if)
-        assert c_name is not None, f'Symbol "{lisp_if}" is not found'
+        condition_var = self.__variable_manager.create_object_name()
 
         test = ctx.test()
         consequent = ctx.consequent()
         alternate = ctx.alternate()
 
         test_var, test_code = self.visit(test)
-        with self.__evaluable_ctx:
-            consequent_var, consequent_code = self.visit(consequent)
+        consequent_var, consequent_code = self.visit(consequent)
+        consequent_code.remove_first_secondary_line()
 
-        operand_vars = [test_var, consequent_var]
-        operand_codes = [test_code, consequent_code]
+        condition_code = self.__code_creator.condition()
+        condition_code.set_test_pre(test_code.render_main())
+        condition_code.set_consequent_body(consequent_code.render())
+        condition_code.set_alternate_body("")
+        condition_code.update_data(var=condition_var, test_var=test_var, consequent_var=consequent_var)
+        condition_code.set_test_after(test_code.render_secondary())
 
         if alternate is not None:
-            with self.__evaluable_ctx:
-                alternate_var, alternate_code = self.visit(alternate)
-            operand_vars.append(alternate_var)
-            operand_codes.append(alternate_code)
+            alternate_var, alternate_code = self.visit(alternate)
+            alternate_code.remove_first_secondary_line()
+            condition_code.set_alternate_body(alternate_code.render())
+            condition_code.update_data(alternate_var=alternate_var)
 
-        return self.__visit_function(
-            function_name=c_name,
-            operand_names=operand_vars,
-            operand_codes=operand_codes,
-        )
+        return condition_var, condition_code
 
     def visitAnd(self, ctx: LispParser.AndContext) -> ExpressionVisitResult:
         lisp_and = "and"

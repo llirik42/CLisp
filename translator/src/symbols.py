@@ -13,8 +13,7 @@ class Symbols:
         """
         The class contains symbols that are used in code generating. Every symbol is a pair: (identifier, symbol). The identifier can be, for example, the name of a Lisp-function and symbol can then will be the name of a C-function that implements Lisp-function. All symbols are divided into sections:
 
-        * API functions
-        * API macros
+        * API
         * internal functions
         * internal types
 
@@ -55,9 +54,7 @@ class Symbols:
         :return: found symbol or None.
         """
 
-        return self.__functions.get(identifier, None) or self.__macros.get(
-            identifier, None
-        )
+        return self.__api.get(identifier, None)
 
     def find_api_function_items(self) -> list[tuple[str, str]]:
         """
@@ -66,7 +63,7 @@ class Symbols:
         :return: list of the symbols as pairs.
         """
 
-        return list(self.__functions.items())
+        return list(self.__api.items())
 
     def has_api_symbol(self, identifier: str) -> bool:
         """
@@ -79,12 +76,8 @@ class Symbols:
         return self.find_api_symbol(identifier) is not None
 
     @property
-    def __functions(self) -> SymbolSection:
-        return self.__data["api"]["functions"]
-
-    @property
-    def __macros(self) -> SymbolSection:
-        return self.__data["api"]["macros"]
+    def __api(self) -> SymbolSection:
+        return self.__data["api"]
 
     @property
     def __internal_functions(self) -> SymbolSection:

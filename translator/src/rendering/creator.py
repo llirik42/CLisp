@@ -6,7 +6,6 @@ from jinja2 import Environment, FileSystemLoader, Template
 from .codes import (
     EmptyCode,
     MakePrimitiveCode,
-    MakeEvaluableCode,
     MakeLambdaCode,
     MakeListCode,
     MakeEnvironmentCode,
@@ -19,6 +18,7 @@ from .codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
+    ConditionCode,
 )
 from src.symbols import Symbols
 
@@ -41,9 +41,9 @@ class CodeCreator:
         self.__CREATE_STRING = symbols.find_internal_function("string")
         self.__CREATE_CHARACTER = symbols.find_internal_function("character")
         self.__CREATE_BOOLEAN = symbols.find_internal_function("boolean")
-        self.__CREATE_EVALUABLE = symbols.find_internal_function("evaluable")
         self.__CREATE_LAMBDA = symbols.find_internal_function("lambda")
         self.__CREATE_LIST = symbols.find_internal_function("list")
+        self.__OBJECT_TO_BOOLEAN = symbols.find_internal_function("to_boolean")
         self.__CREATE_ENVIRONMENT = symbols.find_internal_function("environment")
         self.__DESTROY_ENVIRONMENT = symbols.find_internal_function("~environment")
         self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
@@ -61,9 +61,7 @@ class CodeCreator:
         self.__load_templates(templates_folder_path)
 
     def empty(self) -> EmptyCode:
-        c = EmptyCode()
-
-        return c
+        return EmptyCode()
 
     def make_int(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_INTEGER)
@@ -79,17 +77,6 @@ class CodeCreator:
 
     def make_boolean(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_BOOLEAN)
-
-    def make_evaluable(self) -> MakeEvaluableCode:
-        return MakeEvaluableCode(
-            main_template=self.__get_template("make_evaluable"),
-            secondary_template=self.__get_destroy_object_template(),
-            main_data={
-                "type": self.__OBJECT_TYPE,
-                "creation_func": self.__CREATE_EVALUABLE,
-            },
-            secondary_data={"func": self.__DESTROY_OBJECT},
-        )
 
     def make_lambda(self) -> MakeLambdaCode:
         return MakeLambdaCode(
@@ -113,6 +100,14 @@ class CodeCreator:
             secondary_data={
                 "func": self.__DESTROY_OBJECT,
             },
+        )
+
+    def condition(self) -> ConditionCode:
+        return ConditionCode(
+            main_template=self.__get_template("condition"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
+            secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
     def make_environment(self) -> MakeEnvironmentCode:
