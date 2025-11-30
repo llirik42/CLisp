@@ -1,0 +1,64 @@
+******************[TESTING CODE]******************
+(define x 20)
+(define increment (lambda (x) (+ x 1)))
+(display (increment 10))
+(display (increment x))
+
+;; set! and define in lambdas work on global variables if they are not named as local variables.
+
+;; Setting a lambda to a global variable changes the global variable.
+(define set-global (lambda () (set! x (+ x 1))))
+(set-global)
+(display x)
+
+;; Setting a lambda to a argument changes the argument.
+(define set-argument (lambda (x) (set! x (+ x 1)) x))
+(display (set-argument  5))
+(display x)
+
+;; Defining a variable in a lambda creates a local variable.
+(define define-in-lambda (lambda () (define x 100) (+ x 20 )))
+(display (define-in-lambda))
+(display x)
+
+;; Defining a local variable in a lambda redefine a local variable.
+(define define-local (lambda () (define x 100) (define x 200) (+ x 20 )))
+(display (define-local))
+(display x)
+
+;; Defining a variable in a lambda redefine the argument.
+(define define-argument (lambda (x) (define x 100) (+ x 0)))
+(display (define-argument 213123124))
+(display x)
+
+;; Setting a lambda to a local variable changes the local variable.
+(define set-local (lambda () (define x 300) (set! x (+ x 1)) x))
+(display (set-local))
+(display x)
+
+(display (let ((to-zero (lambda (n) 0))) (to-zero 1234)))
+(display (let ((calc (lambda (x y) (define sum (+ x y)) (define product (* x y)) (/ sum product)))) (calc 2 2)))
+
+(define return-define (lambda () (define x 300)  x))
+(display (return-define))
+
+(define return-let (lambda () (let ((x 50)) x)))
+(display (return-let))
+******************[EXPECTED OUT]******************
+11
+21
+21
+6
+21
+120
+21
+220
+21
+100
+21
+301
+21
+0
+1
+300
+50

@@ -20,9 +20,3 @@ if ! ../install.sh &> /dev/null; then
   echo -e "${RED}Error during installing!${NC}"
   exit 1
 fi
-
-rm -rf ./build/*
-
-.venv/bin/pytest -s main.py
-
-rm -rf ./build/*
