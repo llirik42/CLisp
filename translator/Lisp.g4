@@ -70,7 +70,8 @@ stringConstant : STRING ;
 integerConstant : INTEGER ;
 floatConstant : FLOAT ;
 
-definition : LBRACKET DEFINE variable expression RBRACKET ;
+definition : variableDefinition ;
+variableDefinition : LBRACKET DEFINE variable expression RBRACKET ;
 
 TRUE: '#t' ;
 FALSE: '#f' ;

@@ -175,8 +175,11 @@ class ASTVisitor(LispVisitor):
     def visitProcedureBodyDefinition(
         self, ctx: LispParser.ProcedureBodyDefinitionContext
     ) -> Code:
-        expression = ctx.definition().expression()
-        variable = ctx.definition().variable()
+        # TODO: Handle procedureDefinition
+        variable_definition = ctx.definition().variableDefinition()
+
+        expression = variable_definition.expression()
+        variable = variable_definition.variable()
 
         expr_var, expr_code = self.visit(expression)
         expr_code.remove_newlines()
@@ -268,12 +271,15 @@ class ASTVisitor(LispVisitor):
     ) -> ExpressionVisitResult:
         env = self.__environment_ctx.env
 
-        variable_name = ctx.definition().variable().getText()
+        # TODO: handle procedureDefinition
+        variable_definition = ctx.definition().variableDefinition()
+
+        variable_name = variable_definition.variable().getText()
         if self.__symbols.has_api_symbol(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
         env.add(variable_name)
 
-        expression = ctx.definition().expression()
+        expression = variable_definition.expression()
         expr_var, expr_code = self.visit(expression)
         expr_code.remove_first_secondary_line()
 
