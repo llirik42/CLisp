@@ -55,6 +55,7 @@ class CodeCreator:
         self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
             "environment_global"
         )
+        self.__DESTROY_GLOBAL_ENVIRONMENT = symbols.find_internal_function("~environment_global")
         self.__GET_VARIABLE_VALUE = symbols.find_internal_function("get_variable_value")
         self.__SET_VARIABLE_VALUE = symbols.find_internal_function("set_variable_value")
         self.__UPDATE_VARIABLE_VALUE = symbols.find_internal_function(
@@ -178,7 +179,7 @@ class CodeCreator:
                 "type": self.__ENVIRONMENT_TYPE,
                 "func": self.__GET_GLOBAL_ENVIRONMENT,
             },
-            secondary_data={"func": self.__DESTROY_ENVIRONMENT},
+            secondary_data={"func": self.__DESTROY_GLOBAL_ENVIRONMENT},
         )
 
     def get_variable_value(self) -> GetVariableValueCode:
