@@ -28,7 +28,11 @@ void cl_destroy_lambda(CL_Object* obj) {
 CL_Object* cl_lambda_call(CL_Object* obj, CL_FUNC_PARAMS) {
     const CL_LambdaObject* lambda_object = (CL_LambdaObject*)obj;
     if (lambda_object->with_env) {
-        return lambda_object->func.cl_func_with_env(lambda_object->environment, CL_FUNC_PARAMS_WITHOUT_TYPES);
+        CL_Environment* lambda_call_env = cl_make_env(lambda_object->environment);
+        CL_Object* lambda_call_result = lambda_object->func.cl_func_with_env(lambda_call_env,
+                                                                             CL_FUNC_PARAMS_WITHOUT_TYPES);
+        cl_destroy_env(lambda_call_env);
+        return lambda_call_result;
     }
     return lambda_object->func.cl_func(CL_FUNC_PARAMS_WITHOUT_TYPES);
 }
