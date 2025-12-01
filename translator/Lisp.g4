@@ -4,7 +4,7 @@ program : programElement* EOF ;
 
 programElement
     : expression
-    | environmentBodyDefinition ;
+    | definition ;
 
 expression
     : literal
@@ -44,8 +44,7 @@ procedureFormals
 procedureFixedFormals : LBRACKET variable* RBRACKET ;
 procedureVariadicFormal : variable ;
 procedureMixedFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
-procedureBody : procedureBodyDefinition* expression+ ;
-procedureBodyDefinition : definition ;
+procedureBody : definition* expression+ ;
 
 assignment : LBRACKET SET variable expression RBRACKET ;
 
@@ -54,8 +53,7 @@ letAsterisk : LBRACKET LET_ASTERISK bindingList environmentBody RBRACKET ;
 letRec : LBRACKET LET_REC bindingList environmentBody RBRACKET ;
 bindingList : LBRACKET binding* RBRACKET ;
 binding : LBRACKET variable expression RBRACKET ;
-environmentBody : environmentBodyDefinition* expression+ ;
-environmentBodyDefinition : definition ;
+environmentBody : definition* expression+ ;
 
 constant
     : boolConstant
