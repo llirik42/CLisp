@@ -17,12 +17,8 @@ from .codes import (
     GetFunctionArgumentCode,
     LambdaDefinitionCode,
     ProgramCode,
-    GetGlobalEnvironmentCode,
     ConditionCode,
-    MakeUnspecifiedCode,
-    MakeTrueCode,
-    MakeFalseCode,
-    IncreaseRefCountCode,
+    HavingVarCode,
 )
 from src.symbols import Symbols
 
@@ -55,7 +51,9 @@ class CodeCreator:
         self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
             "environment_global"
         )
-        self.__DESTROY_GLOBAL_ENVIRONMENT = symbols.find_internal_function("~environment_global")
+        self.__DESTROY_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
+            "~environment_global"
+        )
         self.__GET_VARIABLE_VALUE = symbols.find_internal_function("get_variable_value")
         self.__SET_VARIABLE_VALUE = symbols.find_internal_function("set_variable_value")
         self.__UPDATE_VARIABLE_VALUE = symbols.find_internal_function(
@@ -71,8 +69,8 @@ class CodeCreator:
     def empty(self) -> EmptyCode:
         return EmptyCode()
 
-    def make_unspecified(self) -> MakeUnspecifiedCode:
-        return MakeUnspecifiedCode(
+    def make_unspecified(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
@@ -96,8 +94,8 @@ class CodeCreator:
     def make_character(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_CHARACTER)
 
-    def make_true(self) -> MakeTrueCode:
-        return MakeTrueCode(
+    def make_true(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
@@ -109,8 +107,8 @@ class CodeCreator:
             },
         )
 
-    def make_false(self) -> MakeFalseCode:
-        return MakeFalseCode(
+    def make_false(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
@@ -154,8 +152,8 @@ class CodeCreator:
             secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
-    def increase_ref_count(self) -> IncreaseRefCountCode:
-        return IncreaseRefCountCode(
+    def increase_ref_count(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("increase_ref_count"),
             main_data={"func": self.__INCREASE_REF_COUNT},
         )
@@ -171,8 +169,8 @@ class CodeCreator:
             secondary_data={"func": self.__DESTROY_ENVIRONMENT},
         )
 
-    def get_global_environment(self) -> GetGlobalEnvironmentCode:
-        return GetGlobalEnvironmentCode(
+    def get_global_environment(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("get_global_environment"),
             secondary_template=self.__get_template("destroy_environment"),
             main_data={

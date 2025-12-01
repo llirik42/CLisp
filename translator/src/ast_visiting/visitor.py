@@ -488,7 +488,7 @@ class ASTVisitor(LispVisitor):
         if not operands:
             var = self.__variable_manager.create_object_name()
             code = self.__code_creator.make_true()
-            code.set_var(var=var)
+            code.update_data(var=var)
             return var, code
 
         if len(operands) == 1:
@@ -526,7 +526,7 @@ class ASTVisitor(LispVisitor):
         if not operands:
             var = self.__variable_manager.create_object_name()
             code = self.__code_creator.make_false()
-            code.set_var(var=var)
+            code.update_data(var=var)
             return var, code
 
         if len(operands) == 1:
@@ -551,7 +551,7 @@ class ASTVisitor(LispVisitor):
             op1_var,
             self.__code_creator.increase_ref_count(),
         )
-        consequent_code.set_var(var=consequent_var)
+        consequent_code.update_data(var=consequent_var)
 
         alternate_var, alternate_code = op2_var, op2_code
 
@@ -780,6 +780,6 @@ class ASTVisitor(LispVisitor):
             code = self.__code_creator.make_false()
 
         var = self.__variable_manager.create_object_name()
-        code.set_var(var=var)
+        code.update_data(var=var)
 
         return var, code

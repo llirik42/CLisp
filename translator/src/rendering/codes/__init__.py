@@ -1,7 +1,6 @@
 from .code import Code
 from .empty import EmptyCode
 from .get_function_argument import GetFunctionArgumentCode
-from .get_global_environment import GetGlobalEnvironmentCode
 from .get_variable_value import GetVariableValueCode
 from .lambda_call import LambdaCallCode
 from .lambda_definition import LambdaDefinitionCode
@@ -15,7 +14,4 @@ from .set_variable_code import SetVariableValueCode
 from .update_variable_code import UpdateVariableValueCode
 from .make_primitive import MakePrimitiveCode
 from .condition import ConditionCode
-from .make_unspecified import MakeUnspecifiedCode
-from .make_true import MakeTrueCode
-from .make_false import MakeFalseCode
-from .increase_ref_count import IncreaseRefCountCode
+from .having_var import HavingVarCode
