@@ -6,7 +6,6 @@ from .get_variable_value import GetVariableValueCode
 from .lambda_call import LambdaCallCode
 from .lambda_definition import LambdaDefinitionCode
 from .make_environment import MakeEnvironmentCode
-from .make_evaluable import MakeEvaluableCode
 from .make_lambda import MakeLambdaCode
 from .make_list import MakeListCode
 from .make_primitive import MakePrimitiveCode
@@ -15,3 +14,8 @@ from .program import ProgramCode
 from .set_variable_code import SetVariableValueCode
 from .update_variable_code import UpdateVariableValueCode
 from .make_primitive import MakePrimitiveCode
+from .condition import ConditionCode
+from .make_unspecified import MakeUnspecifiedCode
+from .make_true import MakeTrueCode
+from .make_false import MakeFalseCode
+from .increase_ref_count import IncreaseRefCountCode

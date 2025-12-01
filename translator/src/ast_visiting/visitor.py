@@ -12,7 +12,6 @@ from src.rendering import (
 )
 from .declarations_context import DeclarationsContext
 from .environment_context import EnvironmentContext
-from .evaluable_context import EvaluableContext
 from .lambda_context import LambdaContext
 from src.symbols import Symbols
 from .let_type_context import LetTypeContext, LetType
@@ -75,7 +74,6 @@ class ASTVisitor(LispVisitor):
         self.__symbols = symbols
         self.__code_creator = code_creator
         self.__variable_manager = VariableManager()
-        self.__evaluable_ctx = EvaluableContext()
         self.__environment_ctx = EnvironmentContext()
         self.__lambda_ctx = LambdaContext()
         self.__declaration_ctx = DeclarationsContext()
@@ -336,66 +334,38 @@ class ASTVisitor(LispVisitor):
         raise UnexpectedIdentifierException(variable_name, ctx)
 
     def visitCondition(self, ctx: LispParser.ConditionContext) -> ExpressionVisitResult:
-        lisp_if = "if"
-        c_name = self.__symbols.find_api_symbol(lisp_if)
-        assert c_name is not None, f'Symbol "{lisp_if}" is not found'
-
         test = ctx.test()
         consequent = ctx.consequent()
         alternate = ctx.alternate()
 
         test_var, test_code = self.visit(test)
-        with self.__evaluable_ctx:
-            consequent_var, consequent_code = self.visit(consequent)
+        consequent_var, consequent_code = self.visit(consequent)
 
-        operand_vars = [test_var, consequent_var]
-        operand_codes = [test_code, consequent_code]
+        if alternate:
+            alternate_var, alternate_code = self.visit(alternate)
+        else:
+            alternate_var = self.__variable_manager.create_object_name()
+            alternate_code = self.__code_creator.make_unspecified()
+            alternate_code.update_data(var=alternate_var)
 
-        if alternate is not None:
-            with self.__evaluable_ctx:
-                alternate_var, alternate_code = self.visit(alternate)
-            operand_vars.append(alternate_var)
-            operand_codes.append(alternate_code)
-
-        return self.__visit_function(
-            function_name=c_name,
-            operand_names=operand_vars,
-            operand_codes=operand_codes,
+        return self.__visit_if(
+            test_var=test_var,
+            test_code=test_code,
+            consequent_var=consequent_var,
+            consequent_code=consequent_code,
+            alternate_var=alternate_var,
+            alternate_code=alternate_code,
         )
 
     def visitAnd(self, ctx: LispParser.AndContext) -> ExpressionVisitResult:
-        lisp_and = "and"
-        c_name = self.__symbols.find_api_symbol(lisp_and)
-        assert c_name is not None, f'Symbol "{lisp_and}" is not found'
-
-        with self.__evaluable_ctx:
-            operand_vars, operand_codes = self.__visit_operands(ctx.test())
-
-        return self.__visit_function(
-            function_name=c_name,
-            operand_names=operand_vars,
-            operand_codes=operand_codes,
-        )
+        return self.__visit_and(ctx.test())
 
     def visitOr(self, ctx: LispParser.OrContext) -> ExpressionVisitResult:
-        lisp_or = "or"
-        c_name = self.__symbols.find_api_symbol(lisp_or)
-        assert c_name is not None, f'Symbol "{lisp_or}" is not found'
-
-        with self.__evaluable_ctx:
-            operand_vars, operand_codes = self.__visit_operands(ctx.test())
-
-        return self.__visit_function(
-            function_name=c_name,
-            operand_names=operand_vars,
-            operand_codes=operand_codes,
-        )
+        return self.__visit_or(ctx.test())
 
     def visitProcedureCall(
         self, ctx: LispParser.ProcedureCallContext
     ) -> ExpressionVisitResult:
-        # TODO: wrap lambda call into evaluable in if, and, or.
-
         operator_var, operator_code = self.visit(ctx.operator())
         operand_vars, operand_codes = self.__visit_operands(ctx.operand())
 
@@ -432,14 +402,7 @@ class ASTVisitor(LispVisitor):
         self, ctx: LispParser.BoolConstantContext
     ) -> ExpressionVisitResult:
         lisp_true = "#t"
-
-        code = self.__code_creator.make_boolean()
-        value = 1 if ctx.getText() == lisp_true else 0
-
-        return self.__visit_constant(
-            code=code,
-            value=value,
-        )
+        return self.__visit_boolean(ctx.getText() == lisp_true)
 
     def visitCharacterConstant(
         self, ctx: LispParser.CharacterConstantContext
@@ -490,6 +453,116 @@ class ASTVisitor(LispVisitor):
                 env.add_variable(lisp_name)
 
             return [self.visit(e)[1] for e in elements]
+
+    def __visit_if(
+        self,
+        test_var: str,
+        test_code: Code,
+        consequent_var: str,
+        consequent_code: Code,
+        alternate_var: str,
+        alternate_code: Code,
+    ) -> ExpressionVisitResult:
+        var = self.__variable_manager.create_object_name()
+        code = self.__code_creator.if_()
+
+        consequent_code.remove_first_secondary_line()
+        alternate_code.remove_first_secondary_line()
+
+        code.update_data(
+            var=var,
+            cond_var=test_var,
+            then_var=consequent_var,
+            else_var=alternate_var,
+            then_body=consequent_code.render(),
+            else_body=alternate_code.render(),
+            pre_body=test_code.render_main(),
+            post_body=test_code.render_secondary(),
+        )
+
+        return var, code
+
+    def __visit_and(
+        self, operands: list[LispParser.ExpressionContext]
+    ) -> ExpressionVisitResult:
+        if not operands:
+            var = self.__variable_manager.create_object_name()
+            code = self.__code_creator.make_true()
+            code.set_var(var=var)
+            return var, code
+
+        if len(operands) == 1:
+            return self.visit(operands[0])
+
+        if len(operands) == 2:
+            op1_var, op1_code = self.visit(operands[0])
+            op2_var, op2_code = self.visit(operands[1])
+            return self.__visit_and2(op1_var, op1_code, op2_var, op2_code)
+
+        op1_var, op1_code = self.visit(operands[0])
+        op2_var, op2_code = self.__visit_and(operands[1:])
+
+        return self.__visit_and2(op1_var, op1_code, op2_var, op2_code)
+
+    def __visit_and2(
+        self, op1_var: str, op1_code: Code, op2_var: str, op2_code: Code
+    ) -> ExpressionVisitResult:
+        test_var, test_code = op1_var, op1_code
+        consequent_var, consequent_code = op2_var, op2_code
+        alternate_var, alternate_code = self.__visit_boolean(False)
+
+        return self.__visit_if(
+            test_var=test_var,
+            test_code=test_code,
+            consequent_var=consequent_var,
+            consequent_code=consequent_code,
+            alternate_var=alternate_var,
+            alternate_code=alternate_code,
+        )
+
+    def __visit_or(
+        self, operands: list[LispParser.ExpressionContext]
+    ) -> ExpressionVisitResult:
+        if not operands:
+            var = self.__variable_manager.create_object_name()
+            code = self.__code_creator.make_false()
+            code.set_var(var=var)
+            return var, code
+
+        if len(operands) == 1:
+            return self.visit(operands[0])
+
+        if len(operands) == 2:
+            op1_var, op1_code = self.visit(operands[0])
+            op2_var, op2_code = self.visit(operands[1])
+            return self.__visit_or2(op1_var, op1_code, op2_var, op2_code)
+
+        op1_var, op1_code = self.visit(operands[0])
+        op2_var, op2_code = self.__visit_or(operands[1:])
+
+        return self.__visit_or2(op1_var, op1_code, op2_var, op2_code)
+
+    def __visit_or2(
+        self, op1_var: str, op1_code: Code, op2_var: str, op2_code: Code
+    ) -> ExpressionVisitResult:
+        test_var, test_code = op1_var, op1_code
+
+        consequent_var, consequent_code = (
+            op1_var,
+            self.__code_creator.increase_ref_count(),
+        )
+        consequent_code.set_var(var=consequent_var)
+
+        alternate_var, alternate_code = op2_var, op2_code
+
+        return self.__visit_if(
+            test_var=test_var,
+            test_code=test_code,
+            consequent_var=consequent_var,
+            consequent_code=consequent_code,
+            alternate_var=alternate_var,
+            alternate_code=alternate_code,
+        )
 
     def __add_lambda_declaration(
         self,
@@ -689,20 +762,6 @@ class ASTVisitor(LispVisitor):
 
         return expr_var, code
 
-    def __visit_function(
-        self, function_name: str, operand_names: list[str], operand_codes: list[Code]
-    ) -> ExpressionVisitResult:
-        if self.__evaluable_ctx.should_make_evaluable:
-            expr_code = self.__code_creator.make_evaluable()
-        else:
-            expr_code = self.__code_creator.procedure_call()
-
-        expr_var = self.__variable_manager.create_object_name()
-        expr_code.update_data(func=function_name, args=operand_names, var=expr_var)
-        wrapped_expr_code = wrap_codes(expr_code, operand_codes)
-
-        return expr_var, wrapped_expr_code
-
     def __visit_operands(self, operands) -> OperandsVisitResult:
         operand_vars = []
         operand_codes = []
@@ -713,3 +772,14 @@ class ASTVisitor(LispVisitor):
             operand_codes.append(op_template)
 
         return operand_vars, operand_codes
+
+    def __visit_boolean(self, value: bool) -> ExpressionVisitResult:
+        if value:
+            code = self.__code_creator.make_true()
+        else:
+            code = self.__code_creator.make_false()
+
+        var = self.__variable_manager.create_object_name()
+        code.set_var(var=var)
+
+        return var, code

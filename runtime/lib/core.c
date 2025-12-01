@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "core.h"
 #include "memory.h"
 
@@ -95,4 +96,14 @@ enum CL_ObjectType cl_get_obj_type(CL_Object* obj) {
 
 unsigned char cl_is_numeric(enum CL_ObjectType type) {
     return type == INTEGER || type == DOUBLE;
+}
+
+unsigned char cl_obj_to_boolean(CL_Object* obj) {
+    assert(cl_get_obj_type(obj) != EVALUABLE);
+
+    if (cl_get_obj_type(obj) == BOOLEAN) {
+        return cl_get_boolean_value(obj);
+    }
+
+    return 1;
 }

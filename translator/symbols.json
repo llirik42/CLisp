@@ -1,28 +1,22 @@
 {
   "api": {
-    "functions": {
-      "display": "cl_display",
-      "+": "cl_add",
-      "-": "cl_sub",
-      "*": "cl_mul",
-      "/": "cl_div",
-      ">": "cl_greater",
-      ">=": "cl_greater_or_equal",
-      "<": "cl_less",
-      "<=": "cl_less_or_equal",
-      "=": "cl_equal",
-      "not": "cl_not"
-    },
-    "macros": {
-      "if": "cl_if",
-      "and": "cl_and",
-      "or": "cl_or"
-    }
+    "display": "cl_display",
+    "+": "cl_add",
+    "-": "cl_sub",
+    "*": "cl_mul",
+    "/": "cl_div",
+    ">": "cl_greater",
+    ">=": "cl_greater_or_equal",
+    "<": "cl_less",
+    "<=": "cl_less_or_equal",
+    "=": "cl_equal",
+    "not": "cl_not"
   },
   "internal": {
     "functions": {
       "integer" : "cl_make_int",
-      "boolean" : "cl_make_boolean",
+      "true" : "cl_make_true",
+      "false": "cl_make_false",
       "character" : "cl_make_char",
       "string" : "cl_make_string",
       "float" : "cl_make_double",
@@ -37,7 +31,9 @@
       "set_variable_value": "cl_set_variable_value",
       "update_variable_value": "cl_update_variable_value",
       "get_variable_value": "cl_get_variable_value",
-      "lambda_call": "cl_lambda_call"
+      "lambda_call": "cl_lambda_call",
+      "to_boolean": "cl_obj_to_boolean",
+      "ref_count++": "cl_increase_refs_count"
     },
     "types": {
       "object": "CL_Object*",

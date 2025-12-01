@@ -6,7 +6,6 @@ from jinja2 import Environment, FileSystemLoader, Template
 from .codes import (
     EmptyCode,
     MakePrimitiveCode,
-    MakeEvaluableCode,
     MakeLambdaCode,
     MakeListCode,
     MakeEnvironmentCode,
@@ -19,6 +18,11 @@ from .codes import (
     LambdaDefinitionCode,
     ProgramCode,
     GetGlobalEnvironmentCode,
+    ConditionCode,
+    MakeUnspecifiedCode,
+    MakeTrueCode,
+    MakeFalseCode,
+    IncreaseRefCountCode,
 )
 from src.symbols import Symbols
 
@@ -36,14 +40,16 @@ class CodeCreator:
         self.__OBJECT_TYPE = symbols.find_internal_type("object")
         self.__ENVIRONMENT_TYPE = symbols.find_internal_type("environment")
         self.__DESTROY_OBJECT = symbols.find_internal_function("~object")
+        self.__CREATE_UNSPECIFIED = symbols.find_internal_function("unspecified")
         self.__CREATE_INTEGER = symbols.find_internal_function("integer")
         self.__CREATE_FLOAT = symbols.find_internal_function("float")
         self.__CREATE_STRING = symbols.find_internal_function("string")
         self.__CREATE_CHARACTER = symbols.find_internal_function("character")
-        self.__CREATE_BOOLEAN = symbols.find_internal_function("boolean")
-        self.__CREATE_EVALUABLE = symbols.find_internal_function("evaluable")
+        self.__CREATE_TRUE = symbols.find_internal_function("true")
+        self.__CREATE_FALSE = symbols.find_internal_function("false")
         self.__CREATE_LAMBDA = symbols.find_internal_function("lambda")
         self.__CREATE_LIST = symbols.find_internal_function("list")
+        self.__OBJECT_TO_BOOLEAN = symbols.find_internal_function("to_boolean")
         self.__CREATE_ENVIRONMENT = symbols.find_internal_function("environment")
         self.__DESTROY_ENVIRONMENT = symbols.find_internal_function("~environment")
         self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
@@ -55,15 +61,27 @@ class CodeCreator:
             "update_variable_value"
         )
         self.__CALL_LAMBDA = symbols.find_internal_function("lambda_call")
+        self.__INCREASE_REF_COUNT = symbols.find_internal_function("ref_count++")
         self.__FUNCTION_ARGS_VAR = "args"
         self.__FUNCTION_PARAMS = symbols.find_internal_type("lambda_function_params")
 
         self.__load_templates(templates_folder_path)
 
     def empty(self) -> EmptyCode:
-        c = EmptyCode()
+        return EmptyCode()
 
-        return c
+    def make_unspecified(self) -> MakeUnspecifiedCode:
+        return MakeUnspecifiedCode(
+            main_template=self.__get_template("make_primitive"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_UNSPECIFIED,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
+        )
 
     def make_int(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_INTEGER)
@@ -77,18 +95,30 @@ class CodeCreator:
     def make_character(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_CHARACTER)
 
-    def make_boolean(self) -> MakePrimitiveCode:
-        return self.__make_primitive(self.__CREATE_BOOLEAN)
-
-    def make_evaluable(self) -> MakeEvaluableCode:
-        return MakeEvaluableCode(
-            main_template=self.__get_template("make_evaluable"),
+    def make_true(self) -> MakeTrueCode:
+        return MakeTrueCode(
+            main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
-                "creation_func": self.__CREATE_EVALUABLE,
+                "func": self.__CREATE_TRUE,
             },
-            secondary_data={"func": self.__DESTROY_OBJECT},
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
+        )
+
+    def make_false(self) -> MakeFalseCode:
+        return MakeFalseCode(
+            main_template=self.__get_template("make_primitive"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_FALSE,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
         )
 
     def make_lambda(self) -> MakeLambdaCode:
@@ -113,6 +143,20 @@ class CodeCreator:
             secondary_data={
                 "func": self.__DESTROY_OBJECT,
             },
+        )
+
+    def if_(self) -> ConditionCode:
+        return ConditionCode(
+            main_template=self.__get_template("if"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
+            secondary_data={"func": self.__DESTROY_OBJECT},
+        )
+
+    def increase_ref_count(self) -> IncreaseRefCountCode:
+        return IncreaseRefCountCode(
+            main_template=self.__get_template("increase_ref_count"),
+            main_data={"func": self.__INCREASE_REF_COUNT},
         )
 
     def make_environment(self) -> MakeEnvironmentCode:
