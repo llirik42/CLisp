@@ -35,15 +35,15 @@ procedureCall : LBRACKET operator operand* RBRACKET ;
 operator : expression ;
 operand : expression ;
 
-procedure : LBRACKET LAMBDA formals procedureBody RBRACKET ;
-formals
-    : fixedFormals
-    | variadicFormal
-    | mixedFormals
+procedure : LBRACKET LAMBDA procedureFormals procedureBody RBRACKET ;
+procedureFormals
+    : procedureFixedFormals
+    | procedureVariadicFormal
+    | procedureMixedFormals
     ;
-fixedFormals : LBRACKET variable* RBRACKET ;
-variadicFormal : variable ;
-mixedFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
+procedureFixedFormals : LBRACKET variable* RBRACKET ;
+procedureVariadicFormal : variable ;
+procedureMixedFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
 procedureBody : procedureBodyDefinition* expression+ ;
 procedureBodyDefinition : definition ;
 

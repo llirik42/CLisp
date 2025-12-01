@@ -109,7 +109,7 @@ class ASTVisitor(LispVisitor):
         env = self.__environment_ctx.env
 
         function_name = self.__add_lambda_declaration(
-            formals=ctx.formals(), body=ctx.procedureBody()
+            formals=ctx.procedureFormals(), body=ctx.procedureBody()
         )
 
         lambda_var = self.__variable_manager.create_object_name()
@@ -120,20 +120,20 @@ class ASTVisitor(LispVisitor):
 
         return lambda_var, lambda_creation_code
 
-    def visitFixedFormals(self, ctx: LispParser.FixedFormalsContext) -> tuple[str, str]:
+    def visitProcedureFixedFormals(self, ctx: LispParser.ProcedureFixedFormalsContext) -> tuple[str, str]:
         codes, _ = self.__visit_scalar_formals(ctx.variable(), ctx)
 
         return join_codes(codes), ""
 
-    def visitVariadicFormal(self, ctx: LispParser.VariadicFormalContext) -> tuple[str, str]:
+    def visitProcedureVariadicFormal(self, ctx: LispParser.ProcedureVariadicFormalContext) -> tuple[str, str]:
         code, secondary = self.__visit_variadic_formal(
             ctx.variable(), ctx, start_index=0, already_visited_params=[]
         )
 
         return code.render(), secondary
 
-    def visitMixedFormals(
-        self, ctx: LispParser.MixedFormalsContext
+    def visitProcedureMixedFormals(
+        self, ctx: LispParser.ProcedureMixedFormalsContext
     ) -> tuple[str, str]:
         fixed_variables = ctx.variable()[:-1]
         variadic_variable = ctx.variable()[-1]
@@ -558,7 +558,7 @@ class ASTVisitor(LispVisitor):
 
     def __add_lambda_declaration(
         self,
-        formals: LispParser.FormalsContext,
+        formals: LispParser.ProcedureFormalsContext,
         body: LispParser.ProcedureBodyContext,
     ) -> DeclaredFunctionName:
         env_var = "env"  # variable that stores environment in the lambda function (from the template)
@@ -569,7 +569,7 @@ class ASTVisitor(LispVisitor):
         # Visiting formals of the procedure
         with self.__lambda_ctx, self.__environment_ctx:
             self.__environment_ctx.init(name=env_var, code=env.code)
-            formals_text_before, formals_text_after = self.visitFormals(formals)
+            formals_text_before, formals_text_after = self.visitProcedureFormals(formals)
             body_var, body_code_text = self.visit(body)
 
         function_name = self.__variable_manager.create_function_name()
