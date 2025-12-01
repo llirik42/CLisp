@@ -198,53 +198,40 @@ class ASTVisitor(LispVisitor):
     def visitBindingList(
         self, ctx: LispParser.BindingListContext
     ) -> list[BindingVisitResult]:
-        # TODO: fix copy-paste with visitBinding()
+        variables_names = [b.variable().getText() for b in ctx.binding()]
+        self.__check_binding_list_variables(variables_names, ctx)
 
-        result = [self.visit(b) for b in ctx.binding()]
-        if self.__let_type_ctx.type_ != LetType.LET:
-            # All variables have already been added to the environment (let*, letrec)
-            return result
-
-        # No variables were added (let)
-        env = self.__environment_ctx.env
-        for b in ctx.binding():
-            variable_name = b.variable().getText()
-
-            if env.has_variable(variable_name):
-                raise DuplicatedBindingException(variable_name, ctx)
-
-            env.add_variable(variable_name)
-
-        return result
-
-    def visitBinding(self, ctx: LispParser.BindingContext) -> BindingVisitResult:
+        let_type = self.__let_type_ctx.type_
         env = self.__environment_ctx.env
 
+        binding_list_codes = []
+
+        if let_type is LetType.LET:
+            for binding in ctx.binding():
+                binding_code, _ = self.visit(binding)
+                binding_list_codes.append(binding_code)
+            env.extend(variables_names)
+
+        if let_type is LetType.LET_ASTERISK:
+            for binding in ctx.binding():
+                binding_code, binding_variable_name = self.visit(binding)
+                binding_list_codes.append(binding_code)
+                env.add(binding_variable_name)
+
+        if let_type is LetType.LET_REC:
+            env.extend(variables_names)
+            for binding in ctx.binding():
+                binding_code, _ = self.visit(binding)
+                binding_list_codes.append(binding_code)
+
+        return binding_list_codes
+
+    def visitBinding(self, ctx:LispParser.BindingContext) -> tuple[Code, str]:
+        env = self.__environment_ctx.env
         variable_name = ctx.variable().getText()
-
-        if self.__symbols.has_api_symbol(variable_name):
-            raise FunctionRedefineException(variable_name, ctx)
-
-        if env.has_variable(variable_name):
-            raise DuplicatedBindingException(variable_name, ctx)
-
         expression = ctx.expression()
-
-        expr_code = expr_var = None
-        match self.__let_type_ctx.type_:
-            case LetType.LET:
-                expr_var, expr_code = self.visit(expression)
-            case LetType.LET_ASTERISK:
-                expr_var, expr_code = self.visit(expression)
-                env.add_variable(variable_name)
-            case LetType.LET_REC:
-                env.add_variable(variable_name)
-                expr_var, expr_code = self.visit(expression)
-            case _:
-                raise RuntimeError("Unknown type of let")
-
+        expr_var, expr_code = self.visit(expression)
         expr_code.remove_first_secondary_line()
-
         binding_code = self.__code_creator.set_variable_value()
         binding_code.update_data(
             env=env.name,
@@ -252,7 +239,7 @@ class ASTVisitor(LispVisitor):
             value=expr_var,
         )
 
-        return wrap_codes(binding_code, expr_code)
+        return wrap_codes(binding_code, expr_code), variable_name
 
     def visitEnvironmentBody(
         self, ctx: LispParser.EnvironmentBodyContext
@@ -289,7 +276,7 @@ class ASTVisitor(LispVisitor):
         expr_var, expr_code = self.visit(expression)
 
         expr_code.remove_first_secondary_line()
-        env.add_variable(variable_name)
+        env.add(variable_name)
 
         definition_code = self.__code_creator.set_variable_value()
         definition_code.update_data(
@@ -450,7 +437,7 @@ class ASTVisitor(LispVisitor):
             env = self.__environment_ctx.env
 
             for lisp_name, _ in self.__symbols.find_api_function_items():
-                env.add_variable(lisp_name)
+                env.add(lisp_name)
 
             return [self.visit(e)[1] for e in elements]
 
@@ -783,3 +770,16 @@ class ASTVisitor(LispVisitor):
         code.update_data(var=var)
 
         return var, code
+
+    def __check_binding_list_variables(self, variables_names: list[str], ctx: ParserRuleContext) -> None:
+        visited_variables = set()
+
+        for v in variables_names:
+            if self.__symbols.has_api_symbol(v):
+                raise FunctionRedefineException(v, ctx)
+
+            if v in visited_variables:
+                raise DuplicatedBindingException(v, ctx)
+
+            visited_variables.add(v)
+

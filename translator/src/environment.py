@@ -52,7 +52,7 @@ class Environment:
 
         return False
 
-    def add_variable(self, name: str) -> None:
+    def add(self, name: str) -> None:
         """
         Adds a variable to the environment.
 
@@ -60,6 +60,15 @@ class Environment:
         """
 
         self.__variables.add(name)
+
+    def extend(self, names: list[str]) -> None:
+        """
+        Adds variables to the environment.
+
+        :param names: the names of the variables to add.
+        """
+
+        self.__variables.update(names)
 
     @property
     def name(self) -> str:
