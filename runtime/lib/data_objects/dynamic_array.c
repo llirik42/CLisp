@@ -1,7 +1,6 @@
 #include "dynamic_array.h"
 
 #include <math.h>
-#include <stdio.h>
 
 #include "memory.h"
 #include "utils.h"
@@ -11,7 +10,7 @@
 
 CL_DynamicArray* cl_da_create(unsigned short capacity) {
     CL_DynamicArray *da = cl_allocate_memory(sizeof(CL_DynamicArray));
-    if (!capacity) {
+    if (capacity == UNDEFINED_DA_CAPACITY) {
         da->capacity = BASIC_DA_CAPACITY;
     } else {
         da->capacity = capacity;

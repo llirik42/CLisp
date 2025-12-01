@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "arithmetic.h"
 #include "comparation.h"

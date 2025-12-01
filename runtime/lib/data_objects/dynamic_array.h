@@ -7,6 +7,8 @@ typedef struct {
     size_t capacity;
 } CL_DynamicArray;
 
+#define UNDEFINED_DA_CAPACITY 0
+
 CL_DynamicArray* cl_da_create(unsigned short capacity);
 
 void cl_da_append(CL_DynamicArray *da, void *element);
