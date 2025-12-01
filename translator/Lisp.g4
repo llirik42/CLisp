@@ -70,8 +70,21 @@ stringConstant : STRING ;
 integerConstant : INTEGER ;
 floatConstant : FLOAT ;
 
-definition : variableDefinition ;
+definition : variableDefinition | procedureDefinition;
 variableDefinition : LBRACKET DEFINE variable expression RBRACKET ;
+procedureDefinition : LBRACKET DEFINE LBRACKET variable procedureDefinitionFormals RBRACKET procedureBody RBRACKET ;
+
+procedureDefinitionFormals
+    : procedureDefinitionFixedFormals
+    | procedureDefinitionVariadicFormal
+    | procedureDefinitionMixedFormals
+    ;
+procedureDefinitionFixedFormals : variable* ;
+procedureDefinitionVariadicFormal : PERIOD variable ;
+procedureDefinitionMixedFormals : variable+ PERIOD variable ;
+
+
+
 
 TRUE: '#t' ;
 FALSE: '#f' ;
