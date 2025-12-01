@@ -271,12 +271,11 @@ class ASTVisitor(LispVisitor):
         variable_name = ctx.definition().variable().getText()
         if self.__symbols.has_api_symbol(variable_name):
             raise FunctionRedefineException(variable_name, ctx)
+        env.add(variable_name)
 
         expression = ctx.definition().expression()
         expr_var, expr_code = self.visit(expression)
-
         expr_code.remove_first_secondary_line()
-        env.add(variable_name)
 
         definition_code = self.__code_creator.set_variable_value()
         definition_code.update_data(
