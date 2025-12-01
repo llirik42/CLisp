@@ -38,12 +38,12 @@ operand : expression ;
 procedure : LBRACKET LAMBDA formals procedureBody RBRACKET ;
 formals
     : fixedFormals
-    | variadicFormals
-    | listFormals
+    | variadicFormal
+    | mixedFormals
     ;
 fixedFormals : LBRACKET variable* RBRACKET ;
-listFormals : variable ;
-variadicFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
+variadicFormal : variable ;
+mixedFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
 procedureBody : procedureBodyDefinition* expression+ ;
 procedureBodyDefinition : definition ;
 

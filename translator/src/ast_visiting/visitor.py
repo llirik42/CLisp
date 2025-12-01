@@ -125,15 +125,15 @@ class ASTVisitor(LispVisitor):
 
         return join_codes(codes), ""
 
-    def visitListFormals(self, ctx: LispParser.ListFormalsContext) -> tuple[str, str]:
+    def visitVariadicFormal(self, ctx: LispParser.VariadicFormalContext) -> tuple[str, str]:
         code, secondary = self.__visit_variadic_formal(
             ctx.variable(), ctx, start_index=0, already_visited_params=[]
         )
 
         return code.render(), secondary
 
-    def visitVariadicFormals(
-        self, ctx: LispParser.VariadicFormalsContext
+    def visitMixedFormals(
+        self, ctx: LispParser.MixedFormalsContext
     ) -> tuple[str, str]:
         fixed_variables = ctx.variable()[:-1]
         variadic_variable = ctx.variable()[-1]
