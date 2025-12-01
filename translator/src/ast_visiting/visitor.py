@@ -329,6 +329,10 @@ class ASTVisitor(LispVisitor):
         operator_var, operator_code = self.visit(ctx.operator())
         operand_vars, operand_codes = self.__visit_operands(ctx.operand())
 
+        for op in operand_codes:
+            # Remove destroying() operands (they will be destroyed after the exit of lambda)
+            op.remove_first_secondary_line()
+
         expr_code = self.__code_creator.lambda_call()
         expr_var = self.__variable_manager.create_object_name()
         expr_code.update_data(var=expr_var, lambda_var=operator_var, args=operand_vars)
