@@ -5,7 +5,6 @@
 typedef struct {
     const char* key;
     CL_Object* val;
-    unsigned char auto_remove;
 } CL_Variable;
 
 typedef struct Environment {
@@ -21,7 +20,7 @@ CL_Environment* cl_make_env_capacity(CL_Environment* parent, size_t capacity);
 
 void cl_destroy_env(CL_Environment* env);
 
-void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value, unsigned char auto_remove);
+void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value);
 
 CL_Object* cl_update_variable_value(CL_Environment* env, char* name, CL_Object* value);
 

@@ -568,12 +568,7 @@ class ASTVisitor(LispVisitor):
             visited_params.append(param_name)
 
             current_arg_code = self.__code_creator.set_variable_value()
-            current_arg_code.update_data(
-                env=env.name,
-                name=param_name,
-                value=f"args[{i}]",
-                auto_remove=0, # TODO: прибито (объяснить, что это)
-            )  # TODO: value прибито
+            current_arg_code.update_data(env=env.name, name=param_name, value=f"args[{i}]")  # TODO: value прибито
             env.add(param_name)
 
             current_arg_code.remove_newlines()
@@ -603,12 +598,7 @@ class ASTVisitor(LispVisitor):
         value = f"cl_make_list_from_array({count_name}-{start_index}, {args_name}+{start_index})" # TODO: прибито
 
         code = self.__code_creator.set_variable_value()
-        code.update_data(
-            env=env.name,
-            name=param_name,
-            value=value,
-            auto_remove=0, # TODO: прибито (объяснить, что это)
-        )
+        code.update_data(env=env.name, name=param_name, value=value)
         env.add(param_name)
 
         return code

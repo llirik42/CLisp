@@ -1,1 +1,1 @@
-{{ func }}({{ env }}, {{ name }}, {{ value }}, {{ auto_remove }});
+{{ func }}({{ env }}, {{ name }}, {{ value }});

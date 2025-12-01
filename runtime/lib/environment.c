@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "arithmetic.h"
 #include "comparation.h"
@@ -55,16 +56,13 @@ CL_Environment* cl_make_env_capacity(CL_Environment* parent, size_t capacity) {
 
 void cl_destroy_env(CL_Environment* env) {
     for (size_t i = 0; i < env->variables_count; i++) {
-        CL_Variable* var = &env->variables[i];
-        if (var->auto_remove) {
-            cl_destroy_obj(var->val);
-        }
+        cl_destroy_obj(env->variables[i].val);
     }
     cl_free_memory(env->variables);
     cl_free_memory(env);
 }
 
-void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value, unsigned char auto_remove) {
+void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
     if (!env) {
         cl_abort("Environment is NULL!\n");
         __builtin_unreachable();
@@ -86,9 +84,7 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value, un
     for (size_t i = 0; i < env->variables_count; i++) {
         if (!strcmp(name, env->variables[i].key)) {
             cl_destroy_obj(env->variables[i].val);
-            CL_Variable* var = &env->variables[i];
-            var->val = value;
-            var->auto_remove = auto_remove;
+            env->variables[i].val = value;
             return;
         }
     }
@@ -98,7 +94,7 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value, un
         env->variables = cl_reallocate_memory(env->variables, sizeof(CL_Variable) * env->capacity);
     }
 
-    CL_Variable var = {name, value, auto_remove};
+    CL_Variable var = {name, value};
     env->variables[env->variables_count++] = var;
 }
 
@@ -144,8 +140,7 @@ CL_Object* cl_get_variable_value(CL_Environment* env, char* name) {
 }
 
 static void set_reserved_variable(CL_Environment* env, const char* name, CL_Object* value) {
-    unsigned char auto_remove = 1;
-    CL_Variable var = {name, value, auto_remove};
+    CL_Variable var = {name, value};
     env->variables[env->variables_count++] = var;
 }
 
