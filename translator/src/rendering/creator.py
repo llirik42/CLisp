@@ -21,7 +21,8 @@ from .codes import (
     ConditionCode,
     MakeUnspecifiedCode,
     MakeTrueCode,
-    MakeFalseCode, IncreaseRefCountCode,
+    MakeFalseCode,
+    IncreaseRefCountCode,
 )
 from src.symbols import Symbols
 
@@ -146,15 +147,7 @@ class CodeCreator:
 
     def if_(self) -> ConditionCode:
         return ConditionCode(
-            main_template=self.__get_template("condition"),
-            secondary_template=self.__get_destroy_object_template(),
-            main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
-            secondary_data={"func": self.__DESTROY_OBJECT},
-        )
-
-    def and_(self) -> ConditionCode:
-        return ConditionCode(
-            main_template=self.__get_template("condition"),
+            main_template=self.__get_template("if"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
             secondary_data={"func": self.__DESTROY_OBJECT},
@@ -163,9 +156,7 @@ class CodeCreator:
     def increase_ref_count(self) -> IncreaseRefCountCode:
         return IncreaseRefCountCode(
             main_template=self.__get_template("increase_ref_count"),
-            main_data={
-                "func": self.__INCREASE_REF_COUNT
-            }
+            main_data={"func": self.__INCREASE_REF_COUNT},
         )
 
     def make_environment(self) -> MakeEnvironmentCode:

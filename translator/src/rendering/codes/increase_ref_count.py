@@ -1,5 +1,6 @@
 from .code import Code
 
+
 class IncreaseRefCountCode(Code):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
