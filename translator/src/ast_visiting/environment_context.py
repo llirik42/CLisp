@@ -37,9 +37,7 @@ class EnvironmentContext:
         """
 
         parent = self.__env
-        self.__env = Environment(
-            name=name, code=code, parent=parent
-        )
+        self.__env = Environment(name=name, code=code, parent=parent)
 
     def __enter__(self):
         pass

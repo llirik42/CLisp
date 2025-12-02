@@ -6,7 +6,7 @@ from .lambda_call import LambdaCallCode
 from .lambda_definition import LambdaDefinitionCode
 from .make_environment import MakeEnvironmentCode
 from .make_lambda import MakeLambdaCode
-from .make_list import MakeListCode
+from .make_list_from_array import MakeListFromArrayCode
 from .make_primitive import MakePrimitiveCode
 from .procedure_call import ProcedureCallCode
 from .program import ProgramCode

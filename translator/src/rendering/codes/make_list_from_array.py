@@ -3,7 +3,7 @@ from typing import Optional, Union
 from .code import Code
 
 
-class MakeListCode(Code):
+class MakeListFromArrayCode(Code):
     def __init__(self, **kwargs):
         """
         Initial element count is zero and element pointer is NULL (the list will be empty).

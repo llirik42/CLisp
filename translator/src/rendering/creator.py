@@ -7,7 +7,7 @@ from .codes import (
     EmptyCode,
     MakePrimitiveCode,
     MakeLambdaCode,
-    MakeListCode,
+    MakeListFromArrayCode,
     MakeEnvironmentCode,
     GetVariableValueCode,
     SetVariableValueCode,
@@ -45,6 +45,7 @@ class CodeCreator:
         self.__CREATE_FALSE = symbols.find_internal_function("false")
         self.__CREATE_LAMBDA = symbols.find_internal_function("lambda")
         self.__CREATE_LIST = symbols.find_internal_function("list")
+        self.__CREATE_LIST_FROM_ARRAY = symbols.find_internal_function("list_array")
         self.__OBJECT_TO_BOOLEAN = symbols.find_internal_function("to_boolean")
         self.__CREATE_ENVIRONMENT = symbols.find_internal_function("environment")
         self.__DESTROY_ENVIRONMENT = symbols.find_internal_function("~environment")
@@ -131,13 +132,26 @@ class CodeCreator:
             secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
-    def make_list(self) -> MakeListCode:
-        return MakeListCode(
+    def make_list(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_list"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_LIST,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
+        )
+
+    def make_list_from_array(self) -> MakeListFromArrayCode:
+        return MakeListFromArrayCode(
+            main_template=self.__get_template("make_list_from_array"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_LIST_FROM_ARRAY,
             },
             secondary_data={
                 "func": self.__DESTROY_OBJECT,
