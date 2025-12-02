@@ -1,6 +1,6 @@
 #pragma once
 #include "lib/core.h"
-#include "environment.h"
+#include "lib/environment.h"
 
 typedef CL_Object*(*cl_evaluable_func)(CL_Environment* env);
 

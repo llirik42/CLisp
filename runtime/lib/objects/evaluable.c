@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "evaluable.h"
 
 #include "memory.h"
@@ -18,9 +19,14 @@ void cl_destroy_evaluable(CL_Object* obj) {
 }
 
 CL_Object* cl_evaluate(CL_Object* obj) {
+    // TODO: uncomment this after dealing with cl_unwrap_obj()
+//    if (cl_get_obj_type(obj) != EVALUABLE) {
+//        cl_abort("Object is not evaluable!\n");
+//        __builtin_unreachable();
+//    }
+
     if (cl_get_obj_type(obj) != EVALUABLE) {
-        cl_abort("Object is not evaluable!\n");
-        __builtin_unreachable();
+        return obj;
     }
 
     CL_EvaluableObject* evaluable_object = (CL_EvaluableObject*)obj;
