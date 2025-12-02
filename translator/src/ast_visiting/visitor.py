@@ -501,9 +501,8 @@ class ASTVisitor(LispVisitor):
 
         consequent_var, consequent_code = (
             op1_var,
-            self.__code_creator.increase_ref_count(),
+            self.__code_creator.empty()
         )
-        consequent_code.update_data(var=consequent_var)
 
         alternate_var, alternate_code = op2_var, op2_code
 
