@@ -3,19 +3,20 @@ from typing import Optional
 from .code import Code
 
 
-class ProcedureCallCode(Code):
+class MakeCallableCode(Code):
     def __init__(self, **kwargs):
         """
-        Initial args is an empty list.
+        Initial environment is NULL.
         """
 
         super().__init__(required_params=["var", "func"], **kwargs)
+        self._update_main_data(env="NULL")
 
     def update_data(
         self,
         var: Optional[str] = None,
         func: Optional[str] = None,
-        args: Optional[list[str]] = None,
+        env: Optional[str] = None,
     ) -> None:
-        self._update_main_data(var=var, func=func, args=args)
+        self._update_main_data(var=var, func=func, env=env)
         self._update_secondary_data(var=var)

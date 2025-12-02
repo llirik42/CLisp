@@ -10,6 +10,7 @@ from src.rendering import (
 )
 from src.rendering.codes import MakePrimitiveCode, Code
 from src.symbols import Symbols
+from .ast_context import ASTContext, visit
 from .declarations_context import DeclarationsContext
 from .environment_context import EnvironmentContext
 from .exceptions import (
@@ -21,7 +22,6 @@ from .exceptions import (
 )
 from .let_type_context import LetTypeContext, LetType
 from .variable_manager import VariableManager
-from .ast_context import ASTContext, visit
 
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
@@ -107,16 +107,35 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
         env_var = self.__symbols.find_internal("lambda_env")
-
         env = self.__environment_ctx.env
 
         with self.__environment_ctx:
             self.__environment_ctx.init(name=env_var, code=env.code)
             formals_text = self.visit(ctx.procedureFormals())
 
-            return self.__visit_procedure(
+            return self.__visit_lambda(
                 formals_text=formals_text, body=ctx.procedureBody()
             )
+
+    @visit(ast_context)
+    def visitDelay(self, ctx: LispParser.DelayContext) -> ExpressionVisitResult:
+        env_var = self.__symbols.find_internal("evaluable_env")
+        env = self.__environment_ctx.env
+
+        with self.__environment_ctx:
+            self.__environment_ctx.init(name=env_var, code=env.code)
+
+            return self.__visit_evaluable(ctx.expression())
+
+    @visit(ast_context)
+    def visitForce(self, ctx:LispParser.ForceContext) -> ExpressionVisitResult:
+        expr_var, expr_code = self.visit(ctx.expression())
+
+        force_var = self.__variable_manager.create_object_name()
+        force_code = self.__code_creator.evaluation()
+        force_code.update_data(var=force_var, evaluable_var=expr_var)
+
+        return force_var, wrap_codes(force_code, expr_code)
 
     @visit(ast_context)
     def visitProcedureFixedFormals(
@@ -254,7 +273,7 @@ class ASTVisitor(LispVisitor):
         with self.__environment_ctx:
             self.__environment_ctx.init(name=env_var, code=env.code)
             formals_text = self.visit(ctx.procedureDefinitionFormals())
-            procedure_var, procedure_code = self.__visit_procedure(
+            procedure_var, procedure_code = self.__visit_lambda(
                 formals_text=formals_text, body=ctx.procedureBody()
             )
 
@@ -569,10 +588,8 @@ class ASTVisitor(LispVisitor):
         body: LispParser.ProcedureBodyContext,
     ) -> DeclaredFunctionName:
         function_code = self.__code_creator.lambda_definition()
-
         body_var, body_code_text = self.visit(body)
-
-        function_name = self.__variable_manager.create_function_name()
+        function_name = self.__variable_manager.create_lambda_function_name()
 
         body = formals_text + "\n" if formals_text else ""
         body += body_code_text
@@ -583,6 +600,30 @@ class ASTVisitor(LispVisitor):
             body=body,
         )
         function_code.transfer_newline()
+
+        self.__declaration_ctx.add_declaration(function_code)
+
+        return function_name
+
+    def __add_evaluable_declaration(
+        self, expression: LispParser.ExpressionContext
+    ) -> DeclaredFunctionName:
+        function_code = self.__code_creator.evaluable_definition()
+        expr_var, expr_code = self.visit(expression)
+        expr_code.transfer_newline()
+
+        function_name = self.__variable_manager.create_evaluable_function_name()
+
+        result_increase_ref_count = self.__code_creator.increase_ref_count()
+        result_increase_ref_count.update_data(var=expr_var)
+
+        body = wrap_codes(result_increase_ref_count, expr_code).render()
+
+        function_code.update_data(
+            func=function_name,
+            ret_var=expr_var,
+            body=body,
+        )
 
         self.__declaration_ctx.add_declaration(function_code)
 
@@ -667,7 +708,9 @@ class ASTVisitor(LispVisitor):
                 increase_ref_count_count_code = self.__code_creator.increase_ref_count()
                 increase_ref_count_count_code.update_data(var=e_var)
                 increase_ref_count_count_code.remove_newlines()
-                e_code.add_secondary_prolog("\n" + increase_ref_count_count_code.render())
+                e_code.add_secondary_prolog(
+                    "\n" + increase_ref_count_count_code.render()
+                )
 
             e_code.transfer_newline()
             last_expr_var = e_var
@@ -730,7 +773,7 @@ class ASTVisitor(LispVisitor):
 
         return var, code
 
-    def __visit_procedure(
+    def __visit_lambda(
         self, formals_text: str, body: LispParser.ProcedureBodyContext
     ) -> ExpressionVisitResult:
         parent_env = self.__environment_ctx.env.parent
@@ -747,6 +790,21 @@ class ASTVisitor(LispVisitor):
         )
 
         return lambda_var, lambda_creation_code
+
+    def __visit_evaluable(
+        self, expression: LispParser.ExpressionContext
+    ) -> ExpressionVisitResult:
+        parent_env = self.__environment_ctx.env.parent
+
+        function_name = self.__add_evaluable_declaration(expression)
+
+        evaluable_var = self.__variable_manager.create_object_name()
+        evaluable_creation_code = self.__code_creator.make_evaluable()
+        evaluable_creation_code.update_data(
+            var=evaluable_var, func=function_name, env=parent_env.name
+        )
+
+        return evaluable_var, evaluable_creation_code
 
     def __visit_variable_definition(
         self, variable_name: str, expr_var: str, expr_code: Code

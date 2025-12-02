@@ -3,7 +3,7 @@ from typing import Optional
 from .code import Code
 
 
-class LambdaDefinitionCode(Code):
+class FunctionDefinitionCode(Code):
     def __init__(self, **kwargs):
         super().__init__(required_params=["body", "ret_var", "func"], **kwargs)
 

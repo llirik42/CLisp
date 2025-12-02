@@ -33,6 +33,7 @@
     "update_variable_value": "cl_update_variable_value",
     "get_variable_value": "cl_get_variable_value",
     "lambda_call": "cl_lambda_call",
+    "evaluation": "cl_evaluate",
     "to_boolean": "cl_obj_to_boolean",
     "ref_count++": "cl_increase_ref_count",
     "object_type": "CL_Object*",
@@ -40,10 +41,8 @@
     "lambda_env": "env",
     "lambda_args": "args",
     "lambda_count": "count",
-    "lambda_function_params": [
-      "CL_Environment* env",
-      "unsigned int count",
-      "CL_Object** args"
-    ]
+    "lambda_function_params": ["CL_Environment* env", "unsigned int count", "CL_Object** args"],
+    "evaluable_env": "env",
+    "evaluable_function_params": ["CL_Environment* env"]
   }
 }

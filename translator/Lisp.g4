@@ -8,6 +8,8 @@ programElement
 
 expression
     : literal
+    | delay
+    | force
     | variable
     | condition
     | and
@@ -19,6 +21,9 @@ expression
     | letAsterisk
     | letRec
     ;
+
+delay : LBRACKET DELAY expression RBRACKET ;
+force : LBRACKET FORCE expression RBRACKET ;
 
 literal : constant ;
 
@@ -81,9 +86,6 @@ procedureDefinitionFixedFormals : variable* ;
 procedureDefinitionVariadicFormal : PERIOD variable ;
 procedureDefinitionMixedFormals : variable+ PERIOD variable ;
 
-
-
-
 TRUE: '#t' ;
 FALSE: '#f' ;
 LAMBDA : 'lambda' ;
@@ -96,6 +98,8 @@ DEFINE : 'define' ;
 LET : 'let' ;
 LET_ASTERISK : 'let*' ;
 LET_REC : 'letrec' ;
+DELAY : 'delay' ;
+FORCE : 'force' ;
 INTEGER : SIGN? DIGIT+ ;
 FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
