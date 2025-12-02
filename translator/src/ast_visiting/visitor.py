@@ -224,15 +224,20 @@ class ASTVisitor(LispVisitor):
         # TODO: копипаста
 
         env_var = "env"  # variable that stores environment in the lambda function (from the template)
-
         env = self.__environment_ctx.env
+
+        variable_name = ctx.variable().getText()
+
+        # TODO: копипаста с visitVariableDefinition
+        self.__check_variable_definition(variable_name, ctx)
+        env.add(variable_name)
 
         with self.__environment_ctx:
             self.__environment_ctx.init(name=env_var, code=env.code)
             formals_text = self.visit(ctx.procedureDefinitionFormals())
             procedure_var, procedure_code = self.__visit_procedure(formals_text=formals_text, body=ctx.procedureBody())
 
-        return self.__visit_variable_definition(variable_name=ctx.variable().getText(), expr_var=procedure_var, expr_code=procedure_code, ctx=ctx)
+        return self.__visit_variable_definition(variable_name=variable_name, expr_var=procedure_var, expr_code=procedure_code, ctx=ctx)
 
     def visitProcedureDefinitionFixedFormals(self, ctx:LispParser.ProcedureDefinitionFixedFormalsContext) -> str:
         formals = [f.getText() for f in ctx.variable()]
@@ -250,9 +255,13 @@ class ASTVisitor(LispVisitor):
         return self.__visit_formals(formals=formals, has_variadic_formal=True, ctx=ctx)
 
     def visitVariableDefinition(self, ctx:LispParser.VariableDefinitionContext) -> ExpressionVisitResult:
+        variable_name = ctx.variable().getText()
+
+        self.__check_variable_definition(variable_name=variable_name, ctx=ctx)
+        self.__environment_ctx.env.add(variable_name)
+
         expression = ctx.expression()
         expr_var, expr_code = self.visit(expression)
-        variable_name = ctx.variable().getText()
 
         return self.__visit_variable_definition(
             variable_name=variable_name,
@@ -683,10 +692,6 @@ class ASTVisitor(LispVisitor):
     def __visit_variable_definition(self, variable_name:  str, expr_var: str, expr_code: Code, ctx: ParserRuleContext) -> ExpressionVisitResult:
         env = self.__environment_ctx.env
 
-        if self.__symbols.has_api_symbol(variable_name):
-            raise FunctionRedefineException(variable_name, ctx)
-        env.add(variable_name)
-
         definition_code = self.__code_creator.set_variable_value()
         definition_code.update_data(
             env=env.name,
@@ -720,3 +725,7 @@ class ASTVisitor(LispVisitor):
                 raise DuplicatedParamException(f, ctx)
 
             visited_formals.add(f)
+
+    def __check_variable_definition(self, variable_name: str, ctx: ParserRuleContext) -> None:
+        if self.__symbols.has_api_symbol(variable_name):
+            raise FunctionRedefineException(variable_name, ctx)
