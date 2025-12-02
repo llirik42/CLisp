@@ -9,12 +9,11 @@ class Environment:
     Class represents a variable environment: list of the defined Lisp-variables.
     """
 
-    def __init__(self, name: str, code: Code, parent: "Environment", is_global: bool):
+    def __init__(self, name: str, code: Code, parent: "Environment"):
         self.__name = name
         self.__code = code
         self.__variables = set()
         self.__parent = parent
-        self.__is_global = is_global
 
     @property
     def has_parent(self) -> bool:
@@ -23,14 +22,6 @@ class Environment:
         """
 
         return self.__parent is not None
-
-    @property
-    def is_global(self) -> bool:
-        """
-        Returns whether this environment is a global one.
-        """
-
-        return self.__is_global
 
     def has_variable(self, variable: str) -> bool:
         """
@@ -52,7 +43,7 @@ class Environment:
 
         return False
 
-    def add_variable(self, name: str) -> None:
+    def add(self, name: str) -> None:
         """
         Adds a variable to the environment.
 
@@ -60,6 +51,15 @@ class Environment:
         """
 
         self.__variables.add(name)
+
+    def extend(self, names: list[str]) -> None:
+        """
+        Adds variables to the environment.
+
+        :param names: the names of the variables to add.
+        """
+
+        self.__variables.update(names)
 
     @property
     def name(self) -> str:
@@ -84,3 +84,6 @@ class Environment:
         """
 
         return self.__parent
+
+    def __repr__(self) -> str:
+        return f"(Name: {self.__name}, Code: {self.__code}, Variables: {self.__variables}, Parent: {self.__parent})"

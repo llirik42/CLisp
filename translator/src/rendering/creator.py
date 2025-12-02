@@ -7,7 +7,7 @@ from .codes import (
     EmptyCode,
     MakePrimitiveCode,
     MakeLambdaCode,
-    MakeListCode,
+    MakeListFromArrayCode,
     MakeEnvironmentCode,
     GetVariableValueCode,
     SetVariableValueCode,
@@ -17,12 +17,8 @@ from .codes import (
     GetFunctionArgumentCode,
     LambdaDefinitionCode,
     ProgramCode,
-    GetGlobalEnvironmentCode,
     ConditionCode,
-    MakeUnspecifiedCode,
-    MakeTrueCode,
-    MakeFalseCode,
-    IncreaseRefCountCode,
+    HavingVarCode,
 )
 from src.symbols import Symbols
 
@@ -37,41 +33,39 @@ class CodeCreator:
         :raises FileNotFoundError: the directory not found.
         """
 
-        self.__OBJECT_TYPE = symbols.find_internal_type("object")
-        self.__ENVIRONMENT_TYPE = symbols.find_internal_type("environment")
-        self.__DESTROY_OBJECT = symbols.find_internal_function("~object")
-        self.__CREATE_UNSPECIFIED = symbols.find_internal_function("unspecified")
-        self.__CREATE_INTEGER = symbols.find_internal_function("integer")
-        self.__CREATE_FLOAT = symbols.find_internal_function("float")
-        self.__CREATE_STRING = symbols.find_internal_function("string")
-        self.__CREATE_CHARACTER = symbols.find_internal_function("character")
-        self.__CREATE_TRUE = symbols.find_internal_function("true")
-        self.__CREATE_FALSE = symbols.find_internal_function("false")
-        self.__CREATE_LAMBDA = symbols.find_internal_function("lambda")
-        self.__CREATE_LIST = symbols.find_internal_function("list")
-        self.__OBJECT_TO_BOOLEAN = symbols.find_internal_function("to_boolean")
-        self.__CREATE_ENVIRONMENT = symbols.find_internal_function("environment")
-        self.__DESTROY_ENVIRONMENT = symbols.find_internal_function("~environment")
-        self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal_function(
-            "environment_global"
-        )
-        self.__GET_VARIABLE_VALUE = symbols.find_internal_function("get_variable_value")
-        self.__SET_VARIABLE_VALUE = symbols.find_internal_function("set_variable_value")
-        self.__UPDATE_VARIABLE_VALUE = symbols.find_internal_function(
-            "update_variable_value"
-        )
-        self.__CALL_LAMBDA = symbols.find_internal_function("lambda_call")
-        self.__INCREASE_REF_COUNT = symbols.find_internal_function("ref_count++")
+        self.__OBJECT_TYPE = symbols.find_internal("object_type")
+        self.__ENVIRONMENT_TYPE = symbols.find_internal("environment_type")
+        self.__DESTROY_OBJECT = symbols.find_internal("~object")
+        self.__CREATE_UNSPECIFIED = symbols.find_internal("unspecified")
+        self.__CREATE_INTEGER = symbols.find_internal("integer")
+        self.__CREATE_FLOAT = symbols.find_internal("float")
+        self.__CREATE_STRING = symbols.find_internal("string")
+        self.__CREATE_CHARACTER = symbols.find_internal("character")
+        self.__CREATE_TRUE = symbols.find_internal("true")
+        self.__CREATE_FALSE = symbols.find_internal("false")
+        self.__CREATE_LAMBDA = symbols.find_internal("lambda")
+        self.__CREATE_LIST = symbols.find_internal("list")
+        self.__CREATE_LIST_FROM_ARRAY = symbols.find_internal("list_array")
+        self.__OBJECT_TO_BOOLEAN = symbols.find_internal("to_boolean")
+        self.__CREATE_ENVIRONMENT = symbols.find_internal("environment")
+        self.__DESTROY_ENVIRONMENT = symbols.find_internal("~environment")
+        self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal("environment_global")
+        self.__DESTROY_GLOBAL_ENVIRONMENT = symbols.find_internal("~environment_global")
+        self.__GET_VARIABLE_VALUE = symbols.find_internal("get_variable_value")
+        self.__SET_VARIABLE_VALUE = symbols.find_internal("set_variable_value")
+        self.__UPDATE_VARIABLE_VALUE = symbols.find_internal("update_variable_value")
+        self.__CALL_LAMBDA = symbols.find_internal("lambda_call")
+        self.__INCREASE_REF_COUNT = symbols.find_internal("ref_count++")
         self.__FUNCTION_ARGS_VAR = "args"
-        self.__FUNCTION_PARAMS = symbols.find_internal_type("lambda_function_params")
+        self.__FUNCTION_PARAMS = symbols.find_internal("lambda_function_params")
 
         self.__load_templates(templates_folder_path)
 
     def empty(self) -> EmptyCode:
         return EmptyCode()
 
-    def make_unspecified(self) -> MakeUnspecifiedCode:
-        return MakeUnspecifiedCode(
+    def make_unspecified(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
@@ -95,8 +89,8 @@ class CodeCreator:
     def make_character(self) -> MakePrimitiveCode:
         return self.__make_primitive(self.__CREATE_CHARACTER)
 
-    def make_true(self) -> MakeTrueCode:
-        return MakeTrueCode(
+    def make_true(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
@@ -108,8 +102,8 @@ class CodeCreator:
             },
         )
 
-    def make_false(self) -> MakeFalseCode:
-        return MakeFalseCode(
+    def make_false(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
@@ -132,13 +126,26 @@ class CodeCreator:
             secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
-    def make_list(self) -> MakeListCode:
-        return MakeListCode(
+    def make_list(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("make_list"),
             secondary_template=self.__get_destroy_object_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_LIST,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
+            },
+        )
+
+    def make_list_from_array(self) -> MakeListFromArrayCode:
+        return MakeListFromArrayCode(
+            main_template=self.__get_template("make_list_from_array"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "func": self.__CREATE_LIST_FROM_ARRAY,
             },
             secondary_data={
                 "func": self.__DESTROY_OBJECT,
@@ -153,8 +160,8 @@ class CodeCreator:
             secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
-    def increase_ref_count(self) -> IncreaseRefCountCode:
-        return IncreaseRefCountCode(
+    def increase_ref_count(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("increase_ref_count"),
             main_data={"func": self.__INCREASE_REF_COUNT},
         )
@@ -170,15 +177,15 @@ class CodeCreator:
             secondary_data={"func": self.__DESTROY_ENVIRONMENT},
         )
 
-    def get_global_environment(self) -> GetGlobalEnvironmentCode:
-        return GetGlobalEnvironmentCode(
+    def get_global_environment(self) -> HavingVarCode:
+        return HavingVarCode(
             main_template=self.__get_template("get_global_environment"),
             secondary_template=self.__get_template("destroy_environment"),
             main_data={
                 "type": self.__ENVIRONMENT_TYPE,
                 "func": self.__GET_GLOBAL_ENVIRONMENT,
             },
-            secondary_data={"func": self.__DESTROY_ENVIRONMENT},
+            secondary_data={"func": self.__DESTROY_GLOBAL_ENVIRONMENT},
         )
 
     def get_variable_value(self) -> GetVariableValueCode:
@@ -271,7 +278,7 @@ class CodeCreator:
         )
 
     def __get_destroy_object_template(self) -> Template:
-        return self.__get_template("destroy_object")
+        return self.__get_template("decrease_ref_count")
 
     def __get_template(self, name: str) -> Template:
         """

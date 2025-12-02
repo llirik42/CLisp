@@ -14,10 +14,9 @@ class Symbols:
         The class contains symbols that are used in code generating. Every symbol is a pair: (identifier, symbol). The identifier can be, for example, the name of a Lisp-function and symbol can then will be the name of a C-function that implements Lisp-function. All symbols are divided into sections:
 
         * API
-        * internal functions
-        * internal types
+        * internals
 
-        API sections contains symbols that can be used in Lisp-code, while internal sections is used only in code generating and their symbols is not supported in Lisp-code.
+        API contains symbols that can be used in Lisp-code, while internals are used only in code generating and their symbols is not supported in Lisp-code.
 
         :param json_path: path to the table in jSON format.
         :raises FileNotFoundError: file not found.
@@ -26,25 +25,15 @@ class Symbols:
 
         self.__data = json.load(open(json_path))
 
-    def find_internal_function(self, identifier: str) -> Optional[str]:
+    def find_internal(self, identifier: str) -> str:
         """
-        Finds and returns the symbol from the internal functions.
+        Finds and returns the symbol from the internals.
 
         :param identifier: identifier of a symbol.
         :return: found symbol or None.
         """
 
-        return self.__internal_functions.get(identifier, None)
-
-    def find_internal_type(self, identifier: str) -> str:
-        """
-        Finds and returns the symbol from the internal types.
-
-        :param identifier: identifier of a symbol.
-        :return: found symbol or None.
-        """
-
-        return self.__internal_types.get(identifier, None)
+        return self.__internal[identifier]
 
     def find_api_symbol(self, identifier: str) -> Optional[str]:
         """
@@ -80,9 +69,5 @@ class Symbols:
         return self.__data["api"]
 
     @property
-    def __internal_functions(self) -> SymbolSection:
-        return self.__data["internal"]["functions"]
-
-    @property
-    def __internal_types(self) -> SymbolSection:
-        return self.__data["internal"]["types"]
+    def __internal(self) -> SymbolSection:
+        return self.__data["internal"]

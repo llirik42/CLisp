@@ -13,32 +13,37 @@
     "not": "cl_not"
   },
   "internal": {
-    "functions": {
-      "integer" : "cl_make_int",
-      "true" : "cl_make_true",
-      "false": "cl_make_false",
-      "character" : "cl_make_char",
-      "string" : "cl_make_string",
-      "float" : "cl_make_double",
-      "list": "cl_make_list_from_array",
-      "unspecified": "cl_make_unspecified",
-      "evaluable": "cl_make_evaluable",
-      "lambda": "cl_make_lambda",
-      "~object": "cl_destroy_obj",
-      "environment": "cl_make_env",
-      "environment_global": "cl_make_global_env",
-      "~environment": "cl_destroy_env",
-      "set_variable_value": "cl_set_variable_value",
-      "update_variable_value": "cl_update_variable_value",
-      "get_variable_value": "cl_get_variable_value",
-      "lambda_call": "cl_lambda_call",
-      "to_boolean": "cl_obj_to_boolean",
-      "ref_count++": "cl_increase_refs_count"
-    },
-    "types": {
-      "object": "CL_Object*",
-      "environment": "CL_Environment*",
-      "lambda_function_params": ["CL_Environment* env", "unsigned int count", "CL_Object** args"]
-    }
+    "integer": "cl_make_int",
+    "true": "cl_make_true",
+    "false": "cl_make_false",
+    "character": "cl_make_char",
+    "string": "cl_make_string",
+    "float": "cl_make_double",
+    "list": "cl_make_list",
+    "list_array": "cl_make_list_from_array",
+    "unspecified": "cl_make_unspecified",
+    "evaluable": "cl_make_evaluable",
+    "lambda": "cl_make_lambda",
+    "~object": "cl_decrease_ref_count",
+    "environment": "cl_make_env",
+    "~environment": "cl_destroy_env",
+    "environment_global": "cl_make_global_env",
+    "~environment_global": "cl_destroy_global_env",
+    "set_variable_value": "cl_set_variable_value",
+    "update_variable_value": "cl_update_variable_value",
+    "get_variable_value": "cl_get_variable_value",
+    "lambda_call": "cl_lambda_call",
+    "to_boolean": "cl_obj_to_boolean",
+    "ref_count++": "cl_increase_ref_count",
+    "object_type": "CL_Object*",
+    "environment_type": "CL_Environment*",
+    "lambda_env": "env",
+    "lambda_args": "args",
+    "lambda_count": "count",
+    "lambda_function_params": [
+      "CL_Environment* env",
+      "unsigned int count",
+      "CL_Object** args"
+    ]
   }
 }

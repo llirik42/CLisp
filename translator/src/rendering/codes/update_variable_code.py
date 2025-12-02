@@ -14,5 +14,5 @@ class UpdateVariableValueCode(Code):
         name: Optional[str] = None,
         value: Optional[str] = None,
     ) -> None:
-        self._update_main_data(var=var, env=env, name=name, value=value)
+        self._update_main_data(var=var, env=env, name=f'"{name}"', value=value)
         self._update_secondary_data(var=var)

@@ -1,1 +1,1 @@
-{{ type }} {{ var }} = {{ func }}({{ count }}, {{ elements }});
+{{ type }} {{ var }} = {{ func }}();

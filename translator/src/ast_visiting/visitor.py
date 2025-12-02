@@ -1,7 +1,5 @@
 from typing import Union
 
-from antlr4 import ParserRuleContext
-
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
 from src.rendering import (
@@ -10,12 +8,10 @@ from src.rendering import (
     join_codes,
     transfer_secondary,
 )
+from src.rendering.codes import MakePrimitiveCode, Code
+from src.symbols import Symbols
 from .declarations_context import DeclarationsContext
 from .environment_context import EnvironmentContext
-from .lambda_context import LambdaContext
-from src.symbols import Symbols
-from .let_type_context import LetTypeContext, LetType
-from .variable_manager import VariableManager
 from .exceptions import (
     UnexpectedIdentifierException,
     FunctionRedefineException,
@@ -23,8 +19,9 @@ from .exceptions import (
     DuplicatedParamException,
     ParamNameConflictException,
 )
-from src.rendering.codes import MakePrimitiveCode, Code
-from ..environment import Environment
+from .let_type_context import LetTypeContext, LetType
+from .variable_manager import VariableManager
+from .ast_context import ASTContext, visit
 
 # (variable, code)
 ExpressionVisitResult = tuple[str, Code]
@@ -57,7 +54,9 @@ LambdaExpressionsVisitResult = tuple[str, list[Code]]
 FixedFormalsVisitResult = tuple[list[Code], list[str]]
 
 # (code of the formal without secondary, secondary part of the code)
-VariadicFormalVisitResult = tuple[Code, str]
+VariadicFormalVisitResult = Code
+
+ast_context = ASTContext()
 
 
 class ASTVisitor(LispVisitor):
@@ -75,10 +74,10 @@ class ASTVisitor(LispVisitor):
         self.__code_creator = code_creator
         self.__variable_manager = VariableManager()
         self.__environment_ctx = EnvironmentContext()
-        self.__lambda_ctx = LambdaContext()
         self.__declaration_ctx = DeclarationsContext()
         self.__let_type_ctx = LetTypeContext()
 
+    @visit(ast_context)
     def visitProgram(self, ctx: LispParser.ProgramContext) -> ProgramVisitResult:
         global_env_var = self.__variable_manager.create_environment_name()
         main_code = self.__code_creator.get_global_environment()
@@ -105,161 +104,125 @@ class ASTVisitor(LispVisitor):
 
         return program_code.render()
 
+    @visit(ast_context)
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
+        env_var = self.__symbols.find_internal("lambda_env")
+
         env = self.__environment_ctx.env
 
-        function_name = self.__add_lambda_declaration(
-            formals=ctx.formals(), body=ctx.procedureBody()
-        )
+        with self.__environment_ctx:
+            self.__environment_ctx.init(name=env_var, code=env.code)
+            formals_text = self.visit(ctx.procedureFormals())
 
-        lambda_var = self.__variable_manager.create_object_name()
-        lambda_creation_code = self.__code_creator.make_lambda()
-        lambda_creation_code.update_data(
-            var=lambda_var, func=function_name, env=env.name
-        )
+            return self.__visit_procedure(
+                formals_text=formals_text, body=ctx.procedureBody()
+            )
 
-        return lambda_var, lambda_creation_code
+    @visit(ast_context)
+    def visitProcedureFixedFormals(
+        self, ctx: LispParser.ProcedureFixedFormalsContext
+    ) -> str:
+        formals = [f.getText() for f in ctx.variable()]
 
-    def visitFixedFormals(self, ctx: LispParser.FixedFormalsContext) -> tuple[str, str]:
-        codes, _ = self.__visit_scalar_formals(ctx.variable(), ctx)
+        return self.__visit_formals(formals=formals, has_variadic_formal=False)
 
-        return join_codes(codes), ""
+    @visit(ast_context)
+    def visitProcedureVariadicFormal(
+        self, ctx: LispParser.ProcedureVariadicFormalContext
+    ) -> str:
+        formal = ctx.variable().getText()
 
-    def visitListFormals(self, ctx: LispParser.ListFormalsContext) -> tuple[str, str]:
-        code, secondary = self.__visit_variadic_formal(
-            ctx.variable(), ctx, start_index=0, already_visited_params=[]
-        )
+        return self.__visit_formals(formals=[formal], has_variadic_formal=True)
 
-        return code.render(), secondary
+    @visit(ast_context)
+    def visitProcedureMixedFormals(
+        self, ctx: LispParser.ProcedureMixedFormalsContext
+    ) -> str:
+        formals = [f.getText() for f in ctx.variable()]
 
-    def visitVariadicFormals(
-        self, ctx: LispParser.VariadicFormalsContext
-    ) -> tuple[str, str]:
-        fixed_variables = ctx.variable()[:-1]
-        variadic_variable = ctx.variable()[-1]
+        return self.__visit_formals(formals=formals, has_variadic_formal=True)
 
-        fixed_formals_codes, visited_fixed_params = self.__visit_scalar_formals(
-            variables=fixed_variables, ctx=ctx
-        )
-        variadic_formal_code, list_formal_secondary = self.__visit_variadic_formal(
-            variable=variadic_variable,
-            ctx=ctx,
-            start_index=len(fixed_variables),
-            already_visited_params=visited_fixed_params,
-        )
-
-        return (
-            join_codes(fixed_formals_codes + [variadic_formal_code]),
-            list_formal_secondary,
-        )
-
+    @visit(ast_context)
     def visitProcedureBody(
         self, ctx: LispParser.ProcedureBodyContext
     ) -> BodyVisitResult:
-        definitions_secondary, definitions_codes = self.__visit_lambda_definitions(
-            ctx.procedureBodyDefinition()
-        )
+        definitions_codes = [self.visit(d)[1] for d in ctx.definition()]
 
         last_expr_var, expr_codes = self.__visit_lambda_expressions(ctx.expression())
 
-        if definitions_secondary:
-            definitions_secondary_text = "\n".join(definitions_secondary) + "\n"
-        else:
-            definitions_secondary_text = ""
-
         return (
             last_expr_var,
-            join_codes(definitions_codes + expr_codes) + definitions_secondary_text,
+            join_codes(definitions_codes + expr_codes),
         )
 
-    def visitProcedureBodyDefinition(
-        self, ctx: LispParser.ProcedureBodyDefinitionContext
-    ) -> Code:
-        expression = ctx.definition().expression()
-        variable = ctx.definition().variable()
-
-        expr_var, expr_code = self.visit(expression)
-        expr_code.remove_newlines()
-        self.__lambda_ctx.set_param_var(variable.getText(), expr_var)
-
-        return expr_code
-
+    @visit(ast_context)
     def visitLet(self, ctx: LispParser.LetContext) -> ExpressionVisitResult:
-        return self.__visit_let(let_type=LetType.LET, ctx=ctx)
+        return self.__visit_let(let_type=LetType.LET)
 
+    @visit(ast_context)
     def visitLetAsterisk(
         self, ctx: LispParser.LetAsteriskContext
     ) -> ExpressionVisitResult:
-        return self.__visit_let(let_type=LetType.LET_ASTERISK, ctx=ctx)
+        return self.__visit_let(let_type=LetType.LET_ASTERISK)
 
+    @visit(ast_context)
     def visitLetRec(self, ctx: LispParser.LetRecContext) -> ExpressionVisitResult:
-        return self.__visit_let(let_type=LetType.LET_REC, ctx=ctx)
+        return self.__visit_let(let_type=LetType.LET_REC)
 
+    @visit(ast_context)
     def visitBindingList(
         self, ctx: LispParser.BindingListContext
     ) -> list[BindingVisitResult]:
-        # TODO: fix copy-paste with visitBinding()
+        variables_names = [b.variable().getText() for b in ctx.binding()]
+        self.__check_binding_list(variables_names)
 
-        result = [self.visit(b) for b in ctx.binding()]
-        if self.__let_type_ctx.type_ != LetType.LET:
-            # All variables have already been added to the environment (let*, letrec)
-            return result
-
-        # No variables were added (let)
-        env = self.__environment_ctx.env
-        for b in ctx.binding():
-            variable_name = b.variable().getText()
-
-            if env.has_variable(variable_name):
-                raise DuplicatedBindingException(variable_name, ctx)
-
-            env.add_variable(variable_name)
-
-        return result
-
-    def visitBinding(self, ctx: LispParser.BindingContext) -> BindingVisitResult:
+        let_type = self.__let_type_ctx.type_
         env = self.__environment_ctx.env
 
+        binding_list_codes = []
+
+        if let_type is LetType.LET:
+            for binding in ctx.binding():
+                binding_code, _ = self.visit(binding)
+                binding_list_codes.append(binding_code)
+            env.extend(variables_names)
+
+        if let_type is LetType.LET_ASTERISK:
+            for binding in ctx.binding():
+                binding_code, binding_variable_name = self.visit(binding)
+                binding_list_codes.append(binding_code)
+                env.add(binding_variable_name)
+
+        if let_type is LetType.LET_REC:
+            env.extend(variables_names)
+            for binding in ctx.binding():
+                binding_code, _ = self.visit(binding)
+                binding_list_codes.append(binding_code)
+
+        return binding_list_codes
+
+    @visit(ast_context)
+    def visitBinding(self, ctx: LispParser.BindingContext) -> tuple[Code, str]:
+        env = self.__environment_ctx.env
         variable_name = ctx.variable().getText()
-
-        if self.__symbols.has_api_symbol(variable_name):
-            raise FunctionRedefineException(variable_name, ctx)
-
-        if env.has_variable(variable_name):
-            raise DuplicatedBindingException(variable_name, ctx)
-
         expression = ctx.expression()
-
-        expr_code = expr_var = None
-        match self.__let_type_ctx.type_:
-            case LetType.LET:
-                expr_var, expr_code = self.visit(expression)
-            case LetType.LET_ASTERISK:
-                expr_var, expr_code = self.visit(expression)
-                env.add_variable(variable_name)
-            case LetType.LET_REC:
-                env.add_variable(variable_name)
-                expr_var, expr_code = self.visit(expression)
-            case _:
-                raise RuntimeError("Unknown type of let")
-
-        expr_code.remove_first_secondary_line()
-
+        expr_var, expr_code = self.visit(expression)
         binding_code = self.__code_creator.set_variable_value()
         binding_code.update_data(
             env=env.name,
-            name=f'"{variable_name}"',
+            name=variable_name,
             value=expr_var,
         )
 
-        return wrap_codes(binding_code, expr_code)
+        return wrap_codes(binding_code, expr_code), variable_name
 
+    @visit(ast_context)
     def visitEnvironmentBody(
         self, ctx: LispParser.EnvironmentBodyContext
     ) -> BodyVisitResult:
         body_codes = []
 
-        for d in ctx.environmentBodyDefinition():
+        for d in ctx.definition():
             _, d_code = self.visit(d)
             body_codes.append(d_code)
 
@@ -276,63 +239,96 @@ class ASTVisitor(LispVisitor):
 
         return expr_vars[-1], join_codes(body_codes)
 
-    def visitEnvironmentBodyDefinition(
-        self, ctx: LispParser.EnvironmentBodyDefinitionContext
+    @visit(ast_context)
+    def visitProcedureDefinition(
+        self, ctx: LispParser.ProcedureDefinitionContext
     ) -> ExpressionVisitResult:
+        env_var = self.__symbols.find_internal("lambda_env")
         env = self.__environment_ctx.env
 
-        variable_name = ctx.definition().variable().getText()
-        if self.__symbols.has_api_symbol(variable_name):
-            raise FunctionRedefineException(variable_name, ctx)
+        variable_name = ctx.variable().getText()
 
-        expression = ctx.definition().expression()
-        expr_var, expr_code = self.visit(expression)
+        self.__check_variable_definition(variable_name)
+        env.add(variable_name)
 
-        expr_code.remove_first_secondary_line()
-        env.add_variable(variable_name)
+        with self.__environment_ctx:
+            self.__environment_ctx.init(name=env_var, code=env.code)
+            formals_text = self.visit(ctx.procedureDefinitionFormals())
+            procedure_var, procedure_code = self.__visit_procedure(
+                formals_text=formals_text, body=ctx.procedureBody()
+            )
 
-        definition_code = self.__code_creator.set_variable_value()
-        definition_code.update_data(
-            env=env.name,
-            name=f'"{variable_name}"',
-            value=expr_var,
+        return self.__visit_variable_definition(
+            variable_name=variable_name,
+            expr_var=procedure_var,
+            expr_code=procedure_code,
         )
 
-        # First element is ignored and needed to unify the processing of expressions and definitions
-        return "", wrap_codes(definition_code, expr_code)
+    @visit(ast_context)
+    def visitProcedureDefinitionFixedFormals(
+        self, ctx: LispParser.ProcedureDefinitionFixedFormalsContext
+    ) -> str:
+        formals = [f.getText() for f in ctx.variable()]
 
+        return self.__visit_formals(formals=formals, has_variadic_formal=False)
+
+    @visit(ast_context)
+    def visitProcedureDefinitionVariadicFormal(
+        self, ctx: LispParser.ProcedureDefinitionVariadicFormalContext
+    ) -> str:
+        formal = ctx.variable().getText()
+
+        return self.__visit_formals(formals=[formal], has_variadic_formal=True)
+
+    @visit(ast_context)
+    def visitProcedureDefinitionMixedFormals(
+        self, ctx: LispParser.ProcedureDefinitionMixedFormalsContext
+    ) -> str:
+        formals = [f.getText() for f in ctx.variable()]
+
+        return self.__visit_formals(formals=formals, has_variadic_formal=True)
+
+    @visit(ast_context)
+    def visitVariableDefinition(
+        self, ctx: LispParser.VariableDefinitionContext
+    ) -> ExpressionVisitResult:
+        variable_name = ctx.variable().getText()
+
+        self.__check_variable_definition(variable_name=variable_name)
+        self.__environment_ctx.env.add(variable_name)
+
+        expression = ctx.expression()
+        expr_var, expr_code = self.visit(expression)
+
+        return self.__visit_variable_definition(
+            variable_name=variable_name, expr_var=expr_var, expr_code=expr_code
+        )
+
+    @visit(ast_context)
     def visitAssignment(
         self, ctx: LispParser.AssignmentContext
     ) -> ExpressionVisitResult:
         expression = ctx.expression()
         variable_name = ctx.variable().getText()
         env = self.__environment_ctx.env
-        is_env_top_level_lambda = (
-            env.parent and env.parent.is_global and self.__lambda_ctx.inside_lambda
+
+        if not env.has_variable_recursively(variable_name):
+            raise UnexpectedIdentifierException(variable_name, ctx)
+
+        expr_var, expr_code = self.visit(expression)
+
+        assignment_var = self.__variable_manager.create_object_name()
+        assignment_code = self.__code_creator.update_variable_value()
+        assignment_code.update_data(
+            var=assignment_var,
+            env=env.name,
+            name=variable_name,
+            value=expr_var,
         )
 
-        # Attempt of changing lambda param
-        if is_env_top_level_lambda and self.__lambda_ctx.has_param(variable_name):
-            return self.__visit_lambda_param_assignment(
-                param_name=variable_name, expression=expression
-            )
+        return assignment_var, wrap_codes(assignment_code, expr_code)
 
-        # Attempt of changing environment variable
-        if env.has_variable_recursively(variable_name):
-            return self.__visit_environment_variable_assignment(
-                env=env, variable_name=variable_name, expression=expression
-            )
-
-        # Attempt of changing lambda param from environment created in lambda
-        if self.__lambda_ctx.inside_lambda and self.__lambda_ctx.has_param(
-            variable_name
-        ):
-            return self.__visit_lambda_param_assignment(
-                param_name=variable_name, expression=expression
-            )
-
-        raise UnexpectedIdentifierException(variable_name, ctx)
-
+    @visit(ast_context)
     def visitCondition(self, ctx: LispParser.ConditionContext) -> ExpressionVisitResult:
         test = ctx.test()
         consequent = ctx.consequent()
@@ -357,12 +353,15 @@ class ASTVisitor(LispVisitor):
             alternate_code=alternate_code,
         )
 
+    @visit(ast_context)
     def visitAnd(self, ctx: LispParser.AndContext) -> ExpressionVisitResult:
         return self.__visit_and(ctx.test())
 
+    @visit(ast_context)
     def visitOr(self, ctx: LispParser.OrContext) -> ExpressionVisitResult:
         return self.__visit_or(ctx.test())
 
+    @visit(ast_context)
     def visitProcedureCall(
         self, ctx: LispParser.ProcedureCallContext
     ) -> ExpressionVisitResult:
@@ -377,33 +376,28 @@ class ASTVisitor(LispVisitor):
 
         return expr_var, wrapped_expr_code
 
+    @visit(ast_context)
     def visitVariable(self, ctx: LispParser.VariableContext) -> ExpressionVisitResult:
-        variable_name = ctx.getText()
-
-        if self.__lambda_ctx.inside_lambda and self.__lambda_ctx.has_param(
-            variable_name
-        ):
-            param_var = self.__lambda_ctx.get_param_var(variable_name)
-            empty_code = self.__code_creator.empty()
-            return param_var, empty_code
-
         env = self.__environment_ctx.env
+        variable_name = ctx.getText()
 
         if not env.has_variable_recursively(variable_name):
             raise UnexpectedIdentifierException(variable_name, ctx)
 
         expr_var = self.__variable_manager.create_object_name()
         expr_code = self.__code_creator.get_variable_value()
-        expr_code.update_data(var=expr_var, env=env.name, name=f'"{variable_name}"')
+        expr_code.update_data(var=expr_var, env=env.name, name=variable_name)
 
         return expr_var, expr_code
 
+    @visit(ast_context)
     def visitBoolConstant(
         self, ctx: LispParser.BoolConstantContext
     ) -> ExpressionVisitResult:
         lisp_true = "#t"
         return self.__visit_boolean(ctx.getText() == lisp_true)
 
+    @visit(ast_context)
     def visitCharacterConstant(
         self, ctx: LispParser.CharacterConstantContext
     ) -> ExpressionVisitResult:
@@ -416,6 +410,7 @@ class ASTVisitor(LispVisitor):
 
         return self.__visit_constant(code=code, value=f"'{value}'")
 
+    @visit(ast_context)
     def visitStringConstant(
         self, ctx: LispParser.StringConstantContext
     ) -> ExpressionVisitResult:
@@ -423,6 +418,7 @@ class ASTVisitor(LispVisitor):
 
         return self.__visit_constant(code=code, value=ctx.getText())
 
+    @visit(ast_context)
     def visitIntegerConstant(
         self, ctx: LispParser.IntegerConstantContext
     ) -> ExpressionVisitResult:
@@ -430,6 +426,7 @@ class ASTVisitor(LispVisitor):
 
         return self.__visit_constant(code=code, value=int(ctx.getText()))
 
+    @visit(ast_context)
     def visitFloatConstant(
         self, ctx: LispParser.FloatConstantContext
     ) -> ExpressionVisitResult:
@@ -444,13 +441,11 @@ class ASTVisitor(LispVisitor):
         elements: list[LispParser.ProgramElementContext],
     ) -> ProgramElementsVisitResult:
         with self.__environment_ctx:
-            self.__environment_ctx.init(
-                code=main_code, name=global_env_var, is_global=True
-            )
+            self.__environment_ctx.init(code=main_code, name=global_env_var)
             env = self.__environment_ctx.env
 
             for lisp_name, _ in self.__symbols.find_api_function_items():
-                env.add_variable(lisp_name)
+                env.add(lisp_name)
 
             return [self.visit(e)[1] for e in elements]
 
@@ -466,8 +461,16 @@ class ASTVisitor(LispVisitor):
         var = self.__variable_manager.create_object_name()
         code = self.__code_creator.if_()
 
-        consequent_code.remove_first_secondary_line()
-        alternate_code.remove_first_secondary_line()
+        consequent_increase_ref_count_code = self.__code_creator.increase_ref_count()
+        consequent_increase_ref_count_code.update_data(var=consequent_var)
+
+        alternate_increase_ref_count_code = self.__code_creator.increase_ref_count()
+        alternate_increase_ref_count_code.update_data(var=alternate_var)
+
+        consequent_code = wrap_codes(
+            consequent_increase_ref_count_code, consequent_code
+        )
+        alternate_code = wrap_codes(alternate_increase_ref_count_code, alternate_code)
 
         code.update_data(
             var=var,
@@ -488,7 +491,7 @@ class ASTVisitor(LispVisitor):
         if not operands:
             var = self.__variable_manager.create_object_name()
             code = self.__code_creator.make_true()
-            code.set_var(var=var)
+            code.update_data(var=var)
             return var, code
 
         if len(operands) == 1:
@@ -526,7 +529,7 @@ class ASTVisitor(LispVisitor):
         if not operands:
             var = self.__variable_manager.create_object_name()
             code = self.__code_creator.make_false()
-            code.set_var(var=var)
+            code.update_data(var=var)
             return var, code
 
         if len(operands) == 1:
@@ -547,11 +550,7 @@ class ASTVisitor(LispVisitor):
     ) -> ExpressionVisitResult:
         test_var, test_code = op1_var, op1_code
 
-        consequent_var, consequent_code = (
-            op1_var,
-            self.__code_creator.increase_ref_count(),
-        )
-        consequent_code.set_var(var=consequent_var)
+        consequent_var, consequent_code = (op1_var, self.__code_creator.empty())
 
         alternate_var, alternate_code = op2_var, op2_code
 
@@ -566,25 +565,17 @@ class ASTVisitor(LispVisitor):
 
     def __add_lambda_declaration(
         self,
-        formals: LispParser.FormalsContext,
+        formals_text: str,
         body: LispParser.ProcedureBodyContext,
     ) -> DeclaredFunctionName:
-        env_var = "env"  # variable that stores environment in the lambda function (from the template)
-        env = self.__environment_ctx.env
-
         function_code = self.__code_creator.lambda_definition()
 
-        # Visiting formals of the procedure
-        with self.__lambda_ctx, self.__environment_ctx:
-            self.__environment_ctx.init(name=env_var, code=env.code)
-            formals_text_before, formals_text_after = self.visitFormals(formals)
-            body_var, body_code_text = self.visit(body)
+        body_var, body_code_text = self.visit(body)
 
         function_name = self.__variable_manager.create_function_name()
 
-        body = formals_text_before + "\n" if formals_text_before else ""
+        body = formals_text + "\n" if formals_text else ""
         body += body_code_text
-        body += formals_text_after
 
         function_code.update_data(
             func=function_name,
@@ -597,85 +588,70 @@ class ASTVisitor(LispVisitor):
 
         return function_name
 
-    def __visit_scalar_formals(
-        self, variables: list[LispParser.VariableContext], ctx: ParserRuleContext
-    ) -> FixedFormalsVisitResult:
-        codes = []
-        visited_params = []
+    def __visit_formals(self, formals: list[str], has_variadic_formal: bool) -> str:
+        self.__check_formals(formals)
 
-        for i, v in enumerate(variables):
-            param_lisp_name = v.getText()
-
-            if param_lisp_name in visited_params:
-                raise DuplicatedParamException(param_lisp_name, ctx)
-            if self.__symbols.has_api_symbol(param_lisp_name):
-                raise ParamNameConflictException(param_lisp_name, ctx)
-
-            visited_params.append(param_lisp_name)
-
-            param_var = self.__variable_manager.create_object_name()
-            current_arg_getting_code = self.__code_creator.get_function_argument()
-            current_arg_getting_code.update_data(index=i, var=param_var)
-
-            current_arg_getting_code.remove_newlines()
-            codes.append(current_arg_getting_code)
-            self.__lambda_ctx.set_param_var(
-                param_name=param_lisp_name, param_var=param_var
+        if has_variadic_formal:
+            fixed_formals = formals[:-1]
+            variadic_formal = formals[-1]
+            variadic_formal_code = self.__visit_variadic_formal(
+                formal=variadic_formal,
+                start_index=len(fixed_formals),
             )
+        else:
+            fixed_formals = formals
+            variadic_formal_code = self.__code_creator.empty()
 
-        return codes, visited_params
+        fixed_formals_codes = self.__visit_scalar_formals(fixed_formals)
+
+        return join_codes(fixed_formals_codes + [variadic_formal_code])
+
+    def __visit_scalar_formals(self, formals: list[str]) -> list[Code]:
+        args_name = self.__symbols.find_internal("lambda_args")
+
+        env = self.__environment_ctx.env
+        codes = []
+
+        for i, param_name in enumerate(formals):
+            current_arg_code = self.__code_creator.set_variable_value()
+            current_arg_code.update_data(
+                env=env.name, name=param_name, value=f"{args_name}[{i}]"
+            )
+            env.add(param_name)
+
+            current_arg_code.remove_newlines()
+            codes.append(current_arg_code)
+
+        return codes
 
     def __visit_variadic_formal(
         self,
-        variable: LispParser.VariableContext,
-        ctx: ParserRuleContext,
+        formal: str,
         start_index: int,
-        already_visited_params: list[str],
     ) -> VariadicFormalVisitResult:
-        # variables that store number of args and the args in the lambda function (from the template)
-        count_name = "count"
-        args_name = "args"
+        count_name = self.__symbols.find_internal("lambda_count")
+        args_name = self.__symbols.find_internal("lambda_args")
 
-        param_lisp_name = variable.getText()
-        if param_lisp_name in already_visited_params:
-            raise DuplicatedParamException(param_lisp_name, ctx)
-        if self.__symbols.has_api_symbol(param_lisp_name):
-            raise ParamNameConflictException(param_lisp_name, ctx)
+        env = self.__environment_ctx.env
+        variadic_formal_list_var = self.__variable_manager.create_object_name()
 
-        arg_var = self.__variable_manager.create_object_name()
-        code = self.__code_creator.make_list()
-
-        if start_index:
-            count = f"{count_name}-{start_index}"
-            elements = f"{args_name}+{start_index}"
-        else:
+        if start_index == 0:
             count = count_name
-            elements = args_name
+            args = args_name
+        else:
+            count = f"{count_name}-{start_index}"
+            args = f"{args_name}+{start_index}"
 
-        code.update_data(var=arg_var, count=count, elements=elements)
+        variadic_formal_list_code = self.__code_creator.make_list_from_array()
+        variadic_formal_list_code.update_data(
+            var=variadic_formal_list_var, count=count, elements=args
+        )
 
-        code.remove_newlines()
+        code = self.__code_creator.set_variable_value()
+        code.update_data(env=env.name, name=formal, value=variadic_formal_list_var)
+        env.add(formal)
 
-        secondary = code.render_secondary() + "\n"
-        code.clear_secondary()
-
-        self.__lambda_ctx.set_param_var(param_name=param_lisp_name, param_var=arg_var)
-
-        return code, secondary
-
-    def __visit_lambda_definitions(
-        self, definitions: list[LispParser.ProcedureBodyDefinitionContext]
-    ) -> LambdaDefinitionsVisitResult:
-        definitions_secondary = []
-        definitions_codes = []
-
-        for d in definitions:
-            d_code: Code = self.visit(d)
-            definitions_secondary.append(d_code.render_secondary())
-            d_code.clear_secondary()
-            definitions_codes.append(d_code)
-
-        return definitions_secondary, definitions_codes
+        return wrap_codes(code, variadic_formal_list_code)
 
     def __visit_lambda_expressions(
         self, expressions: list[LispParser.ExpressionContext]
@@ -688,7 +664,10 @@ class ASTVisitor(LispVisitor):
 
             is_expression_last = i == len(expressions) - 1
             if is_expression_last:
-                e_code.remove_first_secondary_line()  # Remove destroying result of the procedure
+                increase_ref_count_count_code = self.__code_creator.increase_ref_count()
+                increase_ref_count_count_code.update_data(var=e_var)
+                increase_ref_count_count_code.remove_newlines()
+                e_code.add_secondary_prolog("\n" + increase_ref_count_count_code.render())
 
             e_code.transfer_newline()
             last_expr_var = e_var
@@ -696,45 +675,12 @@ class ASTVisitor(LispVisitor):
 
         return last_expr_var, expr_codes
 
-    def __visit_lambda_param_assignment(
-        self, param_name: str, expression: LispParser.ExpressionContext
-    ) -> ExpressionVisitResult:
-        expr_var, expr_code = self.visit(expression)
-        expr_code.remove_first_secondary_line()
-        self.__lambda_ctx.set_param_var(param_name=param_name, param_var=expr_var)
-        return expr_var, wrap_codes(self.__code_creator.empty(), expr_code)
-
-    def __visit_environment_variable_assignment(
-        self,
-        env: Environment,
-        variable_name: str,
-        expression: LispParser.ExpressionContext,
-    ) -> ExpressionVisitResult:
-        expr_var, expr_code = self.visit(expression)
-
-        expr_code.remove_first_secondary_line()
-
-        assignment_var = self.__variable_manager.create_object_name()
-        assignment_code = self.__code_creator.update_variable_value()
-        assignment_code.update_data(
-            var=assignment_var,
-            env=env.name,
-            name=f'"{variable_name}"',
-            value=expr_var,
-        )
-
-        return assignment_var, wrap_codes(assignment_code, expr_code)
-
     def __visit_let(
         self,
         let_type: LetType,
-        ctx: Union[
-            LispParser.LetContext,
-            LispParser.LetAsteriskContext,
-            LispParser.LetRecContext,
-        ],
     ) -> ExpressionVisitResult:
         env = self.__environment_ctx.env
+        ctx = ast_context.ctx  # LetContext/LetAsteriskContext/LetRecContext
 
         new_env_var = self.__variable_manager.create_environment_name()
         new_env_code = self.__code_creator.make_environment()
@@ -780,6 +726,69 @@ class ASTVisitor(LispVisitor):
             code = self.__code_creator.make_false()
 
         var = self.__variable_manager.create_object_name()
-        code.set_var(var=var)
+        code.update_data(var=var)
 
         return var, code
+
+    def __visit_procedure(
+        self, formals_text: str, body: LispParser.ProcedureBodyContext
+    ) -> ExpressionVisitResult:
+        parent_env = self.__environment_ctx.env.parent
+
+        function_name = self.__add_lambda_declaration(
+            formals_text=formals_text,
+            body=body,
+        )
+
+        lambda_var = self.__variable_manager.create_object_name()
+        lambda_creation_code = self.__code_creator.make_lambda()
+        lambda_creation_code.update_data(
+            var=lambda_var, func=function_name, env=parent_env.name
+        )
+
+        return lambda_var, lambda_creation_code
+
+    def __visit_variable_definition(
+        self, variable_name: str, expr_var: str, expr_code: Code
+    ) -> ExpressionVisitResult:
+        env = self.__environment_ctx.env
+
+        definition_code = self.__code_creator.set_variable_value()
+        definition_code.update_data(
+            env=env.name,
+            name=variable_name,
+            value=expr_var,
+        )
+
+        # First element is ignored and needed to unify the processing of expressions and definitions
+        return "", wrap_codes(definition_code, expr_code)
+
+    def __check_binding_list(self, variables_names: list[str]) -> None:
+        ctx = ast_context.ctx
+        visited_variables = set()
+
+        for v in variables_names:
+            if self.__symbols.has_api_symbol(v):
+                raise FunctionRedefineException(v, ctx)
+
+            if v in visited_variables:
+                raise DuplicatedBindingException(v, ctx)
+
+            visited_variables.add(v)
+
+    def __check_formals(self, formals: list[str]) -> None:
+        ctx = ast_context.ctx
+        visited_formals = set()
+
+        for f in formals:
+            if self.__symbols.has_api_symbol(f):
+                raise ParamNameConflictException(f, ctx)
+
+            if f in visited_formals:
+                raise DuplicatedParamException(f, ctx)
+
+            visited_formals.add(f)
+
+    def __check_variable_definition(self, variable_name: str) -> None:
+        if self.__symbols.has_api_symbol(variable_name):
+            raise FunctionRedefineException(variable_name, ast_context.ctx)

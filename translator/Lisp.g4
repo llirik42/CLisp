@@ -4,7 +4,7 @@ program : programElement* EOF ;
 
 programElement
     : expression
-    | environmentBodyDefinition ;
+    | definition ;
 
 expression
     : literal
@@ -35,17 +35,16 @@ procedureCall : LBRACKET operator operand* RBRACKET ;
 operator : expression ;
 operand : expression ;
 
-procedure : LBRACKET LAMBDA formals procedureBody RBRACKET ;
-formals
-    : fixedFormals
-    | variadicFormals
-    | listFormals
+procedure : LBRACKET LAMBDA procedureFormals procedureBody RBRACKET ;
+procedureFormals
+    : procedureFixedFormals
+    | procedureVariadicFormal
+    | procedureMixedFormals
     ;
-fixedFormals : LBRACKET variable* RBRACKET ;
-listFormals : variable ;
-variadicFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
-procedureBody : procedureBodyDefinition* expression+ ;
-procedureBodyDefinition : definition ;
+procedureFixedFormals : LBRACKET variable* RBRACKET ;
+procedureVariadicFormal : variable ;
+procedureMixedFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
+procedureBody : definition* expression+ ;
 
 assignment : LBRACKET SET variable expression RBRACKET ;
 
@@ -54,8 +53,7 @@ letAsterisk : LBRACKET LET_ASTERISK bindingList environmentBody RBRACKET ;
 letRec : LBRACKET LET_REC bindingList environmentBody RBRACKET ;
 bindingList : LBRACKET binding* RBRACKET ;
 binding : LBRACKET variable expression RBRACKET ;
-environmentBody : environmentBodyDefinition* expression+ ;
-environmentBodyDefinition : definition ;
+environmentBody : definition* expression+ ;
 
 constant
     : boolConstant
@@ -70,7 +68,21 @@ stringConstant : STRING ;
 integerConstant : INTEGER ;
 floatConstant : FLOAT ;
 
-definition : LBRACKET DEFINE variable expression RBRACKET ;
+definition : variableDefinition | procedureDefinition;
+variableDefinition : LBRACKET DEFINE variable expression RBRACKET ;
+procedureDefinition : LBRACKET DEFINE LBRACKET variable procedureDefinitionFormals RBRACKET procedureBody RBRACKET ;
+
+procedureDefinitionFormals
+    : procedureDefinitionFixedFormals
+    | procedureDefinitionVariadicFormal
+    | procedureDefinitionMixedFormals
+    ;
+procedureDefinitionFixedFormals : variable* ;
+procedureDefinitionVariadicFormal : PERIOD variable ;
+procedureDefinitionMixedFormals : variable+ PERIOD variable ;
+
+
+
 
 TRUE: '#t' ;
 FALSE: '#f' ;

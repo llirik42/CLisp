@@ -1,0 +1,25 @@
+******************[TESTING CODE]******************
+(define (f1) 42)
+(display (f1))
+
+(define (f2 x y) (+ x y))
+(display (f2 7 8))
+
+(define (f3 . z) z)
+(display (f3 1 2 3 4 5 6 7 9))
+
+(define (f4 a1 a2 . z) z)
+(display (f4 1 2 3 4 5 6 7 9))
+
+(define (f5 a1 a2 . z) a2)
+(display (f5 1 "Hello" 3 4 5 6 7 8 9 10))
+
+(define (f6 a1 a2 . z) a1)
+(display (f6 -9 2 3 4 5 6 7 8 9 10))
+******************[EXPECTED OUT]******************
+42
+15
+list(1 2 3 4 5 6 7 9)
+list(3 4 5 6 7 9)
+Hello
+-9

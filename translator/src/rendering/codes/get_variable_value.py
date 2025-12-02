@@ -13,4 +13,4 @@ class GetVariableValueCode(Code):
         env: Optional[str] = None,
         name: Optional[str] = None,
     ) -> None:
-        self._update_main_data(var=var, env=env, name=name)
+        self._update_main_data(var=var, env=env, name=f'"{name}"')

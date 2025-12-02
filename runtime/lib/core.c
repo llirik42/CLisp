@@ -18,7 +18,7 @@ void cl_init_obj(CL_Object* obj, enum CL_ObjectType type) {
     obj->ref_count = 1;
 }
 
-void cl_increase_refs_count(CL_Object* obj) {
+void cl_increase_ref_count(CL_Object* obj) {
     obj->ref_count++;
 }
 
@@ -26,7 +26,7 @@ static void destroy_unspecified(CL_Object* obj) {
     cl_free_memory(obj);
 }
 
-void cl_destroy_obj(CL_Object* obj) {
+void cl_decrease_ref_count(CL_Object* obj) {
     if (!obj || !obj->ref_count) {
         return;
     }

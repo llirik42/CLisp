@@ -13,6 +13,7 @@ typedef struct {
     } func;
     unsigned char with_env;
     CL_Environment* environment;
+    CL_DynamicArray* call_environments;
 } CL_LambdaObject;
 
 CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment);
