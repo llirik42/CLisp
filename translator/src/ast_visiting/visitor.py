@@ -666,7 +666,8 @@ class ASTVisitor(LispVisitor):
             if is_expression_last:
                 increase_ref_count_count_code = self.__code_creator.increase_ref_count()
                 increase_ref_count_count_code.update_data(var=e_var)
-                e_code.add_secondary_prolog(increase_ref_count_count_code.render())
+                increase_ref_count_count_code.remove_newlines()
+                e_code.add_secondary_prolog("\n" + increase_ref_count_count_code.render())
 
             e_code.transfer_newline()
             last_expr_var = e_var
