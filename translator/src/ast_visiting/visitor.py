@@ -103,7 +103,7 @@ class ASTVisitor(LispVisitor):
         return program_code.render()
 
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
-        env_var = "env"  # variable that stores environment in the lambda function (from the template)
+        env_var = self.__symbols.find_internal("lambda_env")
 
         env = self.__environment_ctx.env
 
@@ -229,14 +229,11 @@ class ASTVisitor(LispVisitor):
     def visitProcedureDefinition(
         self, ctx: LispParser.ProcedureDefinitionContext
     ) -> ExpressionVisitResult:
-        # TODO: копипаста
-
-        env_var = "env"  # variable that stores environment in the lambda function (from the template)
+        env_var = self.__symbols.find_internal("lambda_env")
         env = self.__environment_ctx.env
 
         variable_name = ctx.variable().getText()
 
-        # TODO: копипаста с visitVariableDefinition
         self.__check_variable_definition(variable_name, ctx)
         env.add(variable_name)
 
@@ -436,10 +433,16 @@ class ASTVisitor(LispVisitor):
         var = self.__variable_manager.create_object_name()
         code = self.__code_creator.if_()
 
-        consequent_code.add_secondary_prolog(
-            f"cl_increase_ref_count({consequent_var});"
+        consequent_increase_ref_count_code = self.__code_creator.increase_ref_count()
+        consequent_increase_ref_count_code.update_data(var=consequent_var)
+
+        alternate_increase_ref_count_code = self.__code_creator.increase_ref_count()
+        alternate_increase_ref_count_code.update_data(var=alternate_var)
+
+        consequent_code = wrap_codes(
+            consequent_increase_ref_count_code, consequent_code
         )
-        alternate_code.add_secondary_prolog(f"cl_increase_ref_count({alternate_var});")
+        alternate_code = wrap_codes(alternate_increase_ref_count_code, alternate_code)
 
         code.update_data(
             var=var,
@@ -578,15 +581,16 @@ class ASTVisitor(LispVisitor):
         return join_codes(fixed_formals_codes + [variadic_formal_code])
 
     def __visit_scalar_formals(self, formals: list[str]) -> list[Code]:
-        env = self.__environment_ctx.env
+        args_name = self.__symbols.find_internal("lambda_args")
 
+        env = self.__environment_ctx.env
         codes = []
 
         for i, param_name in enumerate(formals):
             current_arg_code = self.__code_creator.set_variable_value()
             current_arg_code.update_data(
-                env=env.name, name=param_name, value=f"args[{i}]"
-            )  # TODO: value прибито
+                env=env.name, name=param_name, value=f"{args_name}[{i}]"
+            )
             env.add(param_name)
 
             current_arg_code.remove_newlines()
@@ -599,24 +603,29 @@ class ASTVisitor(LispVisitor):
         formal: str,
         start_index: int,
     ) -> VariadicFormalVisitResult:
-        # variables that store number of args and the args in the lambda function (from the template)
-        count_name = "count"
-        args_name = "args"
+        count_name = self.__symbols.find_internal("lambda_count")
+        args_name = self.__symbols.find_internal("lambda_args")
 
         env = self.__environment_ctx.env
+        variadic_formal_list_var = self.__variable_manager.create_object_name()
 
-        list_var = self.__variable_manager.create_object_name()
-        count = f"{count_name}-{start_index}"
-        args = f"{args_name}+{start_index}"
+        if start_index == 0:
+            count = count_name
+            args = args_name
+        else:
+            count = f"{count_name}-{start_index}"
+            args = f"{args_name}+{start_index}"
 
-        list_creation_code = self.__code_creator.make_list_from_array()
-        list_creation_code.update_data(var=list_var, count=count, elements=args)
+        variadic_formal_list_code = self.__code_creator.make_list_from_array()
+        variadic_formal_list_code.update_data(
+            var=variadic_formal_list_var, count=count, elements=args
+        )
 
         code = self.__code_creator.set_variable_value()
-        code.update_data(env=env.name, name=formal, value=list_var)
+        code.update_data(env=env.name, name=formal, value=variadic_formal_list_var)
         env.add(formal)
 
-        return wrap_codes(code, list_creation_code)
+        return wrap_codes(code, variadic_formal_list_code)
 
     def __visit_lambda_expressions(
         self, expressions: list[LispParser.ExpressionContext]
@@ -629,9 +638,9 @@ class ASTVisitor(LispVisitor):
 
             is_expression_last = i == len(expressions) - 1
             if is_expression_last:
-                e_code.add_secondary_prolog(
-                    f"\ncl_increase_ref_count({e_var});"
-                )  # TODO: прибито
+                increase_ref_count_count_code = self.__code_creator.increase_ref_count()
+                increase_ref_count_count_code.update_data(var=e_var)
+                e_code.add_secondary_prolog(increase_ref_count_count_code.render())
 
             e_code.transfer_newline()
             last_expr_var = e_var
