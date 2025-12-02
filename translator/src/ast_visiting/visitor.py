@@ -418,8 +418,8 @@ class ASTVisitor(LispVisitor):
         var = self.__variable_manager.create_object_name()
         code = self.__code_creator.if_()
 
-        consequent_code.add_secondary_prolog(f"cl_ref_count({consequent_var});")
-        alternate_code.add_secondary_prolog(f"cl_ref_count({alternate_var});")
+        consequent_code.add_secondary_prolog(f"cl_increase_ref_count({consequent_var});")
+        alternate_code.add_secondary_prolog(f"cl_increase_ref_count({alternate_var});")
 
         code.update_data(
             var=var,

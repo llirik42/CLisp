@@ -67,23 +67,13 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
         __builtin_unreachable();
     }
 
-    CL_Environment* curr_env = env;
-    unsigned char found = FALSE;
-    while (curr_env && !found) {
-        for (size_t i = 0; i < curr_env->variables_count; i++) {
-            if (curr_env->variables[i].val == value) {
-                cl_increase_ref_count(curr_env->variables[i].val);
-                found = TRUE;
-                break;
-            }
-        }
-        curr_env = curr_env->parent;
-    }
+    cl_increase_ref_count(value);
 
     for (size_t i = 0; i < env->variables_count; i++) {
-        if (!strcmp(name, env->variables[i].key)) {
-            cl_decrease_ref_count(env->variables[i].val);
-            env->variables[i].val = value;
+        CL_Variable* var = &env->variables[i];
+        if (!strcmp(name, var->key)) {
+            cl_decrease_ref_count(var->val);
+            var->val = value;
             return;
         }
     }
@@ -103,13 +93,15 @@ CL_Object* cl_update_variable_value(CL_Environment* env, char* name, CL_Object* 
         __builtin_unreachable();
     }
 
-    CL_Environment* curr_env = env;
+    cl_increase_ref_count(value);
 
+    CL_Environment* curr_env = env;
     while (curr_env) {
         for (size_t i = 0; i < curr_env->variables_count; i++) {
-            if (!strcmp(name, curr_env->variables[i].key)) {
-                cl_decrease_ref_count(curr_env->variables[i].val);
-                curr_env->variables[i].val = value;
+            CL_Variable* var = &curr_env->variables[i];
+            if (!strcmp(name, var->key)) {
+                cl_decrease_ref_count(var->val);
+                var->val = value;
                 return cl_make_unspecified();
             }
         }
