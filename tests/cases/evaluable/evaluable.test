@@ -1,0 +1,52 @@
+******************[TESTING CODE]******************
+(define delayed-value
+  (delay (+ 2 3)))
+(display (force delayed-value))
+
+(define x 0)
+(define lazy-inc
+  (delay
+    (begin
+      (set! x (+ x 1))
+      x)))
+(display (force lazy-inc))
+(display (force lazy-inc))
+
+(define expensive
+  (delay
+    (begin
+      (display "Complex calculations")
+      (* 1234 5678))))
+
+(display (force expensive))
+(display (force expensive))
+
+(define (lazy-if cond then-expr else-expr)
+  (if cond
+      (force then-expr)
+      (force else-expr)))
+(display (lazy-if #t (delay 10) (delay (/ 1 0))))
+(display (lazy-if #f (delay 10) (delay 20)))
+
+(define safe (delay (/ 1 0)))
+
+(define (f x) (+ x 100))
+(define delayed
+  (delay (f 7)))
+(force delayed)
+
+(define a (delay (+ 1 2)))
+(define b (delay (* (force a) 10)))
+(define c (delay (- (force b) 7)))
+(display (force c))
+******************[EXPECTED OUT]******************
+5
+1
+1
+Complex calculations
+7006652
+7006652
+10
+20
+107
+23
