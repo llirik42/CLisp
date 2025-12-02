@@ -15,6 +15,11 @@ CL_Object* cl_make_evaluable(cl_evaluable_func func, CL_Environment* env) {
 }
 
 void cl_destroy_evaluable(CL_Object* obj) {
+    CL_EvaluableObject* evaluable_object = (CL_EvaluableObject*)obj;
+    if (evaluable_object->result != NULL) {
+        cl_decrease_ref_count(evaluable_object->result);
+    }
+
     cl_free_memory(obj);
 }
 
