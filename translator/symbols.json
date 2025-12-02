@@ -24,7 +24,7 @@
       "unspecified": "cl_make_unspecified",
       "evaluable": "cl_make_evaluable",
       "lambda": "cl_make_lambda",
-      "~object": "cl_destroy_obj",
+      "~object": "cl_decrease_ref_count",
       "environment": "cl_make_env",
       "~environment": "cl_destroy_env",
       "environment_global": "cl_make_global_env",
@@ -34,7 +34,7 @@
       "get_variable_value": "cl_get_variable_value",
       "lambda_call": "cl_lambda_call",
       "to_boolean": "cl_obj_to_boolean",
-      "ref_count++": "cl_increase_refs_count"
+      "ref_count++": "cl_increase_ref_count"
     },
     "types": {
       "object": "CL_Object*",

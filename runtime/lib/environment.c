@@ -55,7 +55,7 @@ CL_Environment* cl_make_env_capacity(CL_Environment* parent, size_t capacity) {
 
 void cl_destroy_env(CL_Environment* env) {
     for (size_t i = 0; i < env->variables_count; i++) {
-        cl_destroy_obj(env->variables[i].val);
+        cl_decrease_ref_count(env->variables[i].val);
     }
     cl_free_memory(env->variables);
     cl_free_memory(env);
@@ -72,7 +72,7 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
     while (curr_env && !found) {
         for (size_t i = 0; i < curr_env->variables_count; i++) {
             if (curr_env->variables[i].val == value) {
-                cl_increase_refs_count(curr_env->variables[i].val);
+                cl_increase_ref_count(curr_env->variables[i].val);
                 found = TRUE;
                 break;
             }
@@ -82,7 +82,7 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
 
     for (size_t i = 0; i < env->variables_count; i++) {
         if (!strcmp(name, env->variables[i].key)) {
-            cl_destroy_obj(env->variables[i].val);
+            cl_decrease_ref_count(env->variables[i].val);
             env->variables[i].val = value;
             return;
         }
@@ -108,7 +108,7 @@ CL_Object* cl_update_variable_value(CL_Environment* env, char* name, CL_Object* 
     while (curr_env) {
         for (size_t i = 0; i < curr_env->variables_count; i++) {
             if (!strcmp(name, curr_env->variables[i].key)) {
-                cl_destroy_obj(curr_env->variables[i].val);
+                cl_decrease_ref_count(curr_env->variables[i].val);
                 curr_env->variables[i].val = value;
                 return cl_make_unspecified();
             }

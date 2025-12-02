@@ -209,7 +209,7 @@ class ASTVisitor(LispVisitor):
         variable_name = ctx.variable().getText()
         expression = ctx.expression()
         expr_var, expr_code = self.visit(expression)
-        expr_code.remove_first_secondary_line()
+        #expr_code.remove_first_secondary_line()
         binding_code = self.__code_creator.set_variable_value()
         binding_code.update_data(
             env=env.name,
@@ -256,7 +256,7 @@ class ASTVisitor(LispVisitor):
 
         expression = variable_definition.expression()
         expr_var, expr_code = self.visit(expression)
-        expr_code.remove_first_secondary_line()
+        #expr_code.remove_first_secondary_line()
 
         definition_code = self.__code_creator.set_variable_value()
         definition_code.update_data(
@@ -280,7 +280,7 @@ class ASTVisitor(LispVisitor):
 
         expr_var, expr_code = self.visit(expression)
 
-        expr_code.remove_first_secondary_line()
+        #expr_code.remove_first_secondary_line()
 
         assignment_var = self.__variable_manager.create_object_name()
         assignment_code = self.__code_creator.update_variable_value()
@@ -418,8 +418,8 @@ class ASTVisitor(LispVisitor):
         var = self.__variable_manager.create_object_name()
         code = self.__code_creator.if_()
 
-        consequent_code.remove_first_secondary_line()
-        alternate_code.remove_first_secondary_line()
+        consequent_code.add_secondary_prolog(f"cl_ref_count({consequent_var});")
+        alternate_code.add_secondary_prolog(f"cl_ref_count({alternate_var});")
 
         code.update_data(
             var=var,
@@ -614,7 +614,7 @@ class ASTVisitor(LispVisitor):
 
             is_expression_last = i == len(expressions) - 1
             if is_expression_last:
-                e_code.remove_first_secondary_line()  # Remove destroying result of the procedure
+                e_code.add_secondary_prolog(f"\ncl_increase_ref_count({e_var});") # TODO: прибито
 
             e_code.transfer_newline()
             last_expr_var = e_var
