@@ -8,7 +8,7 @@ CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
 
     lambda_object->func.cl_func_with_env = func;
     lambda_object->with_env = TRUE;
-    lambda_object->environment = cl_make_env(environment);
+    lambda_object->environment = environment;
     lambda_object->call_environments = cl_da_create(UNDEFINED_DA_CAPACITY);
     return (CL_Object*)lambda_object;
 }
