@@ -6,7 +6,7 @@ from src.rendering import (
     CodeCreator,
     wrap_codes,
     join_codes,
-    transfer_secondary,
+    transfer_secondary, nest_codes,
 )
 from src.rendering.codes import MakePrimitiveCode, Code
 from src.symbols import Symbols
@@ -105,6 +105,12 @@ class ASTVisitor(LispVisitor):
         return program_code.render()
 
     @visit(ast_context)
+    def visitBegin(self, ctx:LispParser.BeginContext) -> ExpressionVisitResult:
+        last_expr_var, expr_codes = self.__visit_expression_sequence(ctx.expression())
+
+        return last_expr_var, nest_codes(expr_codes)
+
+    @visit(ast_context)
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
         env_var = self.__symbols.find_internal("lambda_env")
         env = self.__environment_ctx.env
@@ -167,7 +173,7 @@ class ASTVisitor(LispVisitor):
     ) -> BodyVisitResult:
         definitions_codes = [self.visit(d)[1] for d in ctx.definition()]
 
-        last_expr_var, expr_codes = self.__visit_lambda_expressions(ctx.expression())
+        last_expr_var, expr_codes = self.__visit_expression_sequence(ctx.expression())
 
         return (
             last_expr_var,
@@ -694,7 +700,7 @@ class ASTVisitor(LispVisitor):
 
         return wrap_codes(code, variadic_formal_list_code)
 
-    def __visit_lambda_expressions(
+    def __visit_expression_sequence(
         self, expressions: list[LispParser.ExpressionContext]
     ) -> LambdaExpressionsVisitResult:
         last_expr_var = ""

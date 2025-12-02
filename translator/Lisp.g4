@@ -8,6 +8,7 @@ programElement
 
 expression
     : literal
+    | begin
     | delay
     | force
     | variable
@@ -22,6 +23,7 @@ expression
     | letRec
     ;
 
+begin : LBRACKET BEGIN expression+ RBRACKET ;
 delay : LBRACKET DELAY expression RBRACKET ;
 force : LBRACKET FORCE expression RBRACKET ;
 
@@ -100,6 +102,7 @@ LET_ASTERISK : 'let*' ;
 LET_REC : 'letrec' ;
 DELAY : 'delay' ;
 FORCE : 'force' ;
+BEGIN : 'begin' ;
 INTEGER : SIGN? DIGIT+ ;
 FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
