@@ -20,10 +20,6 @@ void cl_check_func_arg_numeric_type(const char* func_name, enum CL_ObjectType ty
 
 double cl_unwrap_numeric_to_double(CL_Object* numeric);
 
-CL_Object* cl_unwrap_obj(CL_Object* obj);
-
-void cl_destroy_if_unwrapped(CL_Object* origin, CL_Object* unwrapped);
-
 #define CL_CHECK_FUNC_ARGS_COUNT(args_count, expected_count, mode) cl_check_func_args_count(__func__, args_count, expected_count, mode)
 
 #define CL_CHECK_FUNC_ARG_TYPE(type, expected_type) cl_check_func_arg_type(__func__, type, expected_type)

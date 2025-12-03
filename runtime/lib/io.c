@@ -8,7 +8,7 @@
 #include "lib/objects/list.h"
 
 static void display_one_object(CL_Object* obj) {
-    CL_Object* to_display = cl_unwrap_obj(obj);
+    CL_Object* to_display = obj;
 
     switch (cl_get_obj_type(to_display)) {
         case INTEGER:
@@ -46,8 +46,6 @@ static void display_one_object(CL_Object* obj) {
         default:
             printf("Undisplayable type");
     }
-
-    cl_destroy_if_unwrapped(obj, to_display);
 }
 
 CL_Object* cl_display(CL_FUNC_PARAMS) {

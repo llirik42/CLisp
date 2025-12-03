@@ -6,19 +6,17 @@ from jinja2 import Environment, FileSystemLoader, Template
 from .codes import (
     EmptyCode,
     MakePrimitiveCode,
-    MakeLambdaCode,
     MakeListFromArrayCode,
     MakeEnvironmentCode,
     GetVariableValueCode,
     SetVariableValueCode,
     UpdateVariableValueCode,
     LambdaCallCode,
-    ProcedureCallCode,
-    GetFunctionArgumentCode,
-    LambdaDefinitionCode,
+    FunctionDefinitionCode,
     ProgramCode,
     ConditionCode,
     HavingVarCode,
+    MakeCallableCode, EvaluationCode,
 )
 from src.symbols import Symbols
 
@@ -44,6 +42,7 @@ class CodeCreator:
         self.__CREATE_TRUE = symbols.find_internal("true")
         self.__CREATE_FALSE = symbols.find_internal("false")
         self.__CREATE_LAMBDA = symbols.find_internal("lambda")
+        self.__CREATE_EVALUABLE = symbols.find_internal("evaluable")
         self.__CREATE_LIST = symbols.find_internal("list")
         self.__CREATE_LIST_FROM_ARRAY = symbols.find_internal("list_array")
         self.__OBJECT_TO_BOOLEAN = symbols.find_internal("to_boolean")
@@ -55,9 +54,10 @@ class CodeCreator:
         self.__SET_VARIABLE_VALUE = symbols.find_internal("set_variable_value")
         self.__UPDATE_VARIABLE_VALUE = symbols.find_internal("update_variable_value")
         self.__CALL_LAMBDA = symbols.find_internal("lambda_call")
+        self.__EVALUATE = symbols.find_internal("evaluation")
         self.__INCREASE_REF_COUNT = symbols.find_internal("ref_count++")
-        self.__FUNCTION_ARGS_VAR = "args"
-        self.__FUNCTION_PARAMS = symbols.find_internal("lambda_function_params")
+        self.__LAMBDA_PARAMS = symbols.find_internal("lambda_function_params")
+        self.__EVALUABLE_PARAMS = symbols.find_internal("evaluable_function_params")
 
         self.__load_templates(templates_folder_path)
 
@@ -115,16 +115,11 @@ class CodeCreator:
             },
         )
 
-    def make_lambda(self) -> MakeLambdaCode:
-        return MakeLambdaCode(
-            main_template=self.__get_template("make_lambda"),
-            secondary_template=self.__get_destroy_object_template(),
-            main_data={
-                "type": self.__OBJECT_TYPE,
-                "creation_func": self.__CREATE_LAMBDA,
-            },
-            secondary_data={"func": self.__DESTROY_OBJECT},
-        )
+    def make_lambda(self) -> MakeCallableCode:
+        return self.__make_callable(self.__CREATE_LAMBDA)
+
+    def make_evaluable(self) -> MakeCallableCode:
+        return self.__make_callable(self.__CREATE_EVALUABLE)
 
     def make_list(self) -> HavingVarCode:
         return HavingVarCode(
@@ -219,23 +214,6 @@ class CodeCreator:
             },
         )
 
-    def get_function_argument(self) -> GetFunctionArgumentCode:
-        return GetFunctionArgumentCode(
-            main_template=self.__get_template("get_function_argument"),
-            main_data={
-                "type": self.__OBJECT_TYPE,
-                "args": self.__FUNCTION_ARGS_VAR,
-            },
-        )
-
-    def procedure_call(self) -> ProcedureCallCode:
-        return ProcedureCallCode(
-            main_template=self.__get_template("procedure_call"),
-            secondary_template=self.__get_destroy_object_template(),
-            main_data={"type": self.__OBJECT_TYPE},
-            secondary_data={"func": self.__DESTROY_OBJECT},
-        )
-
     def lambda_call(self) -> LambdaCallCode:
         return LambdaCallCode(
             main_template=self.__get_template("lambda_call"),
@@ -250,14 +228,24 @@ class CodeCreator:
             },
         )
 
-    def lambda_definition(self) -> LambdaDefinitionCode:
-        return LambdaDefinitionCode(
-            main_template=self.__get_template("lambda_definition"),
+    def evaluation(self) -> EvaluationCode:
+        return EvaluationCode(
+            main_template=self.__get_template("evaluation"),
+            secondary_template=self.__get_destroy_object_template(),
             main_data={
-                "ret_type": self.__OBJECT_TYPE,
-                "params": self.__FUNCTION_PARAMS,
+                "type": self.__OBJECT_TYPE,
+                "func": self.__EVALUATE,
+            },
+            secondary_data={
+                "func": self.__DESTROY_OBJECT,
             },
         )
+
+    def lambda_definition(self) -> FunctionDefinitionCode:
+        return self.__function_definition(self.__LAMBDA_PARAMS)
+
+    def evaluable_definition(self) -> FunctionDefinitionCode:
+        return self.__function_definition(self.__EVALUABLE_PARAMS)
 
     def program(self) -> ProgramCode:
         return ProgramCode(
@@ -275,6 +263,26 @@ class CodeCreator:
             secondary_data={
                 "func": self.__DESTROY_OBJECT,
             },
+        )
+
+    def __function_definition(self, params: str) -> FunctionDefinitionCode:
+        return FunctionDefinitionCode(
+            main_template=self.__get_template("function_definition"),
+            main_data={
+                "ret_type": self.__OBJECT_TYPE,
+                "params": params,
+            },
+        )
+
+    def __make_callable(self, creation_func: str) -> MakeCallableCode:
+        return MakeCallableCode(
+            main_template=self.__get_template("make_callable"),
+            secondary_template=self.__get_destroy_object_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "creation_func": creation_func,
+            },
+            secondary_data={"func": self.__DESTROY_OBJECT},
         )
 
     def __get_destroy_object_template(self) -> Template:

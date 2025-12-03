@@ -111,9 +111,6 @@ class Code(ABC):
             else f"{rendered_template}\n{epilog}"
         )
 
-        if self.__is_newline_transferred:
-            return rendered[:-1]  # remove trailing \n
-
         return rendered
 
     def render_secondary(self) -> str:

@@ -6,7 +6,8 @@ class VariableManager:
 
         self.__object_count = 0
         self.__environment_count = -1
-        self.__function_count = 0
+        self.__lambda_count = 0
+        self.__evaluable_count = 0
 
     def create_object_name(self) -> str:
         """
@@ -28,11 +29,20 @@ class VariableManager:
 
         return f"env{self.__environment_count}"
 
-    def create_function_name(self) -> str:
+    def create_lambda_function_name(self) -> str:
         """
         Creates and returns a name of the function of a lambda.
         """
 
-        self.__function_count += 1
+        self.__lambda_count += 1
 
-        return f"func{self.__function_count}"
+        return f"lambda{self.__lambda_count}"
+
+    def create_evaluable_function_name(self) -> str:
+        """
+        Creates and returns a name of the function of an evaluable.
+        """
+
+        self.__evaluable_count += 1
+
+        return f"evaluable{self.__evaluable_count}"

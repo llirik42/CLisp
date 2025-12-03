@@ -22,7 +22,7 @@ CL_Object* cl_add(CL_FUNC_PARAMS) {
     }
 
     if (count == 1) {
-        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_Object* operand = args[0];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
         if (operand == args[0]) {
             cl_increase_ref_count(operand);
@@ -33,7 +33,7 @@ CL_Object* cl_add(CL_FUNC_PARAMS) {
     CL_Object* result = cl_make_int(0);
 
     for (unsigned int i = 0; i < count; i++) {
-        CL_Object* operand = cl_unwrap_obj(args[i]);
+        CL_Object* operand = args[i];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
         enum CL_ObjectType operand_type = cl_get_obj_type(operand);
@@ -55,8 +55,6 @@ CL_Object* cl_add(CL_FUNC_PARAMS) {
         } else {
             set_int_value(result, cl_get_int_value(result) + (int)op_value);
         }
-
-        cl_destroy_if_unwrapped(args[i], operand);
     }
 
     return result;
@@ -68,7 +66,7 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
     }
 
     if (count == 1) {
-        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_Object* operand = args[0];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
         if (operand == args[0]) {
             cl_increase_ref_count(operand);
@@ -79,7 +77,7 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
     CL_Object* result = cl_make_int(1);
 
     for (unsigned int i = 0; i < count; i++) {
-        CL_Object* operand = cl_unwrap_obj(args[i]);
+        CL_Object* operand = args[i];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
         enum CL_ObjectType operand_type = cl_get_obj_type(operand);
@@ -87,7 +85,6 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
 
         if (cl_unwrap_numeric_to_double(operand) == 0) {
             cl_decrease_ref_count(result);
-            cl_destroy_if_unwrapped(args[i], operand);
             return cl_make_int(0);
         }
 
@@ -107,8 +104,6 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
         } else {
             set_int_value(result, cl_get_int_value(result) * (int)op_value);
         }
-
-        cl_destroy_if_unwrapped(args[i], operand);
     }
 
     return result;
@@ -118,7 +113,7 @@ CL_Object* cl_div(CL_FUNC_PARAMS) {
     CL_CHECK_FUNC_ARGS_COUNT(count, 0, GREATER);
 
     if (count == 1) {
-        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_Object* operand = args[0];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
         if (cl_unwrap_numeric_to_double(operand) == 0) {
@@ -149,12 +144,11 @@ CL_Object* cl_div(CL_FUNC_PARAMS) {
         }
 
         CL_Object* result = cl_make_double(1 / cl_unwrap_numeric_to_double(operand));
-        cl_destroy_if_unwrapped(args[0], operand);
         return result;
     }
 
-    CL_Object* operand1 = cl_unwrap_obj(args[0]);
-    CL_Object* operand2 = cl_unwrap_obj(args[1]);
+    CL_Object* operand1 = args[0];
+    CL_Object* operand2 = args[1];
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand1));
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand2));
 
@@ -174,9 +168,6 @@ CL_Object* cl_div(CL_FUNC_PARAMS) {
         }
     }
 
-    cl_destroy_if_unwrapped(args[0], operand1);
-    cl_destroy_if_unwrapped(args[1], operand2);
-
     return result;
 }
 
@@ -184,7 +175,7 @@ CL_Object* cl_sub(CL_FUNC_PARAMS) {
     CL_CHECK_FUNC_ARGS_COUNT(count, 0, GREATER);
 
     if (count == 1) {
-        CL_Object* operand = cl_unwrap_obj(args[0]);
+        CL_Object* operand = args[0];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
         enum CL_ObjectType type = cl_get_obj_type(operand);
@@ -200,8 +191,8 @@ CL_Object* cl_sub(CL_FUNC_PARAMS) {
         return operand;
     }
 
-    CL_Object* operand1 = cl_unwrap_obj(args[0]);
-    CL_Object* operand2 = cl_unwrap_obj(args[1]);
+    CL_Object* operand1 = args[0];
+    CL_Object* operand2 = args[1];
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand1));
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand2));
 
@@ -212,9 +203,6 @@ CL_Object* cl_sub(CL_FUNC_PARAMS) {
     } else {
         result = cl_make_int(cl_get_int_value(operand1) - cl_get_int_value(operand2));
     }
-
-    cl_destroy_if_unwrapped(args[0], operand1);
-    cl_destroy_if_unwrapped(args[1], operand2);
 
     return result;
 }
