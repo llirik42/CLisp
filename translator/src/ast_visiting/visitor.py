@@ -610,7 +610,6 @@ class ASTVisitor(LispVisitor):
             ret_var=body_var,
             body=body,
         )
-        function_code.transfer_newline()
 
         self.__declaration_ctx.add_declaration(function_code)
 

@@ -14,7 +14,14 @@ def write_generated_code(output_file: str, code: str) -> None:
     :param code: code to file to write.
     """
 
-    open(output_file, "w").write(code)
+    # TODO: Make the initial generation without empty lines, rather than using this quick fix
+
+    # It doesn't write empty lines in the bodies
+    with open(output_file, "w") as f:
+        for l in code.splitlines():
+            if "\t" in l and l.isspace():
+                continue
+            f.write(l + "\n")
 
 
 def main():
