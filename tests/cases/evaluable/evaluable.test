@@ -48,6 +48,13 @@
 (define b (delay (* (force a) 10)))
 (define c (delay (- (force b) 7)))
 (display (force c))
+
+(define res 0)
+(let ()
+  (define d (delay (+ 2 3)))
+  (set! res (force d)))
+(display res)
+
 ******************[EXPECTED OUT]******************
 5
 1
@@ -68,3 +75,4 @@ Complex calculations
 20
 107
 23
+5
