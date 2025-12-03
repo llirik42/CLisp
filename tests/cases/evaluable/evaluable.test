@@ -33,7 +33,7 @@
 (define (f x) (+ x 100))
 (define delayed
   (delay (f 7)))
-(force delayed)
+(display (force delayed))
 
 (define a (delay (+ 1 2)))
 (define b (delay (* (force a) 10)))

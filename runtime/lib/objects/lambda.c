@@ -28,7 +28,7 @@ void cl_destroy_lambda(CL_Object* obj) {
     if (lambda_object->with_env) {
         CL_DynamicArray* call_envs = lambda_object->call_environments;
 
-        for (size_t i = 0; i < call_envs->size; i++) {
+        for (size_t i = 0; i < cl_da_size(call_envs); i++) {
             CL_Environment* call_env = cl_da_get(call_envs, i);
             cl_destroy_env(call_env);
         }
