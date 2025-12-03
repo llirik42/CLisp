@@ -15,8 +15,8 @@ static unsigned int less_or_equal_than(double a, double b) { return a <= b; }
 static CL_Object* numeric_comparison(CL_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
     cl_check_func_args_count(func_name, count, 2, EQUAL);
 
-    CL_Object* left_term = cl_unwrap_obj(args[0]);
-    CL_Object* right_term = cl_unwrap_obj(args[1]);
+    CL_Object* left_term = args[0];
+    CL_Object* right_term = args[1];
 
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(left_term));
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(right_term));
@@ -26,8 +26,6 @@ static CL_Object* numeric_comparison(CL_FUNC_PARAMS, const char* func_name, comp
     if (compare(cl_unwrap_numeric_to_double(left_term), cl_unwrap_numeric_to_double(right_term))) {
         result = 1;
     }
-    cl_destroy_if_unwrapped(args[0], left_term);
-    cl_destroy_if_unwrapped(args[1], right_term);
 
     return cl_make_boolean(result);
 }
@@ -51,20 +49,16 @@ CL_Object* cl_less_or_equal(CL_FUNC_PARAMS) {
 CL_Object *cl_equal(CL_FUNC_PARAMS) {
     CL_CHECK_FUNC_ARGS_COUNT(count, 2, EQUAL);
 
-    CL_Object* left_term = cl_unwrap_obj(args[0]);
-    CL_Object* right_term = cl_unwrap_obj(args[1]);
+    CL_Object* left_term = args[0];
+    CL_Object* right_term = args[1];
 
     if (cl_is_numeric(cl_get_obj_type(left_term)) && cl_is_numeric(cl_get_obj_type(right_term))) {
         double left_double_value = cl_unwrap_numeric_to_double(left_term);
         double right_double_value = cl_unwrap_numeric_to_double(right_term);
-        cl_destroy_if_unwrapped(args[0], left_term);
-        cl_destroy_if_unwrapped(args[1], right_term);
         return cl_make_boolean(left_double_value == right_double_value);
     }
 
     if (cl_get_obj_type(left_term) != cl_get_obj_type(right_term)) {
-        cl_destroy_if_unwrapped(args[0], left_term);
-        cl_destroy_if_unwrapped(args[1], right_term);
         return cl_make_false();
     }
 
@@ -93,9 +87,6 @@ CL_Object *cl_equal(CL_FUNC_PARAMS) {
         default:
             cl_abort("Unexpected terminal type in clisp_equal\n");
     }
-
-    cl_destroy_if_unwrapped(args[0], left_term);
-    cl_destroy_if_unwrapped(args[1], right_term);
 
     return cl_make_boolean(result);
 }

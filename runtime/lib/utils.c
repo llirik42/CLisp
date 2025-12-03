@@ -71,14 +71,3 @@ double cl_unwrap_numeric_to_double(CL_Object* numeric) {
             __builtin_unreachable();
     }
 }
-
-// Unwrap non-constant type. If evaluable - returns evaluated. If lambda - returns evaluated lambda.
-CL_Object* cl_unwrap_obj(CL_Object* obj) {
-    return cl_evaluate(obj);
-}
-
-void cl_destroy_if_unwrapped(CL_Object* origin, CL_Object* unwrapped) {
-    if (cl_get_obj_type(origin) == EVALUABLE) {
-        cl_destroy_evaluable(unwrapped);
-    }
-}
