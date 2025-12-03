@@ -175,9 +175,14 @@ class ASTVisitor(LispVisitor):
 
         last_expr_var, expr_codes = self.__visit_expression_sequence(ctx.expression())
 
+        result_increase_ref_count = self.__code_creator.increase_ref_count()
+        result_increase_ref_count.update_data(var=last_expr_var)
+
+        body = wrap_codes(result_increase_ref_count, expr_codes)
+
         return (
             last_expr_var,
-            join_codes(definitions_codes + expr_codes),
+            join_codes(definitions_codes + [body]),
         )
 
     @visit(ast_context)
@@ -708,16 +713,6 @@ class ASTVisitor(LispVisitor):
 
         for i, e in enumerate(expressions):
             e_var, e_code = self.visit(e)
-
-            is_expression_last = i == len(expressions) - 1
-            if is_expression_last:
-                increase_ref_count_count_code = self.__code_creator.increase_ref_count()
-                increase_ref_count_count_code.update_data(var=e_var)
-                increase_ref_count_count_code.remove_newlines()
-                e_code.add_secondary_prolog(
-                    "\n" + increase_ref_count_count_code.render()
-                )
-
             e_code.transfer_newline()
             last_expr_var = e_var
             expr_codes.append(e_code)
