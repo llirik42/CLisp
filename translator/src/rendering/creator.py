@@ -16,7 +16,8 @@ from .codes import (
     ProgramCode,
     ConditionCode,
     HavingVarCode,
-    MakeCallableCode, EvaluationCode,
+    MakeCallableCode,
+    EvaluationCode,
 )
 from src.symbols import Symbols
 
@@ -33,7 +34,6 @@ class CodeCreator:
 
         self.__OBJECT_TYPE = symbols.find_internal("object_type")
         self.__ENVIRONMENT_TYPE = symbols.find_internal("environment_type")
-        self.__DESTROY_OBJECT = symbols.find_internal("~object")
         self.__CREATE_UNSPECIFIED = symbols.find_internal("unspecified")
         self.__CREATE_INTEGER = symbols.find_internal("integer")
         self.__CREATE_FLOAT = symbols.find_internal("float")
@@ -56,6 +56,7 @@ class CodeCreator:
         self.__CALL_LAMBDA = symbols.find_internal("lambda_call")
         self.__EVALUATE = symbols.find_internal("evaluation")
         self.__INCREASE_REF_COUNT = symbols.find_internal("ref_count++")
+        self.__DECREASE_REF_COUNT = symbols.find_internal("ref_count--")
         self.__LAMBDA_PARAMS = symbols.find_internal("lambda_function_params")
         self.__EVALUABLE_PARAMS = symbols.find_internal("evaluable_function_params")
 
@@ -67,13 +68,13 @@ class CodeCreator:
     def make_unspecified(self) -> HavingVarCode:
         return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_UNSPECIFIED,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
@@ -92,26 +93,26 @@ class CodeCreator:
     def make_true(self) -> HavingVarCode:
         return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_TRUE,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
     def make_false(self) -> HavingVarCode:
         return HavingVarCode(
             main_template=self.__get_template("make_primitive"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_FALSE,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
@@ -124,41 +125,47 @@ class CodeCreator:
     def make_list(self) -> HavingVarCode:
         return HavingVarCode(
             main_template=self.__get_template("make_list"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_LIST,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
     def make_list_from_array(self) -> MakeListFromArrayCode:
         return MakeListFromArrayCode(
             main_template=self.__get_template("make_list_from_array"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__CREATE_LIST_FROM_ARRAY,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
     def if_(self) -> ConditionCode:
         return ConditionCode(
             main_template=self.__get_template("if"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={"type": self.__OBJECT_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
-            secondary_data={"func": self.__DESTROY_OBJECT},
+            secondary_data={"func": self.__DECREASE_REF_COUNT},
         )
 
     def increase_ref_count(self) -> HavingVarCode:
         return HavingVarCode(
             main_template=self.__get_template("increase_ref_count"),
             main_data={"func": self.__INCREASE_REF_COUNT},
+        )
+
+    def decrease_ref_count(self) -> HavingVarCode:
+        return HavingVarCode(
+            main_template=self.__get_template("decrease_ref_count"),
+            main_data={"func": self.__DECREASE_REF_COUNT},
         )
 
     def make_environment(self) -> MakeEnvironmentCode:
@@ -204,40 +211,40 @@ class CodeCreator:
     def update_variable_value(self) -> UpdateVariableValueCode:
         return UpdateVariableValueCode(
             main_template=self.__get_template("update_variable_value"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__UPDATE_VARIABLE_VALUE,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
     def lambda_call(self) -> LambdaCallCode:
         return LambdaCallCode(
             main_template=self.__get_template("lambda_call"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "args_type": self.__OBJECT_TYPE,
                 "func": self.__CALL_LAMBDA,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
     def evaluation(self) -> EvaluationCode:
         return EvaluationCode(
             main_template=self.__get_template("evaluation"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__EVALUATE,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
@@ -255,13 +262,13 @@ class CodeCreator:
     def __make_primitive(self, creation_function: str) -> MakePrimitiveCode:
         return MakePrimitiveCode(
             main_template=self.__get_template("make_primitive"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": creation_function,
             },
             secondary_data={
-                "func": self.__DESTROY_OBJECT,
+                "func": self.__DECREASE_REF_COUNT,
             },
         )
 
@@ -277,15 +284,15 @@ class CodeCreator:
     def __make_callable(self, creation_func: str) -> MakeCallableCode:
         return MakeCallableCode(
             main_template=self.__get_template("make_callable"),
-            secondary_template=self.__get_destroy_object_template(),
+            secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "creation_func": creation_func,
             },
-            secondary_data={"func": self.__DESTROY_OBJECT},
+            secondary_data={"func": self.__DECREASE_REF_COUNT},
         )
 
-    def __get_destroy_object_template(self) -> Template:
+    def __get_decrease_ref_count_template(self) -> Template:
         return self.__get_template("decrease_ref_count")
 
     def __get_template(self, name: str) -> Template:

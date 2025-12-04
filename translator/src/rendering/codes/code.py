@@ -58,6 +58,7 @@ class Code(ABC):
         self.__is_newline_transferred = False
         self.__are_newlines_removed = False
         self.__main_validate = lambda data: check_required(data, *required_params)
+        self.__re_escape = False
 
     def transfer_newline(self) -> None:
         """

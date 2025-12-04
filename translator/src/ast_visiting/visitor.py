@@ -6,7 +6,8 @@ from src.rendering import (
     CodeCreator,
     wrap_codes,
     join_codes,
-    transfer_secondary, nest_codes,
+    transfer_secondary,
+    nest_codes,
 )
 from src.rendering.codes import MakePrimitiveCode, Code
 from src.symbols import Symbols
@@ -105,7 +106,7 @@ class ASTVisitor(LispVisitor):
         return program_code.render()
 
     @visit(ast_context)
-    def visitBegin(self, ctx:LispParser.BeginContext) -> ExpressionVisitResult:
+    def visitBegin(self, ctx: LispParser.BeginContext) -> ExpressionVisitResult:
         last_expr_var, expr_codes = self.__visit_expression_sequence(ctx.expression())
 
         return last_expr_var, nest_codes(expr_codes)
@@ -134,7 +135,7 @@ class ASTVisitor(LispVisitor):
             return self.__visit_evaluable(ctx.expression())
 
     @visit(ast_context)
-    def visitForce(self, ctx:LispParser.ForceContext) -> ExpressionVisitResult:
+    def visitForce(self, ctx: LispParser.ForceContext) -> ExpressionVisitResult:
         expr_var, expr_code = self.visit(ctx.expression())
 
         force_var = self.__variable_manager.create_object_name()

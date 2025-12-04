@@ -2,25 +2,22 @@ import argparse
 
 from src.ast_reading import read_ast_file, read_ast_stdin
 from src.ast_visiting import ASTVisitor
+from src.postprocessing import postprocess, PostprocessingContext
 from src.rendering import CodeCreator
 from src.symbols import Symbols
 
 
-def write_generated_code(output_file: str, code: str) -> None:
+def write_generated_code(code_lines: list[str], output_file: str) -> None:
     """
     Writes generated code to the given file.
 
+    :param code_lines: lines of code to write.
     :param output_file: path to the file to write.
-    :param code: code to file to write.
     """
-
-    # TODO: Make the initial generation without empty lines, rather than using this quick fix
 
     # It doesn't write empty lines in the bodies
     with open(output_file, "w") as f:
-        for l in code.splitlines():
-            if "\t" in l and l.isspace():
-                continue
+        for l in code_lines:
             f.write(l + "\n")
 
 
@@ -49,9 +46,12 @@ def main():
         symbols=standard_elements,
         code_creator=code_creator,
     )
+    code = visitor.visit(ast)
 
-    output_code = visitor.visit(ast)
-    write_generated_code(args.output_file, output_code)
+    preprocessing_context = PostprocessingContext(code_creator)
+    preprocessed_code_lines = postprocess(code, preprocessing_context)
+
+    write_generated_code(preprocessed_code_lines, args.output_file)
 
 
 if __name__ == "__main__":
