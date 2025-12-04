@@ -1,11 +1,10 @@
 import json
-from typing import Optional
-
+from typing import Optional, Any
 
 __all__ = ["Symbols"]
 
 
-SymbolSection = dict[str, str]
+SymbolSection = dict[str, Any]
 
 
 class Symbols:
@@ -31,19 +30,21 @@ class Symbols:
 
         :param identifier: identifier of a symbol.
         :return: found symbol or None.
+        :raises KeyError: symbol not found.
         """
 
         return self.__internal[identifier]
 
-    def find_api_symbol(self, identifier: str) -> Optional[str]:
+    def find_api_function_symbol(self, identifier: str) -> str:
         """
         Finds and returns the symbol from the API.
 
         :param identifier: identifier of a symbol.
         :return: found symbol or None.
+        :raises KeyError: symbol not found.
         """
 
-        return self.__api.get(identifier, None)
+        return self.__api_functions[identifier]
 
     def find_api_function_items(self) -> list[tuple[str, str]]:
         """
@@ -52,9 +53,9 @@ class Symbols:
         :return: list of the symbols as pairs.
         """
 
-        return list(self.__api.items())
+        return list(self.__api_functions.items())
 
-    def has_api_symbol(self, identifier: str) -> bool:
+    def has_api_function_symbol(self, identifier: str) -> bool:
         """
         Returns whether there is an API symbol.
 
@@ -62,7 +63,11 @@ class Symbols:
         :return: True if there is an API symbol.
         """
 
-        return self.find_api_symbol(identifier) is not None
+        return identifier in self.__api_functions
+
+    @property
+    def __api_functions(self) -> SymbolSection:
+        return self.__api["functions"]
 
     @property
     def __api(self) -> SymbolSection:
@@ -70,4 +75,9 @@ class Symbols:
 
     @property
     def __internal(self) -> SymbolSection:
-        return self.__data["internal"]
+        res = {}
+
+        for v in self.__data["internal"].values():
+            res.update(v)
+
+        return res

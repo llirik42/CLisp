@@ -827,7 +827,7 @@ class ASTVisitor(LispVisitor):
         visited_variables = set()
 
         for v in variables_names:
-            if self.__symbols.has_api_symbol(v):
+            if self.__symbols.has_api_function_symbol(v):
                 raise FunctionRedefineException(v, ctx)
 
             if v in visited_variables:
@@ -840,7 +840,7 @@ class ASTVisitor(LispVisitor):
         visited_formals = set()
 
         for f in formals:
-            if self.__symbols.has_api_symbol(f):
+            if self.__symbols.has_api_function_symbol(f):
                 raise ParamNameConflictException(f, ctx)
 
             if f in visited_formals:
@@ -849,5 +849,5 @@ class ASTVisitor(LispVisitor):
             visited_formals.add(f)
 
     def __check_variable_definition(self, variable_name: str) -> None:
-        if self.__symbols.has_api_symbol(variable_name):
+        if self.__symbols.has_api_function_symbol(variable_name):
             raise FunctionRedefineException(variable_name, ast_context.ctx)
