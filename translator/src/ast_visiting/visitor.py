@@ -33,8 +33,11 @@ OperandsVisitResult = tuple[list[str], list[Code]]
 # (variable that matches the last expression, code)
 BodyVisitResult = tuple[str, str]
 
-# Code of creating value of the variable and binding it
-BindingVisitResult = Code
+# (Codes of creating values of the variables and binding for them, name of the bound variable)
+BindingVisitResult = tuple[Code, str]
+
+# Codes of the bindings
+BindingListVisitResult = list[Code]
 
 # Text of the output C-program
 ProgramVisitResult = str
@@ -51,11 +54,14 @@ LambdaDefinitionsVisitResult = tuple[list[str], list[Code]]
 # (variable of the last expression, list of the codes for each expression)
 LambdaExpressionsVisitResult = tuple[str, list[Code]]
 
-# (Codes for every fixed formal, names of the parameters)
-FixedFormalsVisitResult = tuple[list[Code], list[str]]
+# (Codes for every fixed forma)
+ScalarFormalsVisitResult = list[Code]
 
-# (code of the formal without secondary, secondary part of the code)
+# (code of variadic formal creation)
 VariadicFormalVisitResult = Code
+
+# Code with declaration and creation of the formals that will be inserted into the body
+FormalsVisitResult = str
 
 ast_context = ASTContext()
 
@@ -147,7 +153,7 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitProcedureFixedFormals(
         self, ctx: LispParser.ProcedureFixedFormalsContext
-    ) -> str:
+    ) -> FormalsVisitResult:
         formals = [f.getText() for f in ctx.variable()]
 
         return self.__visit_formals(formals=formals, has_variadic_formal=False)
@@ -155,7 +161,7 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitProcedureVariadicFormal(
         self, ctx: LispParser.ProcedureVariadicFormalContext
-    ) -> str:
+    ) -> FormalsVisitResult:
         formal = ctx.variable().getText()
 
         return self.__visit_formals(formals=[formal], has_variadic_formal=True)
@@ -163,7 +169,7 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitProcedureMixedFormals(
         self, ctx: LispParser.ProcedureMixedFormalsContext
-    ) -> str:
+    ) -> FormalsVisitResult:
         formals = [f.getText() for f in ctx.variable()]
 
         return self.__visit_formals(formals=formals, has_variadic_formal=True)
@@ -203,7 +209,7 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitBindingList(
         self, ctx: LispParser.BindingListContext
-    ) -> list[BindingVisitResult]:
+    ) -> BindingListVisitResult:
         variables_names = [b.variable().getText() for b in ctx.binding()]
         self.__check_binding_list(variables_names)
 
@@ -233,7 +239,7 @@ class ASTVisitor(LispVisitor):
         return binding_list_codes
 
     @visit(ast_context)
-    def visitBinding(self, ctx: LispParser.BindingContext) -> tuple[Code, str]:
+    def visitBinding(self, ctx: LispParser.BindingContext) -> BindingVisitResult:
         env = self.__environment_ctx.env
         variable_name = ctx.variable().getText()
         expression = ctx.expression()
@@ -298,7 +304,7 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitProcedureDefinitionFixedFormals(
         self, ctx: LispParser.ProcedureDefinitionFixedFormalsContext
-    ) -> str:
+    ) -> FormalsVisitResult:
         formals = [f.getText() for f in ctx.variable()]
 
         return self.__visit_formals(formals=formals, has_variadic_formal=False)
@@ -306,7 +312,7 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitProcedureDefinitionVariadicFormal(
         self, ctx: LispParser.ProcedureDefinitionVariadicFormalContext
-    ) -> str:
+    ) -> FormalsVisitResult:
         formal = ctx.variable().getText()
 
         return self.__visit_formals(formals=[formal], has_variadic_formal=True)
@@ -314,7 +320,7 @@ class ASTVisitor(LispVisitor):
     @visit(ast_context)
     def visitProcedureDefinitionMixedFormals(
         self, ctx: LispParser.ProcedureDefinitionMixedFormalsContext
-    ) -> str:
+    ) -> FormalsVisitResult:
         formals = [f.getText() for f in ctx.variable()]
 
         return self.__visit_formals(formals=formals, has_variadic_formal=True)
@@ -640,7 +646,9 @@ class ASTVisitor(LispVisitor):
 
         return function_name
 
-    def __visit_formals(self, formals: list[str], has_variadic_formal: bool) -> str:
+    def __visit_formals(
+        self, formals: list[str], has_variadic_formal: bool
+    ) -> FormalsVisitResult:
         self.__check_formals(formals)
 
         if has_variadic_formal:
@@ -658,7 +666,7 @@ class ASTVisitor(LispVisitor):
 
         return join_codes(fixed_formals_codes + [variadic_formal_code])
 
-    def __visit_scalar_formals(self, formals: list[str]) -> list[Code]:
+    def __visit_scalar_formals(self, formals: list[str]) -> ScalarFormalsVisitResult:
         args_name = self.__symbols.find_internal("lambda_args")
 
         env = self.__environment_ctx.env
@@ -827,7 +835,7 @@ class ASTVisitor(LispVisitor):
         visited_variables = set()
 
         for v in variables_names:
-            if self.__symbols.has_api_symbol(v):
+            if self.__symbols.has_api_function_symbol(v):
                 raise FunctionRedefineException(v, ctx)
 
             if v in visited_variables:
@@ -840,7 +848,7 @@ class ASTVisitor(LispVisitor):
         visited_formals = set()
 
         for f in formals:
-            if self.__symbols.has_api_symbol(f):
+            if self.__symbols.has_api_function_symbol(f):
                 raise ParamNameConflictException(f, ctx)
 
             if f in visited_formals:
@@ -849,5 +857,5 @@ class ASTVisitor(LispVisitor):
             visited_formals.add(f)
 
     def __check_variable_definition(self, variable_name: str) -> None:
-        if self.__symbols.has_api_symbol(variable_name):
+        if self.__symbols.has_api_function_symbol(variable_name):
             raise FunctionRedefineException(variable_name, ast_context.ctx)
