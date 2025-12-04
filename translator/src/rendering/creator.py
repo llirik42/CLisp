@@ -18,6 +18,7 @@ from .codes import (
     HavingVarCode,
     MakeCallableCode,
     EvaluationCode,
+    NativeCallCode,
 )
 from src.symbols import Symbols
 
@@ -34,6 +35,7 @@ class CodeCreator:
 
         self.__OBJECT_TYPE = symbols.find_internal("object_type")
         self.__ENVIRONMENT_TYPE = symbols.find_internal("environment_type")
+        self.__NATIVE_ARGUMENT_TYPE = symbols.find_internal("native_argument_type")
         self.__CREATE_UNSPECIFIED = symbols.find_internal("unspecified")
         self.__CREATE_INTEGER = symbols.find_internal("integer")
         self.__CREATE_FLOAT = symbols.find_internal("float")
@@ -55,6 +57,7 @@ class CodeCreator:
         self.__UPDATE_VARIABLE_VALUE = symbols.find_internal("update_variable_value")
         self.__CALL_LAMBDA = symbols.find_internal("lambda_call")
         self.__EVALUATE = symbols.find_internal("evaluation")
+        self.__NATIVE_CALL = symbols.find_internal("native_call")
         self.__INCREASE_REF_COUNT = symbols.find_internal("ref_count++")
         self.__DECREASE_REF_COUNT = symbols.find_internal("ref_count--")
         self.__LAMBDA_PARAMS = symbols.find_internal("lambda_function_params")
@@ -242,6 +245,20 @@ class CodeCreator:
             main_data={
                 "type": self.__OBJECT_TYPE,
                 "func": self.__EVALUATE,
+            },
+            secondary_data={
+                "func": self.__DECREASE_REF_COUNT,
+            },
+        )
+
+    def native_call(self) -> NativeCallCode:
+        return NativeCallCode(
+            main_template=self.__get_template("native_call"),
+            secondary_template=self.__get_decrease_ref_count_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "arg_type": self.__NATIVE_ARGUMENT_TYPE,
+                "calling_func": self.__NATIVE_CALL,
             },
             secondary_data={
                 "func": self.__DECREASE_REF_COUNT,

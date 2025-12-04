@@ -46,10 +46,10 @@ def main():
         symbols=standard_elements,
         code_creator=code_creator,
     )
-    code = visitor.visit(ast)
+    code_text = visitor.visit(ast)
 
     preprocessing_context = PostprocessingContext(code_creator)
-    preprocessed_code_lines = postprocess(code, preprocessing_context)
+    preprocessed_code_lines = postprocess(code_text, preprocessing_context)
 
     write_generated_code(preprocessed_code_lines, args.output_file)
 
