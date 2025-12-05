@@ -9,9 +9,4 @@ enum CL_NativeType {
     CL_NATIVE_VOID,
 };
 
-typedef struct {
-    enum CL_NativeType type;
-    CL_Object* value;
-} CL_NativeArgument;
-
-CL_Object* cl_native(char* func, char* library, enum CL_NativeType result_type, unsigned int count, CL_NativeArgument* args);
+CL_Object* cl_native(char* func, char* library, enum CL_NativeType result_type, unsigned int count, enum CL_NativeType* args_types);

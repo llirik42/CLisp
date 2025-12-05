@@ -51,7 +51,7 @@
     "other": {
       "object_type": "CL_Object*",
       "environment_type": "CL_Environment*",
-      "native_argument_type": "CL_NativeArgument",
+      "native_argument_type": "enum CL_NativeType",
       "lambda_env": "env",
       "lambda_args": "args",
       "lambda_count": "count",
