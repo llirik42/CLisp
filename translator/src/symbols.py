@@ -29,24 +29,23 @@ class Symbols:
         Finds and returns the symbol from the internals.
 
         :param identifier: identifier of a symbol.
-        :return: found symbol or None.
+        :return: found symbol.
         :raises KeyError: symbol not found.
         """
 
         return self.__internal[identifier]
 
-    def find_api_function_symbol(self, identifier: str) -> str:
+    def try_find_native_type(self, identifier: str) -> Optional[str]:
         """
-        Finds and returns the symbol from the API.
+        Finds and returns the symbol that matches a native type.
 
         :param identifier: identifier of a symbol.
         :return: found symbol or None.
-        :raises KeyError: symbol not found.
         """
 
-        return self.__api_functions[identifier]
+        return self.__native_types.get(identifier, None)
 
-    def find_api_function_items(self) -> list[tuple[str, str]]:
+    def get_api_function_items(self) -> list[tuple[str, str]]:
         """
         Returns all symbols from API functions as pairs: (identifier, symbol).
 
@@ -64,6 +63,10 @@ class Symbols:
         """
 
         return identifier in self.__api_functions
+
+    @property
+    def __native_types(self) -> SymbolSection:
+        return self.__api["native_types"]
 
     @property
     def __api_functions(self) -> SymbolSection:
