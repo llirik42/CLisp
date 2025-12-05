@@ -418,7 +418,7 @@ class ASTVisitor(LispVisitor):
     ) -> ExpressionVisitResult:
         function = ctx.nativeFunction().getText()
 
-        function_name, library_name = visit_native_function(function, ast_context)
+        library_name, function_name = visit_native_function(function, ast_context)
 
         types = [t.getText() for t in ctx.nativeType()]
         args_types = visit_native_function_types(types, self.__symbols, ast_context)
