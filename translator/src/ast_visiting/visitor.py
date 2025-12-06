@@ -411,7 +411,7 @@ class ASTVisitor(LispVisitor):
         )
 
     @visit(ast_context)
-    def visitApply(self, ctx:LispParser.ApplyContext) -> ExpressionVisitResult:
+    def visitApply(self, ctx: LispParser.ApplyContext) -> ExpressionVisitResult:
         operator = ctx.operator()
         operands = ctx.operand()
 
@@ -654,19 +654,19 @@ class ASTVisitor(LispVisitor):
     def __add_lambda_declaration(
         self,
         formals_text: str,
-        body: LispParser.ProcedureBodyContext,
+        body_expr: LispParser.ProcedureBodyContext,
     ) -> DeclaredFunctionName:
         function_code = self.__code_creator.lambda_definition()
-        body_var, body_code_text = self.visit(body)
+        body_expr_var, body_expr_text = self.visit(body_expr)
         function_name = self.__variable_manager.create_lambda_function_name()
 
-        body = formals_text + "\n" if formals_text else ""
-        body += body_code_text
+        function_body_text = formals_text + "\n" if formals_text else ""
+        function_body_text += body_expr_text
 
         function_code.update_data(
             func=function_name,
-            ret_var=body_var,
-            body=body,
+            ret_var=body_expr_var,
+            body=function_body_text,
         )
 
         self.__declaration_ctx.add_declaration(function_code)
@@ -721,7 +721,7 @@ class ASTVisitor(LispVisitor):
         args_name = self.__symbols.find_internal("lambda_args")
 
         env = self.__environment_ctx.env
-        codes = []
+        codes: list[Code] = []
 
         for i, param_name in enumerate(formals):
             current_arg_code = self.__code_creator.set_variable_value()
@@ -840,7 +840,7 @@ class ASTVisitor(LispVisitor):
 
         function_name = self.__add_lambda_declaration(
             formals_text=formals_text,
-            body=body,
+            body_expr=body,
         )
 
         lambda_var = self.__variable_manager.create_object_name()

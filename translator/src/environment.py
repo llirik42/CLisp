@@ -12,7 +12,7 @@ class Environment:
     def __init__(self, name: str, code: Code, parent: "Environment"):
         self.__name = name
         self.__code = code
-        self.__variables = set()
+        self.__variables: set[str] = set()
         self.__parent = parent
 
     @property

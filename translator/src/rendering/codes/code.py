@@ -97,8 +97,7 @@ class Code(ABC):
         Renders and returns main part.
         """
 
-        if self.__main_validate:
-            self.__main_validate(self.__main_data)
+        self.__main_validate(self.__main_data)
 
         epilog = self.__main_epilog
 
