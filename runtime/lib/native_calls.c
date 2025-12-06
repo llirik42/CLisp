@@ -16,5 +16,6 @@ CL_Object* cl_native(const char* func, const char* library, enum CL_NativeType r
     }
     printf("\n");
 
+    va_end(args);
     return cl_make_unspecified();
 }
