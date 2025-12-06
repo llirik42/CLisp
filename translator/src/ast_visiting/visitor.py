@@ -9,7 +9,7 @@ from src.rendering import (
     transfer_secondary,
     nest_codes,
 )
-from src.rendering.codes import MakePrimitiveCode, Code
+from src.rendering.codes import MakePrimitiveCode, Code, LambdaCallCode
 from src.symbols import Symbols
 from .ast_context import ASTContext, visit
 from .declarations_context import DeclarationsContext
@@ -401,16 +401,25 @@ class ASTVisitor(LispVisitor):
     def visitProcedureCall(
         self, ctx: LispParser.ProcedureCallContext
     ) -> ExpressionVisitResult:
-        operator_var, operator_code = self.visit(ctx.operator())
-        operand_vars, operand_codes = self.__visit_operands(ctx.operand())
+        operator = ctx.operator()
+        operands = ctx.operand()
 
-        expr_code = self.__code_creator.lambda_call()
-        expr_var = self.__variable_manager.create_object_name()
-        expr_code.update_data(var=expr_var, lambda_var=operator_var, args=operand_vars)
+        return self.__visit_procedure_call(
+            operator=operator,
+            operands=operands,
+            expr_code=self.__code_creator.lambda_call(),
+        )
 
-        wrapped_expr_code = wrap_codes(expr_code, [operator_code] + operand_codes)
+    @visit(ast_context)
+    def visitApply(self, ctx:LispParser.ApplyContext) -> ExpressionVisitResult:
+        operator = ctx.operator()
+        operands = ctx.operand()
 
-        return expr_var, wrapped_expr_code
+        return self.__visit_procedure_call(
+            operator=operator,
+            operands=operands,
+            expr_code=self.__code_creator.lambda_call_list(),
+        )
 
     @visit(ast_context)
     def visitNativeCall(
@@ -507,6 +516,26 @@ class ASTVisitor(LispVisitor):
                 env.add(lisp_name)
 
             return [self.visit(e)[1] for e in elements]
+
+    def __visit_procedure_call(
+        self,
+        operator: LispParser.ExpressionContext,
+        operands: list[LispParser.ExpressionContext],
+        expr_code: LambdaCallCode,
+    ) -> ExpressionVisitResult:
+        operator_var, operator_code = self.visit(operator)
+        operand_vars, operand_codes = self.__visit_operands(operands)
+
+        expr_var = self.__variable_manager.create_object_name()
+        expr_code.update_data(
+            var=expr_var,
+            lambda_var=operator_var,
+            args=operand_vars,
+        )
+
+        wrapped_expr_code = wrap_codes(expr_code, [operator_code] + operand_codes)
+
+        return expr_var, wrapped_expr_code
 
     def __visit_if(
         self,

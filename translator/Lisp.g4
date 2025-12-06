@@ -17,6 +17,7 @@ expression
     | and
     | or
     | procedureCall
+    | apply
     | procedure
     | assignment
     | let
@@ -44,6 +45,7 @@ consequent : expression ;
 alternate : expression ;
 
 procedureCall : LBRACKET operator operand* RBRACKET ;
+apply : LBRACKET APPLY operator operand+ RBRACKET ;
 operator : expression ;
 operand : expression ;
 
@@ -108,6 +110,7 @@ LET_REC : 'letrec' ;
 DELAY : 'delay' ;
 FORCE : 'force' ;
 BEGIN : 'begin' ;
+APPLY : 'apply' ;
 NATIVE : 'native' ;
 INTEGER : SIGN? DIGIT+ ;
 FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;

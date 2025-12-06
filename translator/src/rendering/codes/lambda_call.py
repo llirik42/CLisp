@@ -17,5 +17,9 @@ class LambdaCallCode(Code):
         lambda_var: Optional[str] = None,
         args: Optional[list[str]] = None,
     ) -> None:
-        self._update_main_data(var=var, lambda_var=lambda_var, args=args)
+        self._update_main_data(
+            var=var,
+            lambda_var=lambda_var,
+            args=args,
+        )
         self._update_secondary_data(var=var)

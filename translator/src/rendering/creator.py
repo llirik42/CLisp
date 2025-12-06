@@ -56,6 +56,7 @@ class CodeCreator:
         self.__SET_VARIABLE_VALUE = symbols.find_internal("set_variable_value")
         self.__UPDATE_VARIABLE_VALUE = symbols.find_internal("update_variable_value")
         self.__CALL_LAMBDA = symbols.find_internal("lambda_call")
+        self.__CALL_LAMBDA_LIST = symbols.find_internal("lambda_call_list")
         self.__EVALUATE = symbols.find_internal("evaluation")
         self.__NATIVE_CALL = symbols.find_internal("native_call")
         self.__INCREASE_REF_COUNT = symbols.find_internal("ref_count++")
@@ -225,18 +226,10 @@ class CodeCreator:
         )
 
     def lambda_call(self) -> LambdaCallCode:
-        return LambdaCallCode(
-            main_template=self.__get_template("lambda_call"),
-            secondary_template=self.__get_decrease_ref_count_template(),
-            main_data={
-                "type": self.__OBJECT_TYPE,
-                "args_type": self.__OBJECT_TYPE,
-                "func": self.__CALL_LAMBDA,
-            },
-            secondary_data={
-                "func": self.__DECREASE_REF_COUNT,
-            },
-        )
+        return self.__lambda_call(self.__CALL_LAMBDA)
+
+    def lambda_call_list(self) -> LambdaCallCode:
+        return self.__lambda_call(self.__CALL_LAMBDA_LIST)
 
     def evaluation(self) -> EvaluationCode:
         return EvaluationCode(
@@ -276,13 +269,27 @@ class CodeCreator:
             main_template=self.__get_template("program"),
         )
 
-    def __make_primitive(self, creation_function: str) -> MakePrimitiveCode:
+    def __lambda_call(self, main_func: str) -> LambdaCallCode:
+        return LambdaCallCode(
+            main_template=self.__get_template("lambda_call"),
+            secondary_template=self.__get_decrease_ref_count_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+                "args_type": self.__OBJECT_TYPE,
+                "func": main_func,
+            },
+            secondary_data={
+                "func": self.__DECREASE_REF_COUNT,
+            },
+        )
+
+    def __make_primitive(self, main_func: str) -> MakePrimitiveCode:
         return MakePrimitiveCode(
             main_template=self.__get_template("make_primitive"),
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__OBJECT_TYPE,
-                "func": creation_function,
+                "func": main_func,
             },
             secondary_data={
                 "func": self.__DECREASE_REF_COUNT,
