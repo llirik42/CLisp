@@ -8,6 +8,7 @@ programElement
 
 expression
     : literal
+    | nativeCall
     | begin
     | delay
     | force
@@ -27,6 +28,10 @@ expression
 begin : LBRACKET BEGIN expression+ RBRACKET ;
 delay : LBRACKET DELAY expression RBRACKET ;
 force : LBRACKET FORCE expression RBRACKET ;
+
+nativeCall : LBRACKET NATIVE nativeFunction nativeType+ RBRACKET ;
+nativeFunction : IDENTIFIER ;
+nativeType : IDENTIFIER ;
 
 literal : constant ;
 
@@ -106,6 +111,7 @@ DELAY : 'delay' ;
 FORCE : 'force' ;
 BEGIN : 'begin' ;
 APPLY : 'apply' ;
+NATIVE : 'native' ;
 INTEGER : SIGN? DIGIT+ ;
 FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;

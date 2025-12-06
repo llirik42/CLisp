@@ -28,29 +28,3 @@ class FunctionRedefineException(VisitingException):
         super().__init__(
             f'The standard library function "{function_name}" cannot be redefined', ctx
         )
-
-
-class UnknownFunctionException(VisitingException):
-    def __init__(self, function_name: str, ctx: ParserRuleContext):
-        super().__init__(f'Unknown function "{function_name}"', ctx)
-
-
-class DuplicatedBindingException(VisitingException):
-    def __init__(self, variable_name: str, ctx: ParserRuleContext):
-        super().__init__(
-            f'Variable "{variable_name}" appeared more than once in the bindings', ctx
-        )
-
-
-class DuplicatedParamException(VisitingException):
-    def __init__(self, param_name: str, ctx: ParserRuleContext):
-        super().__init__(
-            f'Param "{param_name}" appeared more than once in the lambda', ctx
-        )
-
-
-class ParamNameConflictException(VisitingException):
-    def __init__(self, param_name: str, ctx: ParserRuleContext):
-        super().__init__(
-            f'Param "{param_name}" conflicts with the standard library function', ctx
-        )

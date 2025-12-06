@@ -17,11 +17,10 @@ from .environment_context import EnvironmentContext
 from .exceptions import (
     UnexpectedIdentifierException,
     FunctionRedefineException,
-    DuplicatedBindingException,
-    DuplicatedParamException,
-    ParamNameConflictException,
+    VisitingException,
 )
 from .let_type_context import LetTypeContext, LetType
+from .native_utils import visit_native_function, visit_native_function_types
 from .variable_manager import VariableManager
 
 # (variable, code)
@@ -423,6 +422,29 @@ class ASTVisitor(LispVisitor):
         )
 
     @visit(ast_context)
+    def visitNativeCall(
+        self, ctx: LispParser.NativeCallContext
+    ) -> ExpressionVisitResult:
+        function = ctx.nativeFunction().getText()
+
+        library_name, function_name = visit_native_function(function, ast_context)
+
+        types = [t.getText() for t in ctx.nativeType()]
+        args_types = visit_native_function_types(types, self.__symbols, ast_context)
+
+        native_var = self.__variable_manager.create_object_name()
+        native_code = self.__code_creator.native_call()
+        native_code.update_data(
+            var=native_var,
+            function=function_name,
+            library=library_name,
+            result_type=args_types[0],
+            args_types=args_types[1:],
+        )
+
+        return native_var, native_code
+
+    @visit(ast_context)
     def visitVariable(self, ctx: LispParser.VariableContext) -> ExpressionVisitResult:
         env = self.__environment_ctx.env
         variable_name = ctx.getText()
@@ -490,7 +512,7 @@ class ASTVisitor(LispVisitor):
             self.__environment_ctx.init(code=main_code, name=global_env_var)
             env = self.__environment_ctx.env
 
-            for lisp_name, _ in self.__symbols.find_api_function_items():
+            for lisp_name, _ in self.__symbols.get_api_function_items():
                 env.add(lisp_name)
 
             return [self.visit(e)[1] for e in elements]
@@ -868,7 +890,9 @@ class ASTVisitor(LispVisitor):
                 raise FunctionRedefineException(v, ctx)
 
             if v in visited_variables:
-                raise DuplicatedBindingException(v, ctx)
+                raise VisitingException(
+                    f'Variable "{v}" appeared more than once in the bindings', ctx
+                )
 
             visited_variables.add(v)
 
@@ -878,10 +902,14 @@ class ASTVisitor(LispVisitor):
 
         for f in formals:
             if self.__symbols.has_api_function_symbol(f):
-                raise ParamNameConflictException(f, ctx)
+                raise VisitingException(
+                    f'Param "{f}" conflicts with the standard library function', ctx
+                )
 
             if f in visited_formals:
-                raise DuplicatedParamException(f, ctx)
+                raise VisitingException(
+                    f'Param "{f}" appeared more than once in the lambda', ctx
+                )
 
             visited_formals.add(f)
 
