@@ -3,46 +3,46 @@ grammar Lisp;
 program : programElement* EOF ;
 
 programElement
-    : expression
-    | definition ;
+    : definition
+    | expression ;
+
+definition : variableDefinition | procedureDefinition;
+variableDefinition : LBRACKET DEFINE variable expression RBRACKET ;
+procedureDefinition : LBRACKET DEFINE LBRACKET variable procedureDefinitionFormals RBRACKET procedureBody RBRACKET ;
 
 expression
-    : literal
-    | nativeCall
-    | begin
-    | delay
-    | force
+    : constant
     | variable
-    | condition
-    | and
-    | or
     | procedureCall
     | apply
     | procedure
-    | assignment
+    | condition
+    | and
+    | or
     | let
     | letAsterisk
     | letRec
+    | assignment
+    | delay
+    | force
+    | nativeCall
+    | begin
     ;
 
-begin : LBRACKET BEGIN expression+ RBRACKET ;
-delay : LBRACKET DELAY expression RBRACKET ;
-force : LBRACKET FORCE expression RBRACKET ;
-
-nativeCall : LBRACKET NATIVE nativeFunction nativeType+ RBRACKET ;
-nativeFunction : IDENTIFIER ;
-nativeType : IDENTIFIER ;
-
-literal : constant ;
+constant
+    : boolConstant
+    | characterConstant
+    | stringConstant
+    | integerConstant
+    | floatConstant
+    ;
+boolConstant : TRUE | FALSE ;
+characterConstant : CHARACTER ;
+stringConstant : STRING ;
+integerConstant : INTEGER ;
+floatConstant : FLOAT ;
 
 variable : IDENTIFIER ;
-
-condition : LBRACKET IF test consequent alternate? RBRACKET ;
-and : LBRACKET AND test* RBRACKET ;
-or : LBRACKET OR test* RBRACKET ;
-test : expression ;
-consequent : expression ;
-alternate : expression ;
 
 procedureCall : LBRACKET operator operand* RBRACKET ;
 apply : LBRACKET APPLY operator operand+ RBRACKET ;
@@ -60,7 +60,12 @@ procedureVariadicFormal : variable ;
 procedureMixedFormals : LBRACKET variable+ PERIOD variable RBRACKET ;
 procedureBody : definition* expression+ ;
 
-assignment : LBRACKET SET variable expression RBRACKET ;
+condition : LBRACKET IF test consequent alternate? RBRACKET ;
+and : LBRACKET AND test* RBRACKET ;
+or : LBRACKET OR test* RBRACKET ;
+test : expression ;
+consequent : expression ;
+alternate : expression ;
 
 let : LBRACKET LET bindingList environmentBody RBRACKET ;
 letAsterisk : LBRACKET LET_ASTERISK bindingList environmentBody RBRACKET ;
@@ -69,22 +74,16 @@ bindingList : LBRACKET binding* RBRACKET ;
 binding : LBRACKET variable expression RBRACKET ;
 environmentBody : definition* expression+ ;
 
-constant
-    : boolConstant
-    | characterConstant
-    | stringConstant
-    | integerConstant
-    | floatConstant
-    ;
-boolConstant : TRUE | FALSE ;
-characterConstant : CHARACTER ;
-stringConstant : STRING ;
-integerConstant : INTEGER ;
-floatConstant : FLOAT ;
+assignment : LBRACKET SET variable expression RBRACKET ;
 
-definition : variableDefinition | procedureDefinition;
-variableDefinition : LBRACKET DEFINE variable expression RBRACKET ;
-procedureDefinition : LBRACKET DEFINE LBRACKET variable procedureDefinitionFormals RBRACKET procedureBody RBRACKET ;
+delay : LBRACKET DELAY expression RBRACKET ;
+force : LBRACKET FORCE expression RBRACKET ;
+
+nativeCall : LBRACKET NATIVE nativeFunction nativeType+ RBRACKET ;
+nativeFunction : IDENTIFIER ;
+nativeType : IDENTIFIER ;
+
+begin : LBRACKET BEGIN expression+ RBRACKET ;
 
 procedureDefinitionFormals
     : procedureDefinitionFixedFormals
@@ -95,23 +94,23 @@ procedureDefinitionFixedFormals : variable* ;
 procedureDefinitionVariadicFormal : PERIOD variable ;
 procedureDefinitionMixedFormals : variable+ PERIOD variable ;
 
+DEFINE : 'define' ;
 TRUE: '#t' ;
 FALSE: '#f' ;
+APPLY : 'apply' ;
 LAMBDA : 'lambda' ;
-PERIOD : '.' ;
 IF : 'if' ;
 AND : 'and' ;
 OR : 'or'  ;
-SET : 'set!' ;
-DEFINE : 'define' ;
 LET : 'let' ;
 LET_ASTERISK : 'let*' ;
 LET_REC : 'letrec' ;
+SET : 'set!' ;
 DELAY : 'delay' ;
 FORCE : 'force' ;
-BEGIN : 'begin' ;
-APPLY : 'apply' ;
 NATIVE : 'native' ;
+BEGIN : 'begin' ;
+PERIOD : '.' ;
 INTEGER : SIGN? DIGIT+ ;
 FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
