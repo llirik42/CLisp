@@ -1,2 +1,2 @@
-{% set argList = var+'_args' %}{{ type }} {{ argList }}[] = {% raw %}{{% endraw %}{{ args | join(', ') }}{% raw %}}{% endraw %};
-{{ type }} {{ var }} = {{ func }}({{ lambda_var }}, {{ args | length }}, {{ argList }});
+{% set _args = [args | length, scalar_args_count] + args %}
+{{ type }} {{ var }} = {{ func }}({{ lambda_var }}, {{ _args | join(', ') }});
