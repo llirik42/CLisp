@@ -861,7 +861,9 @@ class ASTVisitor(LispVisitor):
                 raise FunctionRedefineException(v, ctx)
 
             if v in visited_variables:
-                raise VisitingException(f'Variable "{v}" appeared more than once in the bindings', ctx)
+                raise VisitingException(
+                    f'Variable "{v}" appeared more than once in the bindings', ctx
+                )
 
             visited_variables.add(v)
 
@@ -871,10 +873,14 @@ class ASTVisitor(LispVisitor):
 
         for f in formals:
             if self.__symbols.has_api_function_symbol(f):
-                raise VisitingException(f'Param "{f}" conflicts with the standard library function', ctx)
+                raise VisitingException(
+                    f'Param "{f}" conflicts with the standard library function', ctx
+                )
 
             if f in visited_formals:
-                raise VisitingException(f'Param "{f}" appeared more than once in the lambda', ctx)
+                raise VisitingException(
+                    f'Param "{f}" appeared more than once in the lambda', ctx
+                )
 
             visited_formals.add(f)
 

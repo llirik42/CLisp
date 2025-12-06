@@ -10,7 +10,10 @@ def visit_native_function(function: str, ctx: ASTContext) -> NativeFunctionVisit
     visiting_ctx = ctx.ctx
 
     if function.count("/") != 1:
-        raise VisitingException("Invalid native function format, it must be <library/function>", visiting_ctx)
+        raise VisitingException(
+            "Invalid native function format, it must be <library/function>",
+            visiting_ctx,
+        )
 
     library_name, function_name = function.split("/")
     if len(library_name) == 0:
@@ -21,7 +24,9 @@ def visit_native_function(function: str, ctx: ASTContext) -> NativeFunctionVisit
     return library_name, function_name
 
 
-def visit_native_function_types(types: list[str], symbols: Symbols, ctx: ASTContext) -> list[str]:
+def visit_native_function_types(
+    types: list[str], symbols: Symbols, ctx: ASTContext
+) -> list[str]:
     visiting_ctx = ctx.ctx
 
     result = []
