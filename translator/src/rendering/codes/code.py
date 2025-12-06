@@ -55,16 +55,7 @@ class Code(ABC):
         )
         self.__template = main_template
         self.__secondary_template = secondary_template
-        self.__are_newlines_removed = False
         self.__main_validate = lambda data: check_required(data, *required_params)
-        self.__re_escape = False
-
-    def remove_newlines(self) -> None:
-        """
-        Removes newlines between main template and main epilog, secondary prolog and secondary template. Thus, the code will consist of
-        """
-
-        self.__are_newlines_removed = True
 
     def add_main_epilog(self, text: str) -> None:
         """
@@ -97,11 +88,7 @@ class Code(ABC):
             self.__template.render(self.__main_data) if self.__template else ""
         )
 
-        rendered = (
-            f"{rendered_template}{epilog}"
-            if self.__are_newlines_removed
-            else f"{rendered_template}\n{epilog}"
-        )
+        rendered = f"{rendered_template}\n{epilog}"
 
         return rendered
 
@@ -114,11 +101,7 @@ class Code(ABC):
 
         if self.__secondary_template:
             rendered_template = self.__secondary_template.render(self.__secondary_data)
-
-            if self.__are_newlines_removed:
-                rendered += f"{rendered_template}"
-            else:
-                rendered += f"\n{rendered_template}"
+            rendered += f"\n{rendered_template}"
 
         return rendered
 

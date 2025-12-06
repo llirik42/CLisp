@@ -727,7 +727,6 @@ class ASTVisitor(LispVisitor):
             )
             env.add(param_name)
 
-            current_arg_code.remove_newlines()
             codes.append(current_arg_code)
 
         return codes
