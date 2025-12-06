@@ -53,6 +53,8 @@ static CL_Object* cl_lambda_call_array(CL_Object* obj, CL_FUNC_PARAMS) {
 }
 
 CL_Object* cl_lambda_call(CL_Object* obj, unsigned int count, ...) {
+    // The function is called by an ordinary procedure call
+
     va_list args;
     va_start(args, count);
     CL_Object* obj_args[count];
@@ -66,6 +68,8 @@ CL_Object* cl_lambda_call(CL_Object* obj, unsigned int count, ...) {
 }
 
 CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...) {
+    // The function is called by (apply ...)
+
     va_list args;
     va_start(args, count);
     CL_Object* tmp[count];
