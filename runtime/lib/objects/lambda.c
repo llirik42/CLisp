@@ -34,7 +34,7 @@ void cl_destroy_lambda(CL_Object* obj) {
 
         for (size_t i = 0; i < cl_da_size(call_envs); i++) {
             CL_Environment* call_env = cl_da_get(call_envs, i);
-            cl_destroy_env(call_env);
+            cl_dec_env_refs_cnt(call_env);
         }
 
         cl_da_destroy(call_envs);
