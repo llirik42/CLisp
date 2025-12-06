@@ -26,6 +26,7 @@ expression
     | delay
     | force
     | nativeCall
+    | do
     | begin
     ;
 
@@ -83,6 +84,15 @@ nativeCall : LBRACKET NATIVE nativeFunction nativeType+ RBRACKET ;
 nativeFunction : IDENTIFIER ;
 nativeType : IDENTIFIER ;
 
+do : LBRACKET DO LBRACKET doVariable* RBRACKET LBRACKET doTest doExpression* RBRACKET doCommand* RBRACKET ;
+doVariable : LBRACKET doVariableName doVariableInit doVariableStep? RBRACKET ;
+doVariableName : variable ;
+doVariableInit : expression ;
+doVariableStep : expression ;
+doTest : expression ;
+doExpression : expression ;
+doCommand : expression ;
+
 begin : LBRACKET BEGIN expression+ RBRACKET ;
 
 procedureDefinitionFormals
@@ -109,6 +119,7 @@ SET : 'set!' ;
 DELAY : 'delay' ;
 FORCE : 'force' ;
 NATIVE : 'native' ;
+DO : 'do' ;
 BEGIN : 'begin' ;
 PERIOD : '.' ;
 INTEGER : SIGN? DIGIT+ ;
