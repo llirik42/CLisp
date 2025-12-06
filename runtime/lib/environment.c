@@ -178,7 +178,7 @@ CL_Environment* cl_move_env(CL_Environment* env) {
         cl_increase_ref_count(new->variables[i].val);
     }
 
-    //cl_dec_env_refs_cnt(env);
+    cl_dec_env_refs_cnt(env);
 
     return new;
 }
