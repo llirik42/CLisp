@@ -165,14 +165,20 @@ CL_Environment* cl_move_env(CL_Environment* env) {
     new->variables_count = env->variables_count;
     new->capacity = env->capacity;
     new->ref_count = 1;
+    new->parent = env->parent;
 
-    new->variables = cl_allocate_memory(sizeof(CL_Variable) * new->variables_count);
-    memcpy(new->variables, env->variables, sizeof(CL_Variable) * new->variables_count);
+    if (new->variables_count) {
+        new->variables = cl_allocate_memory(sizeof(CL_Variable) * new->variables_count);
+        memcpy(new->variables, env->variables, sizeof(CL_Variable) * new->variables_count);
+    } else {
+        new->variables = cl_allocate_memory(sizeof(CL_Variable) * BASIC_CAPACITY);
+    }
+
     for (unsigned int i = 0; i < new->variables_count; i++) {
         cl_increase_ref_count(new->variables[i].val);
     }
 
-    cl_dec_env_refs_cnt(env);
+    //cl_dec_env_refs_cnt(env);
 
     return new;
 }

@@ -1,21 +1,20 @@
+import shutil
 from pathlib import Path
 
 
 def delete_all_files_in_dir(directory_path):
-    try:
-        path = Path(directory_path)
+    if not directory_path.exists():
+        print(f"Directory {directory_path} not exists!")
+        return
 
-        if not path.exists():
-            print(f"Directory {directory_path} not exists!")
-            return
-
-        for file_path in path.iterdir():
-            if file_path.is_file():
-                file_path.unlink()
-
-    except Exception as e:
-        print(f"Error during deleting files: {e}")
-
+    for item in directory_path.iterdir():
+        try:
+            if item.is_file():
+                item.unlink()
+            elif item.is_dir():
+                shutil.rmtree(item)
+        except Exception as e:
+            print(f"Error during deleting files: {e}")
 
 def copy_directory_structure(source_dir, target_dir):
     source_path = Path(source_dir)
