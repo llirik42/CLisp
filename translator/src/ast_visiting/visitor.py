@@ -95,8 +95,6 @@ class ASTVisitor(LispVisitor):
             elements=ctx.programElement(),
         )
 
-        for c in program_element_codes:
-            c.transfer_newline()
         if len(program_element_codes) != 0:
             main_code.add_main_epilog(f"\n{join_codes(program_element_codes)}")
 
@@ -678,7 +676,6 @@ class ASTVisitor(LispVisitor):
     ) -> DeclaredFunctionName:
         function_code = self.__code_creator.evaluable_definition()
         expr_var, expr_code = self.visit(expression)
-        expr_code.transfer_newline()
 
         function_name = self.__variable_manager.create_evaluable_function_name()
 
@@ -772,7 +769,6 @@ class ASTVisitor(LispVisitor):
 
         for i, e in enumerate(expressions):
             e_var, e_code = self.visit(e)
-            e_code.transfer_newline()
             last_expr_var = e_var
             expr_codes.append(e_code)
 
