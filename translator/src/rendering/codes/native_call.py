@@ -15,7 +15,7 @@ class NativeCallCode(Code):
         function: Optional[str] = None,
         library: Optional[str] = None,
         result_type: Optional[str] = None,
-        args_types: list[str] = None,
+        args_types: Optional[list[str]] = None,
     ) -> None:
         if args_types is None:
             args_types = []
