@@ -9,7 +9,7 @@ from src.rendering import (
     transfer_secondary,
     nest_codes,
 )
-from src.rendering.codes import MakePrimitiveCode, Code
+from src.rendering.codes import MakePrimitiveCode, Code, LambdaCallCode
 from src.symbols import Symbols
 from .ast_context import ASTContext, visit
 from .declarations_context import DeclarationsContext
@@ -404,10 +404,11 @@ class ASTVisitor(LispVisitor):
     ) -> ExpressionVisitResult:
         operator = ctx.operator()
         operands = ctx.operand()
-        scalar_args_count = len(operands)
 
         return self.__visit_procedure_call(
-            operator=operator, operands=operands, scalar_args_count=scalar_args_count
+            operator=operator,
+            operands=operands,
+            expr_code=self.__code_creator.lambda_call(),
         )
 
     @visit(ast_context)
@@ -487,18 +488,16 @@ class ASTVisitor(LispVisitor):
         self,
         operator: LispParser.ExpressionContext,
         operands: list[LispParser.ExpressionContext],
-        scalar_args_count: int,
+        expr_code: LambdaCallCode,
     ) -> ExpressionVisitResult:
         operator_var, operator_code = self.visit(operator)
         operand_vars, operand_codes = self.__visit_operands(operands)
 
-        expr_code = self.__code_creator.lambda_call()
         expr_var = self.__variable_manager.create_object_name()
         expr_code.update_data(
             var=expr_var,
             lambda_var=operator_var,
             args=operand_vars,
-            scalar_args_count=scalar_args_count,
         )
 
         wrapped_expr_code = wrap_codes(expr_code, [operator_code] + operand_codes)

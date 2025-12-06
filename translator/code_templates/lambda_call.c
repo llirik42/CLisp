@@ -1,2 +1,2 @@
-{% set _args = [args | length, scalar_args_count] + args %}
+{% set _args = [args | length] + args %}
 {{ type }} {{ var }} = {{ func }}({{ lambda_var }}, {{ _args | join(', ') }});
