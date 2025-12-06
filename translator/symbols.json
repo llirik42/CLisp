@@ -43,6 +43,7 @@
       "get_variable_value": "cl_get_variable_value",
       "lambda_call": "cl_lambda_call",
       "evaluation": "cl_evaluate",
+      "native_call": "cl_native",
       "to_boolean": "cl_obj_to_boolean",
       "ref_count++": "cl_increase_ref_count",
       "ref_count--": "cl_decrease_ref_count"
@@ -50,6 +51,7 @@
     "other": {
       "object_type": "CL_Object*",
       "environment_type": "CL_Environment*",
+      "native_argument_type": "enum CL_NativeType",
       "lambda_env": "env",
       "lambda_args": "args",
       "lambda_count": "count",
