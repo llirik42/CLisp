@@ -412,6 +412,17 @@ class ASTVisitor(LispVisitor):
         )
 
     @visit(ast_context)
+    def visitApply(self, ctx:LispParser.ApplyContext) -> ExpressionVisitResult:
+        operator = ctx.operator()
+        operands = ctx.operand()
+
+        return self.__visit_procedure_call(
+            operator=operator,
+            operands=operands,
+            expr_code=self.__code_creator.lambda_call_list(),
+        )
+
+    @visit(ast_context)
     def visitVariable(self, ctx: LispParser.VariableContext) -> ExpressionVisitResult:
         env = self.__environment_ctx.env
         variable_name = ctx.getText()

@@ -42,6 +42,7 @@
       "update_variable_value": "cl_update_variable_value",
       "get_variable_value": "cl_get_variable_value",
       "lambda_call": "cl_lambda_call",
+      "lambda_call_list": "cl_lambda_call_list",
       "evaluation": "cl_evaluate",
       "to_boolean": "cl_obj_to_boolean",
       "ref_count++": "cl_increase_ref_count",

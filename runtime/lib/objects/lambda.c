@@ -1,6 +1,7 @@
 #include "objects/lambda.h"
 
 #include "lib/memory.h"
+#include "lib/utils.h"
 #include "list.h"
 
 #include <stdarg.h>
@@ -75,6 +76,8 @@ CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...) {
 
     unsigned int scalar_args_count = count - 1;
     CL_Object* list_arg = tmp[scalar_args_count];
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(list_arg), LIST);
+
     unsigned int list_arg_length = cl_list_length(list_arg);
     unsigned int obj_args_count = scalar_args_count + list_arg_length;
     CL_Object* obj_args[obj_args_count];
