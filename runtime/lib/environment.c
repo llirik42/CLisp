@@ -41,8 +41,17 @@ static CL_Environment* make_environment(CL_Environment* parent, size_t capacity)
     env->parent = parent;
     env->capacity = capacity;
     env->variables_count = 0;
+    env->ref_count = 1;
     env->variables = cl_allocate_memory(sizeof(CL_Variable) * capacity);
     return env;
+}
+
+static void destroy_env(CL_Environment* env) {
+    for (size_t i = 0; i < env->variables_count; i++) {
+        cl_decrease_ref_count(env->variables[i].val);
+    }
+    cl_free_memory(env->variables);
+    cl_free_memory(env);
 }
 
 CL_Environment* cl_make_env(CL_Environment* parent) {
@@ -53,12 +62,15 @@ CL_Environment* cl_make_env_capacity(CL_Environment* parent, size_t capacity) {
     return make_environment(parent, capacity);
 }
 
-void cl_destroy_env(CL_Environment* env) {
-    for (size_t i = 0; i < env->variables_count; i++) {
-        cl_decrease_ref_count(env->variables[i].val);
+void cl_inc_env_refs_cnt(CL_Environment* env) {
+    env->ref_count++;
+}
+
+void cl_dec_env_refs_cnt(CL_Environment* env) {
+    if (!env || --env->ref_count > 0) {
+        return;
     }
-    cl_free_memory(env->variables);
-    cl_free_memory(env);
+    destroy_env(env);
 }
 
 void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
@@ -145,5 +157,22 @@ CL_Environment* cl_make_global_env() {
 }
 
 void cl_destroy_global_env(CL_Environment* env) {
-    cl_destroy_env(env);
+    destroy_env(env);
+}
+
+CL_Environment* cl_move_env(CL_Environment* env) {
+    CL_Environment* new = cl_allocate_memory(sizeof(CL_Environment));
+    new->variables_count = env->variables_count;
+    new->capacity = env->capacity;
+    new->ref_count = 1;
+
+    new->variables = cl_allocate_memory(sizeof(CL_Variable) * new->variables_count);
+    memcpy(new->variables, env->variables, sizeof(CL_Variable) * new->variables_count);
+    for (unsigned int i = 0; i < new->variables_count; i++) {
+        cl_increase_ref_count(new->variables[i].val);
+    }
+
+    cl_dec_env_refs_cnt(env);
+
+    return new;
 }
