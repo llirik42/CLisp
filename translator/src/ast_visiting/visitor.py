@@ -401,12 +401,16 @@ class ASTVisitor(LispVisitor):
     def visitProcedureCall(
         self, ctx: LispParser.ProcedureCallContext
     ) -> ExpressionVisitResult:
-        operator = ctx.operator()
-        operands = ctx.operand()
+        operator_var, operator_code = self.visit(ctx.operator())
+        operand_vars, operand_codes = self.__visit_operands(ctx.operand())
 
-        return self.__visit_procedure_call(
-            operator=operator, operands=operands, scalar_args_count=len(operands)
-        )
+        expr_code = self.__code_creator.lambda_call()
+        expr_var = self.__variable_manager.create_object_name()
+        expr_code.update_data(var=expr_var, lambda_var=operator_var, args=operand_vars)
+
+        wrapped_expr_code = wrap_codes(expr_code, [operator_code] + operand_codes)
+
+        return expr_var, wrapped_expr_code
 
     @visit(ast_context)
     def visitNativeCall(
@@ -503,28 +507,6 @@ class ASTVisitor(LispVisitor):
                 env.add(lisp_name)
 
             return [self.visit(e)[1] for e in elements]
-
-    def __visit_procedure_call(
-        self,
-        operator: LispParser.ExpressionContext,
-        operands: list[LispParser.ExpressionContext],
-        scalar_args_count: int,
-    ) -> ExpressionVisitResult:
-        operator_var, operator_code = self.visit(operator)
-        operand_vars, operand_codes = self.__visit_operands(operands)
-
-        expr_code = self.__code_creator.lambda_call()
-        expr_var = self.__variable_manager.create_object_name()
-        expr_code.update_data(
-            var=expr_var,
-            lambda_var=operator_var,
-            args=operand_vars,
-            scalar_args_count=scalar_args_count,
-        )
-
-        wrapped_expr_code = wrap_codes(expr_code, [operator_code] + operand_codes)
-
-        return expr_var, wrapped_expr_code
 
     def __visit_if(
         self,
