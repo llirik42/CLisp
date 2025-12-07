@@ -1,0 +1,20 @@
+******************[TESTING CODE]******************
+(define (fact n) (do ((i 1 (+ i 1))
+                       (res 1 (* res i)))
+                   ((>= i n) res)))
+
+(display (fact 0))
+(display (fact 1))
+(display (fact 2))
+(display (fact 3))
+(display (fact 4))
+(display (fact 10))
+(display (fact 15))
+******************[EXPECTED OUT]******************
+1
+1
+2
+6
+24
+3628800
+2004310016
