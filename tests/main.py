@@ -74,8 +74,8 @@ if __name__ == '__main__':
         raise ValueError('No test files found!')
 
     os.environ['TEST_FILES'] = os.pathsep.join(tests_files_paths)
-    copy_directory_structure(CASES_PATH, BUILD_PATH)
     delete_all_files_in_dir(BUILD_PATH)
+    copy_directory_structure(CASES_PATH, BUILD_PATH)
 
     pytest.main(["test.py::test_with_path_env", "-v", "-s"])
 

@@ -1,0 +1,21 @@
+******************[TESTING CODE]******************
+(define z 28)
+(define p 0)
+
+(let ((x 5))
+     (set! p (delay (set! z x))))
+
+(display z)
+(force p)
+(display z)
+
+(let ((x 10))
+  (let ((delayed (delay (* x x))))
+    (set! x 20) (display (force delayed))))
+
+(let* ((x 10) (delayed (delay (* x x)))) (display (force delayed)))
+******************[EXPECTED OUT]******************
+28
+5
+400
+100

@@ -38,6 +38,29 @@ void cl_da_pop(CL_DynamicArray *da) {
     da->size--;
 }
 
+void cl_da_remove(CL_DynamicArray *da, void *element) {
+    for (size_t i = 0; i < da->size; i++) {
+        if (da->data[i] == element) {
+            for (size_t j = i+1; j < da->size; j++) {
+                da->data[j - 1] = da->data[j];
+            }
+            da->size--;
+            return;
+        }
+    }
+}
+
+void cl_da_remove_at(CL_DynamicArray *da, size_t index) {
+    if (index >= da->size) {
+        cl_abort("Index out of dynamic array size");
+    }
+
+    for (size_t i = index+1; i < da->size; i++) {
+        da->data[i-1] = da->data[i];
+    }
+    da->size--;
+}
+
 void* cl_da_get(CL_DynamicArray *da, size_t index) {
     if (index >= da->size) {
         cl_abort("Index out of dynamic array size");
