@@ -14,6 +14,7 @@ CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
     lambda_object->with_env = TRUE;
     lambda_object->environment = environment;
     lambda_object->call_environments = cl_da_create(UNDEFINED_DA_CAPACITY);
+    cl_inc_env_refs_cnt(environment);
     return (CL_Object*)lambda_object;
 }
 
@@ -34,10 +35,11 @@ void cl_destroy_lambda(CL_Object* obj) {
 
         for (size_t i = 0; i < cl_da_size(call_envs); i++) {
             CL_Environment* call_env = cl_da_get(call_envs, i);
-            cl_destroy_env(call_env);
+            cl_dec_env_refs_cnt(call_env);
         }
 
         cl_da_destroy(call_envs);
+        cl_dec_env_refs_cnt(lambda_object->environment);
     }
     cl_free_memory(obj);
 }

@@ -1,0 +1,12 @@
+******************[TESTING CODE]******************
+(define z 28)
+(display z)
+
+(let ((x 5))
+     (set! z (lambda () x)))
+
+(display (z))
+
+******************[EXPECTED OUT]******************
+28
+5
