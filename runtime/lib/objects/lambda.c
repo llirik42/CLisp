@@ -7,11 +7,11 @@
 #include <stdarg.h>
 
 CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
-    CL_LambdaObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaObject));
+    CL_LambdaUserObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaUserObject));
     cl_init_obj((CL_Object*)lambda_object, LAMBDA);
 
-    lambda_object->func.cl_func_with_env = func;
-    lambda_object->with_env = TRUE;
+    lambda_object->cl_func = func;
+    lambda_object->lambda_type = USER;
     lambda_object->environment = environment;
     lambda_object->call_environments = cl_da_create(UNDEFINED_DA_CAPACITY);
     cl_inc_env_refs_cnt(environment);
@@ -19,39 +19,71 @@ CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
 }
 
 CL_Object* cl_make_lambda_without_env(cl_func func) {
-    CL_LambdaObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaObject));
+    CL_LambdaLibraryObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaLibraryObject));
     cl_init_obj((CL_Object*)lambda_object, LAMBDA);
 
-    lambda_object->func.cl_func = func;
-    lambda_object->with_env = FALSE;
-    lambda_object->call_environments = NULL;
+    lambda_object->cl_func = func;
+    lambda_object->lambda_type = LIBRARY;
+    return (CL_Object*)lambda_object;
+}
+
+CL_Object* cl_make_lambda_native(cl_func_native func, CL_NativeData* data) {
+    CL_LambdaNativeObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaNativeObject));
+    cl_init_obj((CL_Object*)lambda_object, LAMBDA);
+
+    lambda_object->cl_func = func;
+    lambda_object->lambda_type = NATIVE;
+    lambda_object->native_data = data;
     return (CL_Object*)lambda_object;
 }
 
 void cl_destroy_lambda(CL_Object* obj) {
     CL_LambdaObject* lambda_object = (CL_LambdaObject*)obj;
-    if (lambda_object->with_env) {
-        CL_DynamicArray* call_envs = lambda_object->call_environments;
+    switch (lambda_object->lambda_type) {
+        case USER: {
+            CL_LambdaUserObject* lambda_user = (CL_LambdaUserObject*)lambda_object;
+            CL_DynamicArray* call_envs = lambda_user->call_environments;
 
-        for (size_t i = 0; i < cl_da_size(call_envs); i++) {
-            CL_Environment* call_env = cl_da_get(call_envs, i);
-            cl_dec_env_refs_cnt(call_env);
+            for (size_t i = 0; i < cl_da_size(call_envs); i++) {
+                CL_Environment* call_env = cl_da_get(call_envs, i);
+                cl_dec_env_refs_cnt(call_env);
+            }
+
+            cl_da_destroy(call_envs);
+            cl_dec_env_refs_cnt(lambda_user->environment);
+            break;
         }
-
-        cl_da_destroy(call_envs);
-        cl_dec_env_refs_cnt(lambda_object->environment);
+        case NATIVE: {
+            CL_LambdaNativeObject* lambda_native = (CL_LambdaNativeObject*)lambda_object;
+            cl_destroy_native_data(lambda_native->native_data);
+            break;
+        }
+        default: {}
     }
+
     cl_free_memory(obj);
 }
 
 static CL_Object* cl_lambda_call_array(CL_Object* obj, CL_FUNC_PARAMS) {
     const CL_LambdaObject* lambda_object = (CL_LambdaObject*)obj;
-    if (lambda_object->with_env) {
-        CL_Environment* lambda_call_env = cl_make_env(lambda_object->environment);
-        cl_da_append(lambda_object->call_environments, lambda_call_env);
-        return lambda_object->func.cl_func_with_env(lambda_call_env, CL_FUNC_PARAMS_WITHOUT_TYPES);
+    switch (lambda_object->lambda_type) {
+        case USER: {
+            CL_LambdaUserObject* lambda_user = (CL_LambdaUserObject*)lambda_object;
+            CL_Environment* lambda_call_env = cl_make_env(lambda_user->environment);
+            cl_da_append(lambda_user->call_environments, lambda_call_env);
+            return lambda_user->cl_func(lambda_call_env, CL_FUNC_PARAMS_WITHOUT_TYPES);
+        }
+        case NATIVE: {
+            CL_LambdaNativeObject* lambda_native = (CL_LambdaNativeObject*)lambda_object;
+            return lambda_native->cl_func(lambda_native->native_data, CL_FUNC_PARAMS_WITHOUT_TYPES);
+        }
+        case LIBRARY: {
+            CL_LambdaLibraryObject* lambda_native = (CL_LambdaLibraryObject*)lambda_object;
+            return lambda_native->cl_func(CL_FUNC_PARAMS_WITHOUT_TYPES);
+        }
+        default:
+            __builtin_unreachable();
     }
-    return lambda_object->func.cl_func(CL_FUNC_PARAMS_WITHOUT_TYPES);
 }
 
 CL_Object* cl_lambda_call(CL_Object* obj, unsigned int count, ...) {

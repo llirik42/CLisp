@@ -1,0 +1,6 @@
+******************[TESTING CODE]******************
+(display (+ ((native stdlib/atoi integer string) "153") 47))
+((native stdio/printf integer string integer string) "%d is a %s\n" 5 "five")
+******************[EXPECTED OUT]******************
+200
+5 is a five
