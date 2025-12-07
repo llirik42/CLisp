@@ -10,7 +10,7 @@ enum CL_ObjectType {
     EVALUABLE,
     STRING,
     CHAR,
-    LIST,
+    VECTOR,
     LAMBDA,
     UNSPECIFIED,
 };

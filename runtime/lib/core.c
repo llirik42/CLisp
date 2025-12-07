@@ -5,7 +5,7 @@
 #include "objects/primitive.h"
 #include "objects/evaluable.h"
 #include "objects/lambda.h"
-#include "objects/list.h"
+#include "objects/vector.h"
 
 CL_Object* cl_make_unspecified() {
     CL_Object* obj = cl_allocate_memory(sizeof(CL_Object));
@@ -51,8 +51,8 @@ void cl_decrease_ref_count(CL_Object* obj) {
         case CHAR:
             cl_destroy_char(obj);
             break;
-        case LIST:
-            cl_destroy_list(obj);
+        case VECTOR:
+            cl_destroy_vector(obj);
             break;
         case EVALUABLE:
             cl_destroy_evaluable(obj);
@@ -80,7 +80,7 @@ char* get_obj_type_name(enum CL_ObjectType type) {
             return "STRING";
         case CHAR:
             return "CHAR";
-        case LIST:
+        case VECTOR:
             return "LIST";
         case LAMBDA:
             return "LAMBDA";

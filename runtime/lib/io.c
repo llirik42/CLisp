@@ -5,7 +5,7 @@
 #include "lib/objects/primitive.h"
 #include "core.h"
 #include "utils.h"
-#include "lib/objects/list.h"
+#include "lib/objects/vector.h"
 
 static void display_one_object(CL_Object* obj) {
     CL_Object* to_display = obj;
@@ -30,11 +30,11 @@ static void display_one_object(CL_Object* obj) {
                 printf("false");
             }
             break;
-        case LIST:
-            printf("%s", "list(");
-            for (size_t i = 0; i < cl_list_length(to_display); i++) {
-                display_one_object(cl_list_at(to_display, i));
-                if (i != cl_list_length(to_display) - 1) {
+        case VECTOR:
+            printf("%s", "vector(");
+            for (size_t i = 0; i < cl_vector_length(to_display); i++) {
+                display_one_object(cl_vector_at(to_display, i));
+                if (i != cl_vector_length(to_display) - 1) {
                     putchar(' ');
                 }
             }

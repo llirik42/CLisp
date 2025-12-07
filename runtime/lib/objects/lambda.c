@@ -2,7 +2,7 @@
 
 #include "lib/memory.h"
 #include "lib/utils.h"
-#include "list.h"
+#include "vector.h"
 
 #include <stdarg.h>
 
@@ -114,16 +114,16 @@ CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...) {
 
     unsigned int scalar_args_count = count - 1;
     CL_Object* list_arg = tmp[scalar_args_count];
-    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(list_arg), LIST);
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(list_arg), VECTOR);
 
-    unsigned int list_arg_length = cl_list_length(list_arg);
+    unsigned int list_arg_length = cl_vector_length(list_arg);
     unsigned int obj_args_count = scalar_args_count + list_arg_length;
     CL_Object* obj_args[obj_args_count];
     for (unsigned int i = 0; i < scalar_args_count; i++) {
         obj_args[i] = tmp[i];
     }
     for (unsigned int i = 0; i < list_arg_length; i++) {
-        obj_args[i + scalar_args_count] = cl_list_at(list_arg, i);
+        obj_args[i + scalar_args_count] = cl_vector_at(list_arg, i);
     }
 
     CL_Object* result = cl_lambda_call_array(obj, obj_args_count, obj_args);
