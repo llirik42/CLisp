@@ -17,6 +17,10 @@ void cl_da_pop(CL_DynamicArray *da);
 
 void* cl_da_get(CL_DynamicArray *da, size_t index);
 
+void cl_da_remove(CL_DynamicArray *da, void *element);
+
+void cl_da_remove_at(CL_DynamicArray *da, size_t index);
+
 void cl_da_destroy(CL_DynamicArray *da);
 
 size_t cl_da_size(CL_DynamicArray *da);
