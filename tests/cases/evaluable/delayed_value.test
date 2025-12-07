@@ -1,0 +1,7 @@
+******************[TESTING CODE]******************
+(define delayed-value
+  (delay (+ 2 3)))
+(display (force delayed-value))
+
+******************[EXPECTED OUT]******************
+5

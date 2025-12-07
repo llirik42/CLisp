@@ -1,0 +1,11 @@
+******************[TESTING CODE]******************
+(define (lazy-if cond then-expr else-expr)
+  (if cond
+      (force then-expr)
+      (force else-expr)))
+(display (lazy-if #t (delay 10) (delay (/ 1 0))))
+(display (lazy-if #f (delay 10) (delay 20)))
+
+******************[EXPECTED OUT]******************
+10
+20

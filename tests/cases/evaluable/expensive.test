@@ -1,0 +1,32 @@
+******************[TESTING CODE]******************
+(define expensive
+  (delay
+    (begin
+      (display "Complex calculations")
+      (* 1234 5678))))
+
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+(display (force expensive))
+
+******************[EXPECTED OUT]******************
+Complex calculations
+7006652
+7006652
+7006652
+7006652
+7006652
+7006652
+7006652
+7006652
+7006652
+7006652
+7006652
