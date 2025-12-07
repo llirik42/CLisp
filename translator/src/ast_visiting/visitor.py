@@ -540,14 +540,18 @@ class ASTVisitor(LispVisitor):
 
             # True test
             if expressions:
-                last_expr_var, expr_codes = self.__visit_expression_sequence(expressions)
+                last_expr_var, expr_codes = self.__visit_expression_sequence(
+                    expressions
+                )
             else:
                 var, code = self.__visit_unspecified()
                 last_expr_var = var
                 expr_codes = [code]
             loop_var_increase_ref_count_code = self.__code_creator.increase_ref_count()
             loop_var_increase_ref_count_code.update_data(var=last_expr_var)
-            true_test_body = wrap_codes(loop_var_increase_ref_count_code, expr_codes).render()
+            true_test_body = wrap_codes(
+                loop_var_increase_ref_count_code, expr_codes
+            ).render()
 
             # False test
             ## Commands

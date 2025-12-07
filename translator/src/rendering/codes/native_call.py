@@ -1,12 +1,23 @@
 from typing import Optional
 
 from .code import Code
+from src.symbols import Symbols
+from src.templates import Templates
 
 
 class NativeCallCode(Code):
-    def __init__(self, **kwargs):
+    def __init__(self, symbols: Symbols, templates: Templates):
         super().__init__(
-            required_params=["var", "library", "function", "result_type"], **kwargs
+            main_template=templates.NATIVE_CALL,
+            secondary_template=templates.DECREASE_REF_COUNT,
+            main_data={
+                "type": symbols.OBJECT_TYPE,
+                "arg_type": symbols.NATIVE_ARGUMENT_TYPE,
+                "calling_func": symbols.NATIVE_CALL,
+            },
+            secondary_data={
+                "func": symbols.DECREASE_REF_COUNT,
+            },
         )
 
     def update_data(

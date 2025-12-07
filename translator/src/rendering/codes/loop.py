@@ -1,22 +1,21 @@
 from typing import Optional
 
 from .code import Code
+from src.symbols import Symbols
+from src.templates import Templates
 
 
 class LoopCode(Code):
-    def __init__(self, **kwargs):
+    def __init__(self, symbols: Symbols, templates: Templates):
         super().__init__(
-            required_params=[
-                "var",
-                "pre_body",
-                "post_body",
-                "test_body",
-                "test_value",
-                "true_test_body",
-                "true_test_var",
-                "false_test_body",
-            ],
-            **kwargs,
+            main_template=templates.LOOP,
+            secondary_template=templates.DECREASE_REF_COUNT,
+            main_data={
+                "type": symbols.OBJECT_TYPE,
+            },
+            secondary_data={
+                "func": symbols.DECREASE_REF_COUNT,
+            },
         )
 
     def update_data(
