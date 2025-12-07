@@ -24,16 +24,42 @@ class Symbols:
 
         self.__data = json.load(open(json_path))
 
-    def find_internal(self, identifier: str) -> str:
-        """
-        Finds and returns the symbol from the internals.
-
-        :param identifier: identifier of a symbol.
-        :return: found symbol.
-        :raises KeyError: symbol not found.
-        """
-
-        return self.__internal[identifier]
+        self.BOOLEAN_TYPE = self.__find_internal("boolean_type")
+        self.OBJECT_TYPE = self.__find_internal("object_type")
+        self.ENVIRONMENT_TYPE = self.__find_internal("environment_type")
+        self.NATIVE_ARGUMENT_TYPE = self.__find_internal("native_argument_type")
+        self.CREATE_UNSPECIFIED = self.__find_internal("unspecified")
+        self.CREATE_INTEGER = self.__find_internal("integer")
+        self.CREATE_FLOAT = self.__find_internal("float")
+        self.CREATE_STRING = self.__find_internal("string")
+        self.CREATE_CHARACTER = self.__find_internal("character")
+        self.CREATE_TRUE = self.__find_internal("true")
+        self.CREATE_FALSE = self.__find_internal("false")
+        self.CREATE_LAMBDA = self.__find_internal("lambda")
+        self.CREATE_EVALUABLE = self.__find_internal("evaluable")
+        self.CREATE_LIST = self.__find_internal("list")
+        self.CREATE_LIST_FROM_ARRAY = self.__find_internal("list_array")
+        self.OBJECT_TO_BOOLEAN = self.__find_internal("to_boolean")
+        self.CREATE_ENVIRONMENT = self.__find_internal("environment")
+        self.MOVE_ENVIRONMENT = self.__find_internal("move_environment")
+        self.DESTROY_ENVIRONMENT = self.__find_internal("~environment")
+        self.GET_GLOBAL_ENVIRONMENT = self.__find_internal("environment_global")
+        self.DESTROY_GLOBAL_ENVIRONMENT = self.__find_internal("~environment_global")
+        self.GET_VARIABLE_VALUE = self.__find_internal("get_variable_value")
+        self.SET_VARIABLE_VALUE = self.__find_internal("set_variable_value")
+        self.UPDATE_VARIABLE_VALUE = self.__find_internal("update_variable_value")
+        self.CALL_LAMBDA = self.__find_internal("lambda_call")
+        self.CALL_LAMBDA_LIST = self.__find_internal("lambda_call_list")
+        self.EVALUATE = self.__find_internal("evaluation")
+        self.NATIVE_CALL = self.__find_internal("native_call")
+        self.INCREASE_REF_COUNT = self.__find_internal("ref_count++")
+        self.DECREASE_REF_COUNT = self.__find_internal("ref_count--")
+        self.LAMBDA_PARAMS = self.__find_internal("lambda_function_params")
+        self.LAMBDA_ENV = self.__find_internal("lambda_env")
+        self.LAMBDA_ARGS = self.__find_internal("lambda_args")
+        self.LAMBDA_COUNT = self.__find_internal("lambda_count")
+        self.EVALUABLE_PARAMS = self.__find_internal("evaluable_function_params")
+        self.EVALUABLE_ENV = self.__find_internal("evaluable_env")
 
     def try_find_native_type(self, identifier: str) -> Optional[str]:
         """
@@ -63,6 +89,9 @@ class Symbols:
         """
 
         return identifier in self.__api_functions
+
+    def __find_internal(self, identifier: str) -> str:
+        return self.__internal[identifier]
 
     @property
     def __native_types(self) -> SymbolSection:

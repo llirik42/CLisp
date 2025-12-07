@@ -128,7 +128,7 @@ class ASTVisitor(LispVisitor):
     def visitProcedureDefinition(
         self, ctx: LispParser.ProcedureDefinitionContext
     ) -> ExpressionVisitResult:
-        env_var = self.__symbols.find_internal("lambda_env")
+        env_var = self.__symbols.LAMBDA_ENV
         env = self.__environment_ctx.env
 
         variable_name = ctx.variable().getText()
@@ -257,7 +257,7 @@ class ASTVisitor(LispVisitor):
 
     @visit(ast_context)
     def visitProcedure(self, ctx: LispParser.ProcedureContext) -> ExpressionVisitResult:
-        env_var = self.__symbols.find_internal("lambda_env")
+        env_var = self.__symbols.LAMBDA_ENV
         env = self.__environment_ctx.env
 
         with self.__environment_ctx:
@@ -451,7 +451,7 @@ class ASTVisitor(LispVisitor):
 
     @visit(ast_context)
     def visitDelay(self, ctx: LispParser.DelayContext) -> ExpressionVisitResult:
-        env_var = self.__symbols.find_internal("evaluable_env")
+        env_var = self.__symbols.EVALUABLE_ENV
         env = self.__environment_ctx.env
 
         with self.__environment_ctx:
@@ -501,8 +501,6 @@ class ASTVisitor(LispVisitor):
 
         variables_names = [v.doVariableName().getText() for v in variables]
         self.__check_do_variables(variables_names)
-
-        old_env = self.__environment_ctx.env
 
         loop_var = self.__variable_manager.create_object_name()
 
@@ -556,8 +554,6 @@ class ASTVisitor(LispVisitor):
             command_codes = [self.visit(c)[1] for c in commands]
 
             ## Step
-            step_codes = []
-
             move_code = self.__code_creator.move_environment()
             move_code.update_data(var=env.name, env=env.name)
 
@@ -813,7 +809,7 @@ class ASTVisitor(LispVisitor):
         return join_codes(fixed_formals_codes + [variadic_formal_code])
 
     def __visit_scalar_formals(self, formals: list[str]) -> ScalarFormalsVisitResult:
-        args_name = self.__symbols.find_internal("lambda_args")
+        args_name = self.__symbols.LAMBDA_ARGS
 
         env = self.__environment_ctx.env
         codes: list[Code] = []
@@ -834,8 +830,8 @@ class ASTVisitor(LispVisitor):
         formal: str,
         start_index: int,
     ) -> VariadicFormalVisitResult:
-        count_name = self.__symbols.find_internal("lambda_count")
-        args_name = self.__symbols.find_internal("lambda_args")
+        count_name = self.__symbols.LAMBDA_COUNT
+        args_name = self.__symbols.LAMBDA_ARGS
 
         env = self.__environment_ctx.env
         variadic_formal_list_var = self.__variable_manager.create_object_name()
