@@ -16,6 +16,24 @@
 // 8 + 1 NULL
 #define DLL_VARIANTS_COUNT_MAX 9
 
+#define HANDLE_OBJ(OBJ_TYPE, NATIVE_TYPE, C_TYPE, GETTER) \
+case OBJ_TYPE: { \
+if (data->args_types[i] != NATIVE_TYPE) { \
+cl_abort("Native call: object type not equal assigned type!\n"); \
+} \
+C_TYPE val = GETTER(args[i]); \
+C_TYPE* ptr = cl_allocate_memory(sizeof(C_TYPE)); \
+*ptr = val; \
+variables[i] = ptr; \
+break; \
+}
+
+#define HANDLE_RET_VALUE(NATIVE_TYPE, C_TYPE, CREATOR) \
+case NATIVE_TYPE: \
+ret_obj = CREATOR(*(C_TYPE*)result); \
+break;
+
+
 static sigjmp_buf segv_jmp_buf;
 
 static void segv_handler(int sig, siginfo_t *info, void *ucontext) {
@@ -142,46 +160,11 @@ CL_Object* cl_call_native(CL_NativeData* data, CL_FUNC_PARAMS) {
     void* variables[count];
     for (size_t i = 0; i < count; i++) {
         switch (args[i]->type) {
-            case INTEGER: {
-                if (data->args_types[i] != CL_NATIVE_INTEGER) {
-                    cl_abort("Native call: object type not equal assigned type!\n");
-                }
-                int int_val = cl_get_int_value(args[i]);
-                int* int_ptr = cl_allocate_memory(sizeof(int));
-                *int_ptr = int_val;
-                variables[i] = int_ptr;
-                break;
-            }
-            case DOUBLE: {
-                if (data->args_types[i] != CL_NATIVE_DOUBLE) {
-                    cl_abort("Native call: object type not equal assigned type!\n");
-                }
-                double double_val = cl_get_double_value(args[i]);
-                char* double_prt = cl_allocate_memory(sizeof(double));
-                *double_prt = double_val;
-                variables[i] = double_prt;
-                break;
-            }
-            case CHAR: {
-                if (data->args_types[i] != CL_NATIVE_CHAR) {
-                    cl_abort("Native call: object type not equal assigned type!\n");
-                }
-                char char_val = cl_get_char_value(args[i]);
-                char* char_prt = cl_allocate_memory(sizeof(char));
-                *char_prt = char_val;
-                variables[i] = char_prt;
-                break;
-            }
-            case STRING: {
-                if (data->args_types[i] != CL_NATIVE_STRING) {
-                    cl_abort("Native call: object type not equal assigned type!\n");
-                }
-                char* string_val = cl_get_string_value(args[i]);
-                char** string_ptr = cl_allocate_memory(sizeof(char*));
-                *string_ptr = string_val;
-                variables[i] = string_ptr;
-                break;
-            }
+            HANDLE_OBJ(INTEGER, CL_NATIVE_INTEGER, int, cl_get_int_value)
+            HANDLE_OBJ(DOUBLE, CL_NATIVE_DOUBLE, double, cl_get_double_value)
+            HANDLE_OBJ(CHAR, CL_NATIVE_CHAR, char, cl_get_char_value)
+            HANDLE_OBJ(STRING, CL_NATIVE_STRING, char*, cl_get_string_value)
+
             case UNSPECIFIED:
                 variables[i] = NULL;
                 break;
@@ -224,18 +207,11 @@ CL_Object* cl_call_native(CL_NativeData* data, CL_FUNC_PARAMS) {
     }
 
     switch (data->return_type) {
-        case CL_NATIVE_INTEGER:
-            ret_obj = cl_make_int(*(int*)result);
-            break;
-        case CL_NATIVE_DOUBLE:
-            ret_obj = cl_make_double(*(double*)result);
-            break;
-        case CL_NATIVE_CHAR:
-            ret_obj = cl_make_char(*(char*)result);
-            break;
-        case CL_NATIVE_STRING:
-            ret_obj = cl_make_string(*(char**)result);
-            break;
+        HANDLE_RET_VALUE(CL_NATIVE_INTEGER, int, cl_make_int)
+        HANDLE_RET_VALUE(CL_NATIVE_DOUBLE, double, cl_make_double)
+        HANDLE_RET_VALUE(CL_NATIVE_CHAR, char, cl_make_char)
+        HANDLE_RET_VALUE(CL_NATIVE_STRING, char*, cl_make_string)
+
         default:
             cl_abort("Native call result unknown type!\n");
             __builtin_unreachable();
