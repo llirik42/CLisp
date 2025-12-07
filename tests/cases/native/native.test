@@ -1,0 +1,12 @@
+******************[TESTING CODE]******************
+(display (+ ((native stdlib/atoi integer string) "153") 47))
+((native stdio/printf integer string integer string) "%d is a %s\n" 5 "five")
+(display ((native cmath/round double double) 6.23))
+(display ((native cmath/round double double) 6.7))
+(display ((native cmath/ceil double double) 5.1))
+******************[EXPECTED OUT]******************
+200
+5 is a five
+6
+7
+6

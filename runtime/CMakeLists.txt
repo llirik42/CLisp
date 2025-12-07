@@ -22,7 +22,7 @@ set_target_properties(runtime PROPERTIES
         SUFFIX ".so"
 )
 target_include_directories(runtime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-target_link_libraries(runtime m)
+target_link_libraries(runtime m ffi dl)
 
 file(GLOB_RECURSE SANDBOX_EXEC_FILES
         "./sandbox/*.c"
@@ -30,4 +30,4 @@ file(GLOB_RECURSE SANDBOX_EXEC_FILES
 
 add_executable(sandbox ${SOURCE_FILES} ${SANDBOX_EXEC_FILES})
 target_include_directories(sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-target_link_libraries(sandbox m)
+target_link_libraries(sandbox m ffi dl)

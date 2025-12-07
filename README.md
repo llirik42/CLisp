@@ -10,6 +10,11 @@ Install uv:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+Install libffi (example for Ubuntu)
+```bash
+sudo apt install libffi-dev
+```
+
 Launch installing script:
 
 ```bash
