@@ -19,6 +19,8 @@ from .codes import (
     MakeCallableCode,
     EvaluationCode,
     NativeCallCode,
+    LoopCode,
+    GetBooleanValueCode, MoveEnvironmentCode,
 )
 from src.symbols import Symbols
 
@@ -33,6 +35,7 @@ class CodeCreator:
         :raises FileNotFoundError: the directory not found.
         """
 
+        self.__BOOLEAN_TYPE = symbols.find_internal("boolean_type")
         self.__OBJECT_TYPE = symbols.find_internal("object_type")
         self.__ENVIRONMENT_TYPE = symbols.find_internal("environment_type")
         self.__NATIVE_ARGUMENT_TYPE = symbols.find_internal("native_argument_type")
@@ -49,6 +52,7 @@ class CodeCreator:
         self.__CREATE_LIST_FROM_ARRAY = symbols.find_internal("list_array")
         self.__OBJECT_TO_BOOLEAN = symbols.find_internal("to_boolean")
         self.__CREATE_ENVIRONMENT = symbols.find_internal("environment")
+        self.__MOVE_ENVIRONMENT = symbols.find_internal("move_environment")
         self.__DESTROY_ENVIRONMENT = symbols.find_internal("~environment")
         self.__GET_GLOBAL_ENVIRONMENT = symbols.find_internal("environment_global")
         self.__DESTROY_GLOBAL_ENVIRONMENT = symbols.find_internal("~environment_global")
@@ -263,6 +267,30 @@ class CodeCreator:
 
     def evaluable_definition(self) -> FunctionDefinitionCode:
         return self.__function_definition(self.__EVALUABLE_PARAMS)
+
+    def loop(self) -> LoopCode:
+        return LoopCode(
+            main_template=self.__get_template("loop"),
+            secondary_template=self.__get_decrease_ref_count_template(),
+            main_data={
+                "type": self.__OBJECT_TYPE,
+            },
+            secondary_data={
+                "func": self.__DECREASE_REF_COUNT,
+            },
+        )
+
+    def get_boolean_value(self) -> GetBooleanValueCode:
+        return GetBooleanValueCode(
+            main_template=self.__get_template("get_boolean_value"),
+            main_data={"type": self.__BOOLEAN_TYPE, "func": self.__OBJECT_TO_BOOLEAN},
+        )
+
+    def move_environment(self) -> MoveEnvironmentCode:
+        return MoveEnvironmentCode(
+            main_template=self.__get_template("move_environment"),
+            main_data={"func": self.__MOVE_ENVIRONMENT}
+        )
 
     def program(self) -> ProgramCode:
         return ProgramCode(

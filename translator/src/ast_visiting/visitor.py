@@ -322,9 +322,7 @@ class ASTVisitor(LispVisitor):
         if alternate:
             alternate_var, alternate_code = self.visit(alternate)
         else:
-            alternate_var = self.__variable_manager.create_object_name()
-            alternate_code = self.__code_creator.make_unspecified()
-            alternate_code.update_data(var=alternate_var)
+            alternate_var, alternate_code = self.__visit_unspecified()
 
         return self.__visit_if(
             test_var=test_var,
@@ -496,8 +494,103 @@ class ASTVisitor(LispVisitor):
 
     @visit(ast_context)
     def visitDo(self, ctx: LispParser.DoContext) -> ExpressionVisitResult:
-        # TODO: implement
-        pass
+        variables: list[LispParser.DoVariableContext] = ctx.doVariable()
+        test = ctx.doTest()
+        expressions = ctx.doExpression()
+        commands = ctx.doCommand()
+
+        variables_names = [v.doVariableName().getText() for v in variables]
+        self.__check_do_variables(variables_names)
+
+        old_env = self.__environment_ctx.env
+
+        loop_var = self.__variable_manager.create_object_name()
+
+        with self.__environment_ctx:
+            new_env_code = self.__code_creator.make_environment()
+            self.__environment_ctx.init(
+                name=self.__variable_manager.create_environment_name(),
+                code=new_env_code,
+            )
+            env = self.__environment_ctx.env
+
+            new_env_code.update_data(var=env.name, parent=env.parent.name)
+
+            init_codes = []
+            for v in variables:
+                name = v.doVariableName().getText()
+                env.add(name)
+                init = v.doVariableInit()
+                init_var, init_code = self.visit(init)
+                definition_code = self.__visit_variable_definition(
+                    variable_name=name, expr_var=init_var, expr_code=init_code
+                )
+                init_codes.append(definition_code)
+
+            env_code = env.code
+
+            pre_body = env_code.render_main()
+            for _, c in init_codes:
+                pre_body += c.render() + "\n"
+
+            # Test
+            test_var, test_code = self.visit(test)
+            test_value_var = f"{test_var}_value"
+            test_value_code = self.__code_creator.get_boolean_value()
+            test_value_code.update_data(var=test_value_var, arg=test_var)
+            test_body = wrap_codes(test_value_code, test_code).render()
+
+            # True test
+            if expressions:
+                last_expr_var, expr_codes = self.__visit_expression_sequence(expressions)
+            else:
+                var, code = self.__visit_unspecified()
+                last_expr_var = var
+                expr_codes = [code]
+            loop_var_increase_ref_count_code = self.__code_creator.increase_ref_count()
+            loop_var_increase_ref_count_code.update_data(var=last_expr_var)
+            true_test_body = wrap_codes(loop_var_increase_ref_count_code, expr_codes).render()
+
+            # False test
+            ## Commands
+            command_codes = [self.visit(c)[1] for c in commands]
+
+            ## Step
+            step_codes = []
+
+            move_code = self.__code_creator.move_environment()
+            move_code.update_data(var=env.name, env=env.name)
+
+            step_codes = []
+
+            for v in variables:
+                name = v.doVariableName().getText()
+                step = v.doVariableStep()
+                if step is None:
+                    continue
+
+                expr_var, expr_code = self.visit(step)
+                _, step_code = self.__visit_variable_definition(
+                    variable_name=name, expr_var=expr_var, expr_code=expr_code
+                )
+
+                step_codes.append(step_code)
+
+            iteration_body = join_codes([move_code] + step_codes)
+
+            loop_code = self.__code_creator.loop()
+            loop_code.update_data(
+                var=loop_var,
+                pre_body=pre_body,
+                post_body=env_code.render_secondary(),
+                test_body=test_body,
+                test_value=test_value_var,
+                true_test_body=true_test_body,
+                true_test_var=last_expr_var,
+                false_test_body=join_codes(command_codes) + "\n" + iteration_body,
+            )
+
+        return loop_var, loop_code
 
     @visit(ast_context)
     def visitBegin(self, ctx: LispParser.BeginContext) -> ExpressionVisitResult:
@@ -792,6 +885,7 @@ class ASTVisitor(LispVisitor):
         binding_list = ctx.bindingList()
 
         with self.__environment_ctx:
+            # TODO: parent устанавливается в new_env_code.update_data() и неявно в self.__environment_ctx.init
             self.__environment_ctx.init(code=new_env_code, name=new_env_var)
             self.__let_type_ctx.visit(let_type)
 
@@ -881,7 +975,16 @@ class ASTVisitor(LispVisitor):
         # First element is ignored and needed to unify the processing of expressions and definitions
         return "", wrap_codes(definition_code, expr_code)
 
+    def __visit_unspecified(self) -> ExpressionVisitResult:
+        var = self.__variable_manager.create_object_name()
+        code = self.__code_creator.make_unspecified()
+        code.update_data(var=var)
+
+        return var, code
+
     def __check_binding_list(self, variables_names: list[str]) -> None:
+        # TODO: copy-paste
+
         ctx = ast_context.ctx
         visited_variables = set()
 
@@ -897,6 +1000,8 @@ class ASTVisitor(LispVisitor):
             visited_variables.add(v)
 
     def __check_formals(self, formals: list[str]) -> None:
+        # TODO: copy-paste
+
         ctx = ast_context.ctx
         visited_formals = set()
 
@@ -912,6 +1017,23 @@ class ASTVisitor(LispVisitor):
                 )
 
             visited_formals.add(f)
+
+    def __check_do_variables(self, variables_names: list[str]) -> None:
+        # TODO: copy-paste
+
+        ctx = ast_context.ctx
+        visited_variables = set()
+
+        for v in variables_names:
+            if self.__symbols.has_api_function_symbol(v):
+                raise FunctionRedefineException(v, ctx)
+
+            if v in visited_variables:
+                raise VisitingException(
+                    f'Variable "{v}" appeared more than once in the loop', ctx
+                )
+
+            visited_variables.add(v)
 
     def __check_variable_definition(self, variable_name: str) -> None:
         if self.__symbols.has_api_function_symbol(variable_name):
