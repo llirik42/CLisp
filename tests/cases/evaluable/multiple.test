@@ -1,0 +1,8 @@
+******************[TESTING CODE]******************
+(define a (delay (+ 1 2)))
+(define b (delay (* (force a) 10)))
+(define c (delay (- (force b) 7)))
+(display (force c))
+
+******************[EXPECTED OUT]******************
+23

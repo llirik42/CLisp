@@ -1,15 +1,24 @@
 from typing import Optional
 
 from .code import Code
+from src.symbols import Symbols
+from src.templates import Templates
 
 
 class LambdaCallCode(Code):
-    def __init__(self, **kwargs):
-        """
-        Initial args is an empty list.
-        """
-
-        super().__init__(required_params=["var", "lambda_var"], **kwargs)
+    def __init__(self, symbols: Symbols, templates: Templates, func: str):
+        super().__init__(
+            main_template=templates.LAMBDA_CALL,
+            secondary_template=templates.DECREASE_REF_COUNT,
+            main_data={
+                "type": symbols.OBJECT_TYPE,
+                "args_type": symbols.OBJECT_TYPE,
+                "func": func,
+            },
+            secondary_data={
+                "func": symbols.DECREASE_REF_COUNT,
+            },
+        )
 
     def update_data(
         self,
@@ -23,3 +32,15 @@ class LambdaCallCode(Code):
             args=args,
         )
         self._update_secondary_data(var=var)
+
+
+class OrdinaryLambdaCallCode(LambdaCallCode):
+    def __init__(self, symbols: Symbols, templates: Templates):
+        super().__init__(symbols=symbols, templates=templates, func=symbols.CALL_LAMBDA)
+
+
+class ListLambdaCallCode(LambdaCallCode):
+    def __init__(self, symbols: Symbols, templates: Templates):
+        super().__init__(
+            symbols=symbols, templates=templates, func=symbols.CALL_LAMBDA_LIST
+        )

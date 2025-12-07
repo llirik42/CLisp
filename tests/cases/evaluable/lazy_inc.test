@@ -1,0 +1,13 @@
+******************[TESTING CODE]******************
+(define x 0)
+(define lazy-inc
+  (delay
+    (begin
+      (set! x (+ x 1))
+      x)))
+(display (force lazy-inc))
+(display (force lazy-inc))
+
+******************[EXPECTED OUT]******************
+1
+1

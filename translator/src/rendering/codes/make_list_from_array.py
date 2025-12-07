@@ -1,16 +1,23 @@
 from typing import Optional, Union
 
 from .code import Code
+from src.symbols import Symbols
+from src.templates import Templates
 
 
 class MakeListFromArrayCode(Code):
-    def __init__(self, **kwargs):
-        """
-        Initial element count is zero and element pointer is NULL (the list will be empty).
-        """
-
-        super().__init__(required_params=["var"], **kwargs)
-        self._update_main_data(count=0, elements="NULL")
+    def __init__(self, symbols: Symbols, templates: Templates):
+        super().__init__(
+            main_template=templates.MAKE_LIST_FROM_ARRAY,
+            secondary_template=templates.DECREASE_REF_COUNT,
+            main_data={
+                "type": symbols.OBJECT_TYPE,
+                "func": symbols.CREATE_LIST_FROM_ARRAY,
+            },
+            secondary_data={
+                "func": symbols.DECREASE_REF_COUNT,
+            },
+        )
 
     def update_data(
         self,

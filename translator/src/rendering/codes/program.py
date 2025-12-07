@@ -1,16 +1,15 @@
 from typing import Optional
 
 from .code import Code
+from src.symbols import Symbols
+from src.templates import Templates
 
 
 class ProgramCode(Code):
-    def __init__(self, **kwargs):
-        """
-        Initial body of the main is empty and there are no declarations.
-        """
-
-        super().__init__(**kwargs)
-        self._update_main_data(main_body="")
+    def __init__(self, symbols: Symbols, templates: Templates):
+        super().__init__(
+            main_template=templates.PROGRAM,
+        )
 
     def update_data(
         self,

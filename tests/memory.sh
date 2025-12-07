@@ -8,8 +8,8 @@ export LD_LIBRARY_PATH=../lib:$LD_LIBRARY_PATH
 
 for file in $(find . -type f -name "*.out"); do
     if ! valgrind --leak-check=full --error-exitcode=1 "$file" > /dev/null 2>&1; then
-        echo -e "${RED}Memory leak in $file${NC}"
+        echo -e "${RED}Found memory problems in $file${NC}"
     else
-        echo -e "${GREEN}No memory leak in $file${NC}"
+        echo -e "${GREEN}No memory problems in $file${NC}"
     fi
 done

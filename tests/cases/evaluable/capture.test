@@ -1,0 +1,9 @@
+******************[TESTING CODE]******************
+(define res 0)
+(let ()
+  (define d (delay (+ 2 3)))
+  (set! res (force d)))
+(display res)
+
+******************[EXPECTED OUT]******************
+5

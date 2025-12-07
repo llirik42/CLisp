@@ -5,20 +5,18 @@ from src.symbols import Symbols
 from src.templates import Templates
 
 
-class MakeEnvironmentCode(Code):
+class GetGlobalEnvironmentCode(Code):
     def __init__(self, symbols: Symbols, templates: Templates):
         super().__init__(
-            main_template=templates.MAKE_ENVIRONMENT,
+            main_template=templates.GET_GLOBAL_ENVIRONMENT,
             secondary_template=templates.DESTROY_ENVIRONMENT,
             main_data={
                 "type": symbols.ENVIRONMENT_TYPE,
-                "func": symbols.CREATE_ENVIRONMENT,
+                "func": symbols.GET_GLOBAL_ENVIRONMENT,
             },
-            secondary_data={"func": symbols.DESTROY_ENVIRONMENT},
+            secondary_data={"func": symbols.DESTROY_GLOBAL_ENVIRONMENT},
         )
 
-    def update_data(
-        self, var: Optional[str] = None, parent: Optional[str] = None
-    ) -> None:
-        self._update_main_data(var=var, parent=parent)
+    def update_data(self, var: Optional[str] = None) -> None:
+        self._update_main_data(var=var)
         self._update_secondary_data(var=var)

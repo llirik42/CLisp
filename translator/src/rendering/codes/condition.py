@@ -1,22 +1,17 @@
 from typing import Optional
 
 from .code import Code
+from src.symbols import Symbols
+from src.templates import Templates
 
 
 class ConditionCode(Code):
-    def __init__(self, **kwargs):
+    def __init__(self, symbols: Symbols, templates: Templates):
         super().__init__(
-            required_params=[
-                "var",
-                "cond_var",
-                "then_var",
-                "else_var",
-                "then_body",
-                "else_body",
-                "pre_body",
-                "post_body",
-            ],
-            **kwargs,
+            main_template=templates.IF,
+            secondary_template=templates.DECREASE_REF_COUNT,
+            main_data={"type": symbols.OBJECT_TYPE, "func": symbols.OBJECT_TO_BOOLEAN},
+            secondary_data={"func": symbols.DECREASE_REF_COUNT},
         )
 
     def update_data(
