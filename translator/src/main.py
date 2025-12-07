@@ -5,6 +5,7 @@ from src.ast_visiting import ASTVisitor
 from src.postprocessing import postprocess, PostprocessingContext
 from src.rendering import CodeCreator
 from src.symbols import Symbols
+from src.templates import Templates
 
 
 def write_generated_code(code_lines: list[str], output_file: str) -> None:
@@ -33,17 +34,19 @@ def main():
         "-f", "--input_file", action="store", help="Read Lisp-Code from the file"
     )
     parser.add_argument("-o", "--output-file", default="output.c")
-    parser.add_argument("-p", "--procedure-table", default="symbols.json")
+    parser.add_argument("-s", "--symbols-table", default="symbols.json")
     parser.add_argument("-t", "--templates", default="code_templates")
     args = parser.parse_args()
 
     ast = read_ast_stdin() if args.input_stdin else read_ast_file(args.input_file)
 
-    standard_elements = Symbols(args.procedure_table)
-    code_creator = CodeCreator(standard_elements, args.templates)
+    symbols = Symbols(args.symbols_table)
+    templates = Templates(args.templates)
+
+    code_creator = CodeCreator(symbols, templates)
 
     visitor = ASTVisitor(
-        symbols=standard_elements,
+        symbols=symbols,
         code_creator=code_creator,
     )
     code_text = visitor.visit(ast)

@@ -1,8 +1,7 @@
-import os
-from pathlib import Path
+from jinja2 import Template
 
-from jinja2 import Environment, FileSystemLoader, Template
-
+from src.symbols import Symbols
+from src.templates import Templates
 from .codes import (
     EmptyCode,
     MakePrimitiveCode,
@@ -22,30 +21,20 @@ from .codes import (
     LoopCode,
     GetBooleanValueCode, MoveEnvironmentCode,
 )
-from src.symbols import Symbols
 
 
 class CodeCreator:
-    def __init__(self, symbols: Symbols, templates_folder_path: str):
-        """
-        Class represents a creator for objects of Code.
-
-        :param symbols: symbols that are used for code generating.
-        :param templates_folder_path: path to the directory with templates for code.
-        :raises FileNotFoundError: the directory not found.
-        """
-
+    def __init__(self, symbols: Symbols, templates: Templates):
         self.__symbols = symbols
-
-        self.__load_templates(templates_folder_path)
+        self.__templates = templates
 
     def empty(self) -> EmptyCode:
         return EmptyCode()
 
     def make_unspecified(self) -> HavingVarCode:
         return HavingVarCode(
-            main_template=self.__get_template("make_primitive"),
-            secondary_template=self.__get_decrease_ref_count_template(),
+            main_template=self.__templates.MAKE_PRIMITIVE,
+            secondary_template=self.__templates.DECREASE_REF_COUNT,
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
                 "func": self.__symbols.CREATE_UNSPECIFIED,
@@ -69,7 +58,7 @@ class CodeCreator:
 
     def make_true(self) -> HavingVarCode:
         return HavingVarCode(
-            main_template=self.__get_template("make_primitive"),
+            main_template=self.__templates.MAKE_PRIMITIVE,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -82,7 +71,7 @@ class CodeCreator:
 
     def make_false(self) -> HavingVarCode:
         return HavingVarCode(
-            main_template=self.__get_template("make_primitive"),
+            main_template=self.__templates.MAKE_PRIMITIVE,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -101,7 +90,7 @@ class CodeCreator:
 
     def make_list_from_array(self) -> MakeListFromArrayCode:
         return MakeListFromArrayCode(
-            main_template=self.__get_template("make_list_from_array"),
+            main_template=self.__templates.MAKE_LIST_FROM_ARRAY,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -114,7 +103,7 @@ class CodeCreator:
 
     def if_(self) -> ConditionCode:
         return ConditionCode(
-            main_template=self.__get_template("if"),
+            main_template=self.__templates.IF,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={"type": self.__symbols.OBJECT_TYPE, "func": self.__symbols.OBJECT_TO_BOOLEAN},
             secondary_data={"func": self.__symbols.DECREASE_REF_COUNT},
@@ -122,20 +111,20 @@ class CodeCreator:
 
     def increase_ref_count(self) -> HavingVarCode:
         return HavingVarCode(
-            main_template=self.__get_template("increase_ref_count"),
+            main_template=self.__templates.INCREASE_REF_COUNT,
             main_data={"func": self.__symbols.INCREASE_REF_COUNT},
         )
 
     def decrease_ref_count(self) -> HavingVarCode:
         return HavingVarCode(
-            main_template=self.__get_template("decrease_ref_count"),
+            main_template=self.__templates.DECREASE_REF_COUNT,
             main_data={"func": self.__symbols.DECREASE_REF_COUNT},
         )
 
     def make_environment(self) -> MakeEnvironmentCode:
         return MakeEnvironmentCode(
-            main_template=self.__get_template("make_environment"),
-            secondary_template=self.__get_template("destroy_environment"),
+            main_template=self.__templates.MAKE_ENVIRONMENT,
+            secondary_template=self.__templates.DESTROY_ENVIRONMENT,
             main_data={
                 "type": self.__symbols.ENVIRONMENT_TYPE,
                 "func": self.__symbols.CREATE_ENVIRONMENT,
@@ -145,8 +134,8 @@ class CodeCreator:
 
     def get_global_environment(self) -> HavingVarCode:
         return HavingVarCode(
-            main_template=self.__get_template("get_global_environment"),
-            secondary_template=self.__get_template("destroy_environment"),
+            main_template=self.__templates.GET_GLOBAL_ENVIRONMENT,
+            secondary_template=self.__templates.DESTROY_ENVIRONMENT,
             main_data={
                 "type": self.__symbols.ENVIRONMENT_TYPE,
                 "func": self.__symbols.GET_GLOBAL_ENVIRONMENT,
@@ -156,7 +145,7 @@ class CodeCreator:
 
     def get_variable_value(self) -> GetVariableValueCode:
         return GetVariableValueCode(
-            main_template=self.__get_template("get_variable_value"),
+            main_template=self.__templates.GET_VARIABLE_VALUE,
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
                 "func": self.__symbols.GET_VARIABLE_VALUE,
@@ -165,7 +154,7 @@ class CodeCreator:
 
     def set_variable_value(self) -> SetVariableValueCode:
         return SetVariableValueCode(
-            main_template=self.__get_template("set_variable_value"),
+            main_template=self.__templates.SET_VARIABLE_VALUE,
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
                 "func": self.__symbols.SET_VARIABLE_VALUE,
@@ -174,7 +163,7 @@ class CodeCreator:
 
     def update_variable_value(self) -> UpdateVariableValueCode:
         return UpdateVariableValueCode(
-            main_template=self.__get_template("update_variable_value"),
+            main_template=self.__templates.UPDATE_VARIABLE_VALUE,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -193,7 +182,7 @@ class CodeCreator:
 
     def evaluation(self) -> EvaluationCode:
         return EvaluationCode(
-            main_template=self.__get_template("evaluation"),
+            main_template=self.__templates.EVALUATION,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -206,7 +195,7 @@ class CodeCreator:
 
     def native_call(self) -> NativeCallCode:
         return NativeCallCode(
-            main_template=self.__get_template("native_call"),
+            main_template=self.__templates.NATIVE_CALL,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -226,7 +215,7 @@ class CodeCreator:
 
     def loop(self) -> LoopCode:
         return LoopCode(
-            main_template=self.__get_template("loop"),
+            main_template=self.__templates.LOOP,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -238,24 +227,24 @@ class CodeCreator:
 
     def get_boolean_value(self) -> GetBooleanValueCode:
         return GetBooleanValueCode(
-            main_template=self.__get_template("get_boolean_value"),
+            main_template=self.__templates.GET_BOOLEAN_VALUE,
             main_data={"type": self.__symbols.BOOLEAN_TYPE, "func": self.__symbols.OBJECT_TO_BOOLEAN},
         )
 
     def move_environment(self) -> MoveEnvironmentCode:
         return MoveEnvironmentCode(
-            main_template=self.__get_template("move_environment"),
+            main_template=self.__templates.MOVE_ENVIRONMENT,
             main_data={"func": self.__symbols.MOVE_ENVIRONMENT}
         )
 
     def program(self) -> ProgramCode:
         return ProgramCode(
-            main_template=self.__get_template("program"),
+            main_template=self.__templates.PROGRAM,
         )
 
     def __lambda_call(self, main_func: str) -> LambdaCallCode:
         return LambdaCallCode(
-            main_template=self.__get_template("lambda_call"),
+            main_template=self.__templates.LAMBDA_CALL,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -269,8 +258,8 @@ class CodeCreator:
 
     def __make_primitive(self, main_func: str) -> MakePrimitiveCode:
         return MakePrimitiveCode(
-            main_template=self.__get_template("make_primitive"),
-            secondary_template=self.__get_decrease_ref_count_template(),
+            main_template=self.__templates.MAKE_PRIMITIVE,
+            secondary_template=self.__templates.DECREASE_REF_COUNT,
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
                 "func": main_func,
@@ -282,7 +271,7 @@ class CodeCreator:
 
     def __function_definition(self, params: str) -> FunctionDefinitionCode:
         return FunctionDefinitionCode(
-            main_template=self.__get_template("function_definition"),
+            main_template=self.__templates.FUNCTION_DEFINITION,
             main_data={
                 "ret_type": self.__symbols.OBJECT_TYPE,
                 "params": params,
@@ -291,7 +280,7 @@ class CodeCreator:
 
     def __make_callable(self, creation_func: str) -> MakeCallableCode:
         return MakeCallableCode(
-            main_template=self.__get_template("make_callable"),
+            main_template=self.__templates.MAKE_CALLABLE,
             secondary_template=self.__get_decrease_ref_count_template(),
             main_data={
                 "type": self.__symbols.OBJECT_TYPE,
@@ -301,7 +290,7 @@ class CodeCreator:
         )
 
     def __get_decrease_ref_count_template(self) -> Template:
-        return self.__get_template("decrease_ref_count")
+        return self.__templates.DECREASE_REF_COUNT
 
     def __get_template(self, name: str) -> Template:
         """
@@ -312,17 +301,3 @@ class CodeCreator:
 
         return self.__templates[name]
 
-    def __load_templates(self, templates_folder_path: str) -> None:
-        """
-        Loads all templates from the given folder.
-
-        :param templates_folder_path: path to the directory with templates for code.
-        :raises FileNotFoundError: the directory not found.
-        """
-
-        env = Environment(loader=FileSystemLoader(templates_folder_path))
-
-        self.__templates = {
-            Path(name).stem: env.get_template(name)
-            for name in os.listdir(templates_folder_path)
-        }
