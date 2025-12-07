@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "native_calls.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -5,7 +6,6 @@
 #include <ffi.h>
 #include <setjmp.h>
 #include <signal.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "memory.h"
