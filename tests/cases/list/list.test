@@ -1,0 +1,51 @@
+******************[TESTING CODE]******************
+(display (list))
+(display (list 1 2 3 4 5 6))
+
+(display (list? (list)))
+(display (list? (cons 1 (list))))
+(display (list? (cons (list) 1)))
+(display (list? (cons (list) (list))))
+(display (list? (cons 1 2)))
+(display (list? 1))
+
+(display (cons 1 (list 1 2 3 4)))
+(display (cons (list 1) (list 2 3)))
+
+(display (length (list)))
+(display (length (list 1 2 3 4)))
+(display (length (cons 1 (list 1 2 3 4))))
+(display (length (cons (list 1) (list 2 3))))
+
+(display (let ((l (list 1 2 3 4))) l))
+(display (let ((l (list 1 2 3 4))) (set-car! l 0) l))
+(display (let ((l (list 1 2 3 4))) (set-cdr! l 0) (list? l)))
+
+(define prepend-zero (lambda (l) (cons 0 l)))
+(display (prepend-zero (list 1 2 3)))
+
+(display (list-ref (list 1 2 3) 0))
+(display (list-ref (list 1 2 3) 1))
+(display (list-ref (list 1 2 3) 2))
+******************[EXPECTED OUT]******************
+()
+(1 2 3 4 5 6)
+true
+true
+false
+true
+false
+false
+(1 1 2 3 4)
+((1) 2 3)
+0
+4
+5
+3
+(1 2 3 4)
+(0 2 3 4)
+false
+(0 1 2 3)
+1
+2
+3

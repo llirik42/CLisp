@@ -12,6 +12,8 @@
 #include "memory.h"
 #include "utils.h"
 #include "objects/lambda.h"
+#include "objects/list.h"
+#include "objects/pair.h"
 
 #define BASIC_CAPACITY 4
 #define CAPACITY_MULTIPLIER 1.5
@@ -33,6 +35,16 @@ static const NamedFunc reserved[] = {
     {"<=", cl_less_or_equal},
     {"=", cl_equal},
     {"not", cl_not},
+    {"list", cl_make_list},
+    {"car", cl_get_pair_left},
+    {"cdr", cl_get_pair_right},
+    {"length", cl_list_length},
+    {"list-ref", cl_list_at},
+    {"set-car!", cl_set_pair_left},
+    {"set-cdr!", cl_set_pair_right},
+    {"list?", cl_is_list},
+    {"cons", cl_make_pair},
+    {"pair?", cl_is_pair},
 };
 
 #define RESERVED_COUNT sizeof(reserved) / sizeof(NamedFunc)

@@ -10,9 +10,11 @@ enum CL_ObjectType {
     EVALUABLE,
     STRING,
     CHAR,
-    LIST,
+    VECTOR,
     LAMBDA,
     UNSPECIFIED,
+    PAIR,
+    EMPTY_LIST,
 };
 
 char* get_obj_type_name(enum CL_ObjectType type);
