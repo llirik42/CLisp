@@ -3,8 +3,10 @@
 #include <math.h>
 #include <string.h>
 
-#include "objects/primitive.h"
 #include "utils.h"
+
+#include "lib/objects/primitive.h"
+#include "lib/exit/abort.h"
 
 #define DOUBLE_EPSILON 1e-9
 

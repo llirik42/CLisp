@@ -1,9 +1,8 @@
 #include "logic.h"
 
-#include <stdio.h>
-
-#include "objects/primitive.h"
 #include "utils.h"
+
+#include "lib/objects/primitive.h"
 
 CL_Object* cl_not(CL_FUNC_PARAMS) {
     CL_CHECK_FUNC_ARGS_COUNT(count, 1, EQUAL);

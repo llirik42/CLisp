@@ -1,6 +1,6 @@
 #include "vector.h"
 
-#include "lib/memory.h"
+#include "lib/memory/memory.h"
 
 #define UNDEFINED_SIZE 0
 

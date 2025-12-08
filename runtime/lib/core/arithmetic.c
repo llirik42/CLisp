@@ -2,9 +2,11 @@
 
 #include <stddef.h>
 
-#include "objects/primitive.h"
 #include "utils.h"
-#include "objects/primitive_types.h"
+
+#include "lib/objects/primitive.h"
+#include "lib/exit/abort.h"
+#include "lib/objects/primitive_types.h"
 
 static void set_int_value(CL_Object* obj, int new_value) {
     CL_IntObject* int_object = (CL_IntObject*)obj;
@@ -25,7 +27,7 @@ CL_Object* cl_add(CL_FUNC_PARAMS) {
         CL_Object* operand = args[0];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
         if (operand == args[0]) {
-            cl_increase_ref_count(operand);
+            cl_inc_refs_cnt(operand);
         }
         return operand;
     }
@@ -41,7 +43,7 @@ CL_Object* cl_add(CL_FUNC_PARAMS) {
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = cl_get_int_value(result);
-            cl_decrease_ref_count(result);
+            cl_dec_refs_cnt(result);
             result = cl_make_double(prev_value);
             result_type = cl_get_obj_type(result);
         }
@@ -69,7 +71,7 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
         CL_Object* operand = args[0];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
         if (operand == args[0]) {
-            cl_increase_ref_count(operand);
+            cl_inc_refs_cnt(operand);
         }
         return operand;
     }
@@ -84,13 +86,13 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
         enum CL_ObjectType result_type = cl_get_obj_type(result);
 
         if (cl_unwrap_numeric_to_double(operand) == 0) {
-            cl_decrease_ref_count(result);
+            cl_dec_refs_cnt(result);
             return cl_make_int(0);
         }
 
         if (operand_type == DOUBLE && result_type == INTEGER) {
             double prev_value = cl_get_int_value(result);
-            cl_decrease_ref_count(result);
+            cl_dec_refs_cnt(result);
             result = cl_make_double(prev_value);
             result_type = cl_get_obj_type(result);
         }
@@ -127,7 +129,7 @@ CL_Object* cl_div(CL_FUNC_PARAMS) {
             double double_value = cl_get_double_value(operand);
             if (double_value == 1 || double_value == -1) {
                 if (operand == args[0]) {
-                    cl_increase_ref_count(operand);
+                    cl_inc_refs_cnt(operand);
                 }
                 return operand;
             }
@@ -137,7 +139,7 @@ CL_Object* cl_div(CL_FUNC_PARAMS) {
             double int_value = cl_get_int_value(operand);
             if (int_value == 1 || int_value == -1) {
                 if (operand == args[0]) {
-                    cl_increase_ref_count(operand);
+                    cl_inc_refs_cnt(operand);
                 }
                 return operand;
             }
@@ -186,7 +188,7 @@ CL_Object* cl_sub(CL_FUNC_PARAMS) {
             set_double_value(operand, -1 * cl_get_double_value(operand));
         }
         if (operand == args[0]) {
-            cl_increase_ref_count(operand);
+            cl_inc_refs_cnt(operand);
         }
         return operand;
     }

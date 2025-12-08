@@ -1,7 +1,7 @@
 #pragma once
-#include "lib/native_calls.h"
-#include "lib/environment.h"
-#include "lib/core.h"
+#include "lib/core/native_calls.h"
+#include "lib/core/environment.h"
+#include "lib/core/core.h"
 
 typedef CL_Object*(*cl_func_with_env)(CL_Environment* env, CL_FUNC_PARAMS);
 typedef CL_Object*(*cl_func_native)(CL_NativeData* data, CL_FUNC_PARAMS);

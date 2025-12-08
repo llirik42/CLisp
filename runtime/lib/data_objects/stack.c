@@ -1,7 +1,7 @@
 #include "stack.h"
 
-#include "memory.h"
-#include "utils.h"
+#include "lib/exit/abort.h"
+#include "lib/memory/memory.h"
 
 #define DEFAULT_STACK_SIZE 8
 

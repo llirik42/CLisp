@@ -1,6 +1,6 @@
 #pragma once
 #include "core.h"
-#include "data_objects/dynamic_array.h"
+#include "lib/data_objects/dynamic_array.h"
 
 typedef struct {
     const char* key;

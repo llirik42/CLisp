@@ -1,14 +1,15 @@
 #include <assert.h>
+
 #include "core.h"
-#include "memory.h"
 #include "utils.h"
 
-#include "objects/primitive.h"
-#include "objects/evaluable.h"
-#include "objects/lambda.h"
-#include "objects/list.h"
-#include "objects/pair.h"
-#include "objects/vector.h"
+#include "lib/objects/primitive.h"
+#include "lib/objects/evaluable.h"
+#include "lib/objects/lambda.h"
+#include "lib/objects/list.h"
+#include "lib/objects/pair.h"
+#include "lib/objects/vector.h"
+#include "lib/memory/memory.h"
 
 CL_Object* cl_make_unspecified() {
     CL_Object* obj = cl_allocate_memory(sizeof(CL_Object));
@@ -21,7 +22,7 @@ void cl_init_obj(CL_Object* obj, enum CL_ObjectType type) {
     obj->ref_count = 1;
 }
 
-void cl_increase_ref_count(CL_Object* obj) {
+void cl_inc_refs_cnt(CL_Object* obj) {
     obj->ref_count++;
 }
 
@@ -29,7 +30,7 @@ static void cl_destroy_unspecified(CL_Object* obj) {
     cl_free_memory(obj);
 }
 
-void cl_decrease_ref_count(CL_Object* obj) {
+void cl_dec_refs_cnt(CL_Object* obj) {
     if (!obj || !obj->ref_count) {
         return;
     }
