@@ -15,7 +15,7 @@ CL_Object* cl_make_list(CL_FUNC_PARAMS) {
 
     CL_PairObject* result = NULL;
     CL_PairObject* curr_pair = NULL;
-    for (unsigned int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         CL_PairObject* new_pair = (CL_PairObject*)cl_make_pair_internal(args[i], (CL_Object*)empty_list_object);
         if (!result) {
             result = new_pair;
@@ -96,12 +96,12 @@ CL_Object* cl_list_at(CL_FUNC_PARAMS) {
     return cl_get_pair_left_internal(curr_pair);
 }
 
-unsigned int cl_list_length_internal(CL_Object* obj) {
+size_t cl_list_length_internal(CL_Object* obj) {
     if (cl_get_obj_type(obj) == EMPTY_LIST) {
         return 0;
     }
 
-    int length = 0;
+    size_t length = 0;
     CL_Object* curr_pair = obj;
     while (cl_get_obj_type(curr_pair) != EMPTY_LIST) {
         if (cl_get_obj_type(curr_pair) != PAIR) {

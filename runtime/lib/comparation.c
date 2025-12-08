@@ -8,12 +8,12 @@
 
 #define DOUBLE_EPSILON 1e-9
 
-typedef unsigned int (*comparison_fn)(double, double);
+typedef bool (*comparison_fn)(double, double);
 
-static unsigned int greater_than(double a, double b) { return a > b; }
-static unsigned int greater_or_equal_than(double a, double b) { return a >= b; }
-static unsigned int less_than(double a, double b) { return a < b; }
-static unsigned int less_or_equal_than(double a, double b) { return a <= b; }
+static bool greater_than(double a, double b) { return a > b; }
+static bool greater_or_equal_than(double a, double b) { return a >= b; }
+static bool less_than(double a, double b) { return a < b; }
+static bool less_or_equal_than(double a, double b) { return a <= b; }
 
 static CL_Object* numeric_comparison(CL_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
     cl_check_func_args_count(func_name, count, 2, EQUAL);

@@ -32,7 +32,7 @@ CL_Object* cl_add(CL_FUNC_PARAMS) {
 
     CL_Object* result = cl_make_int(0);
 
-    for (unsigned int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         CL_Object* operand = args[i];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 
@@ -76,7 +76,7 @@ CL_Object* cl_mul(CL_FUNC_PARAMS) {
 
     CL_Object* result = cl_make_int(1);
 
-    for (unsigned int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         CL_Object* operand = args[i];
         CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(operand));
 

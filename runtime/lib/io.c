@@ -86,7 +86,7 @@ static void display_one_object(CL_Object* obj) {
 CL_Object* cl_display(CL_FUNC_PARAMS) {
     CL_CHECK_FUNC_ARGS_COUNT(count, 0, GREATER);
 
-    for (unsigned int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         display_one_object(args[i]);
         if (i != count - 1) {
             putchar(' ');

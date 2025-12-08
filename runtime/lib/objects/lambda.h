@@ -50,6 +50,6 @@ CL_Object* cl_make_lambda_native(cl_func_native func, CL_NativeData* data);
 
 void cl_destroy_lambda(CL_Object* object);
 
-CL_Object* cl_lambda_call(CL_Object* obj, unsigned int count, ...);
+CL_Object* cl_lambda_call(CL_Object* obj, size_t count, ...);
 
-CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...);
+CL_Object* cl_lambda_call_list(CL_Object* obj, size_t count, ...);

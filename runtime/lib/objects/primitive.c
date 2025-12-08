@@ -97,7 +97,7 @@ char* cl_get_string_value(CL_Object* obj) {
     return string_object->value;
 }
 
-unsigned int cl_get_string_length(CL_Object* obj) {
+size_t cl_get_string_length(CL_Object* obj) {
     CL_StringObject* string_object = (CL_StringObject*)obj;
     return string_object->length;
 }

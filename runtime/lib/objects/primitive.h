@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 #include "lib/core.h"
 
 CL_Object* cl_make_int(int value);
@@ -28,7 +30,7 @@ CL_Object* cl_make_string(char* value);
 
 char* cl_get_string_value(CL_Object* obj);
 
-unsigned int cl_get_string_length(CL_Object* obj);
+size_t cl_get_string_length(CL_Object* obj);
 
 void cl_destroy_string(CL_Object* obj);
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include <stddef.h>
 
 enum CL_ObjectType {
     INTEGER,
@@ -22,7 +23,7 @@ typedef struct {
     unsigned short ref_count;
 } CL_Object;
 
-#define CL_FUNC_PARAMS unsigned int count, CL_Object** args
+#define CL_FUNC_PARAMS size_t count, CL_Object** args
 #define CL_FUNC_PARAMS_WITHOUT_TYPES count, args
 
 typedef CL_Object*(*cl_func)(CL_FUNC_PARAMS);
