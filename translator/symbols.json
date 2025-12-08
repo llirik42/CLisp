@@ -31,7 +31,12 @@
       "procedure?": "cl_is_procedure",
       "promise?": "cl_is_evaluable",
       "newline": "cl_display_newline",
-      "readline": "cl_readline"
+      "readline": "cl_readline",
+      "to-integer": "cl_to_integer",
+      "to-double": "cl_to_double",
+      "to-char": "cl_to_char",
+      "to-string": "cl_to_string",
+      "to-boolean": "cl_to_boolean"
     },
     "native_types": {
       "integer": "CL_NATIVE_INTEGER",

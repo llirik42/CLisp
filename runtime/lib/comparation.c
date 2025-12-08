@@ -1,9 +1,12 @@
 #include "comparation.h"
 
+#include <math.h>
 #include <string.h>
 
 #include "objects/primitive.h"
 #include "utils.h"
+
+#define DOUBLE_EPSILON 1e-9
 
 typedef unsigned int (*comparison_fn)(double, double);
 
@@ -72,7 +75,7 @@ CL_Object *cl_equal(CL_FUNC_PARAMS) {
             result = cl_get_boolean_value(left_term) == cl_get_boolean_value(right_term);
             break;
         case DOUBLE:
-            result = cl_get_double_value(left_term) == cl_get_double_value(right_term);
+            result = fabs(cl_get_double_value(left_term) - cl_get_double_value(right_term)) < DOUBLE_EPSILON;
             break;
         case CHAR:
             result = cl_get_char_value(left_term) == cl_get_char_value(right_term);
