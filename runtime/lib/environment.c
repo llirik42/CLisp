@@ -52,7 +52,9 @@ static const NamedFunc reserved[] = {
     {"string?", cl_is_string},
     {"boolean?", cl_is_boolean},
     {"procedure?", cl_is_procedure},
-    {"promise?", cl_is_evaluable}
+    {"promise?", cl_is_evaluable},
+    {"newline", cl_display_newline},
+    {"readline", cl_readline}
 };
 
 #define RESERVED_COUNT sizeof(reserved) / sizeof(NamedFunc)
