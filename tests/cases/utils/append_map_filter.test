@@ -1,0 +1,71 @@
+******************[TESTING CODE]******************
+(display "append")
+(define (append coll el)
+  (define (_append _coll _res)
+    (if (> (length _coll) 0)
+      (cons (car _coll) (_append (cdr _coll) el _res))
+      (list el)))
+  (_append coll (list)))
+
+(display (append (list) 10))
+(display (append (list 1) 10))
+(display (append (list 1 2) 10))
+(display (append (list 1 2 3) 10))
+(display (append (list 1 2 3 4 5 6 7 8 9 10) 10))
+
+(display "map")
+
+(define (inc x) (+ x 1))
+
+(define (map f coll)
+  (letrec ((_map (lambda (_coll _res)
+                   (if (> (length _coll) 0)
+                     (_map (cdr _coll) (append _res (f (car _coll))))
+                     _res))))
+    (_map coll (list))))
+
+(display (map inc (list)))
+(display (map inc (list 1)))
+(display (map inc (list 1 2)))
+(display (map inc (list 1 2 3 4 5)))
+
+(display "filter")
+
+(define (filter pred coll)
+  (letrec ((_filter (lambda (_coll _res)
+                   (if (> (length _coll) 0)
+                     (let ((el (car _coll)))
+                       (if (pred el)
+                         (_filter (cdr _coll) (append _res el))
+                         (_filter (cdr _coll) _res)))
+                     _res))))
+    (_filter coll (list))))
+
+(display (filter integer? (list)))
+(display (filter integer? (list 1)))
+(display (filter integer? (list "1")))
+(display (filter integer? (list 1 2 3)))
+(display (filter integer? (list "1" "2" "3")))
+(display (filter integer? (list "1" 2 "3" 4 "5" 6 "7" 8 "9" 10)))
+(display (filter integer? (list 1 2 "3" 4 "5" "6" "7" 8 9 "10")))
+
+******************[EXPECTED OUT]******************
+append
+(10)
+(1 10)
+(1 2 10)
+(1 2 3 10)
+(1 2 3 4 5 6 7 8 9 10 10)
+map
+()
+(2)
+(2 3)
+(2 3 4 5 6)
+filter
+()
+(1)
+()
+(1 2 3)
+()
+(2 4 6 8 10)
+(1 2 4 8 9)
