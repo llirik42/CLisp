@@ -50,7 +50,7 @@ void cl_check_func_arg_type(const char* func_name, enum CL_ObjectType type, enum
 }
 
 void cl_check_func_arg_numeric_type(const char* func_name, enum CL_ObjectType type) {
-    if (!cl_is_numeric(type)) {
+    if (!cl_is_numeric_internal(type)) {
         char error_str[CL_ERROR_BUF_SIZE];
         snprintf(error_str, sizeof(error_str), "Wrong argument type in %s! Must be numeric. Got %s.\n",
             func_name, get_obj_type_name(type));

@@ -1,0 +1,20 @@
+******************[TESTING CODE]******************
+(display (integer? 1))
+(display (integer? 1.1))
+(display (integer? #t))
+(display (integer? #\A))
+(display (integer? "STRING"))
+(display (integer? (cons 1 1)))
+(display (integer? (list 1 2 3)))
+(display (integer? (lambda () 1)))
+(display (integer? (delay 1)))
+******************[EXPECTED OUT]******************
+true
+false
+false
+false
+false
+false
+false
+false
+false

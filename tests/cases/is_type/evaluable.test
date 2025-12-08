@@ -1,0 +1,20 @@
+******************[TESTING CODE]******************
+(display (promise? 1))
+(display (promise? 1.1))
+(display (promise? #t))
+(display (promise? #\A))
+(display (promise? "STRING"))
+(display (promise? (cons 1 1)))
+(display (promise? (list 1 2 3)))
+(display (promise? (lambda () 1)))
+(display (promise? (delay 1)))
+******************[EXPECTED OUT]******************
+false
+false
+false
+false
+false
+false
+false
+false
+true
