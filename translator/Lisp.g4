@@ -3,8 +3,12 @@ grammar Lisp;
 program : programElement* EOF ;
 
 programElement
-    : definition
+    : platformDefinition
+    | definition
     | expression ;
+
+platformDefinition : LBRACKET DEFINE_PLATFORM LBRACKET variable procedureDefinitionFormals RBRACKET platformBodyLines+ RBRACKET ;
+platformBodyLines : PLATFORM_BODY_LINE ;
 
 definition : variableDefinition | procedureDefinition;
 variableDefinition : LBRACKET DEFINE variable expression RBRACKET ;
@@ -103,6 +107,7 @@ doCommand : expression ;
 
 begin : LBRACKET BEGIN expression+ RBRACKET ;
 
+DEFINE_PLATFORM : 'define-platform' ;
 DEFINE : 'define' ;
 TRUE: '#t' ;
 FALSE: '#f' ;
@@ -126,6 +131,8 @@ FLOAT : SIGN?  ((DIGIT* '.' DIGIT+) | (DIGIT+ '.' DIGIT*)) ;
 IDENTIFIER : (LETTER|EXTENDED_CHAR) (LETTER|EXTENDED_CHAR|DIGIT)* ;
 CHARACTER : '#\\' (~'\\' | ESCAPED_QUOTE | ESCAPED_BACKSLASH | ESCAPE_SEQUENCE) ;
 STRING : '"' (~('\\' | '"') | ESCAPED_DOUBLEQUOTE | ESCAPED_BACKSLASH | ESCAPE_SEQUENCE)* '"' ;
+PLATFORM_BODY_LINE : '`' (~'`')* '`' ;
+
 WS : [ \t\r\n,]+ -> skip ;
 COMMENT : ';' ~[\r\n]* -> skip ;
 LBRACKET : '(' ;
