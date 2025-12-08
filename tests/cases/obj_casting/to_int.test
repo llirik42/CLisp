@@ -1,0 +1,18 @@
+******************[TESTING CODE]******************
+(display (to-integer 20))
+(display (to-integer 18.2))
+(display (to-integer #t))
+(display (to-integer #f))
+(display (to-integer #\A))
+(display (to-integer "1231"))
+(display (to-integer "-1231"))
+(display (to-integer "-1231      "))
+******************[EXPECTED OUT]******************
+20
+18
+1
+0
+65
+1231
+-1231
+-1231

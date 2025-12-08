@@ -229,7 +229,7 @@ CL_Object* cl_to_double(CL_FUNC_PARAMS) {
                 }
             }
 
-            return cl_make_int((int)val);
+            return cl_make_double(val);
         }
         default:
             cl_abort("Cast to double: unexpected type!\n");
@@ -262,7 +262,7 @@ CL_Object* cl_to_char(CL_FUNC_PARAMS) {
             return cl_make_char(cl_get_char_value(obj));
         case STRING: {
             char* str = cl_get_string_value(obj);
-            if (strlen(str) != 0) {
+            if (strlen(str) != 1) {
                 cl_abort("Cast to char from string: length of string not equal 1!\n");
             }
             return cl_make_char(*str);
@@ -283,7 +283,9 @@ CL_Object* cl_to_string(CL_FUNC_PARAMS) {
             // INT_MIN = -2147483648 (11 symbols) + \0
             char* buffer = cl_allocate_memory(12 * sizeof(char));
             sprintf(buffer, "%d", val);
-            return cl_make_string(buffer);
+            CL_Object* str = cl_make_string(buffer);
+            cl_free_memory(buffer);
+            return str;
         }
         case DOUBLE: {
             double val = cl_get_double_value(obj);
@@ -291,7 +293,9 @@ CL_Object* cl_to_string(CL_FUNC_PARAMS) {
             char* buffer = cl_allocate_memory(350 * sizeof(char));
             sprintf(buffer, "%g", val);
             buffer = cl_reallocate_memory(buffer, strlen(buffer) + 1);
-            return cl_make_string(buffer);
+            CL_Object* str = cl_make_string(buffer);
+            cl_free_memory(buffer);
+            return str;
         }
         case BOOLEAN: {
             unsigned char val = cl_get_boolean_value(obj);

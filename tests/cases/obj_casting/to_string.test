@@ -1,0 +1,16 @@
+******************[TESTING CODE]******************
+(display (to-string 65))
+(display (to-string 65.2))
+(display (to-string -65.2))
+(display (to-string #t))
+(display (to-string #f))
+(display (to-string #\A))
+(display (to-string "X"))
+******************[EXPECTED OUT]******************
+65
+65.2
+-65.2
+true
+false
+A
+X

@@ -1,0 +1,22 @@
+******************[TESTING CODE]******************
+(display (to-double 20))
+(display (to-double 18.2))
+(display (to-double #t))
+(display (to-double #f))
+(display (to-double #\A))
+(display (to-double "1231.1"))
+(display (to-double "-1231.1"))
+(display (to-double "-1231.1    "))
+(display (to-double "200E-2"))
+(display (to-double "200E2"))
+******************[EXPECTED OUT]******************
+20
+18.2
+1
+0
+65
+1231.1
+-1231.1
+-1231.1
+2
+20000

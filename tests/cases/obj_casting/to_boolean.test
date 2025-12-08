@@ -1,0 +1,18 @@
+******************[TESTING CODE]******************
+(display (to-boolean 1))
+(display (to-boolean 0))
+(display (to-boolean #t))
+(display (to-boolean #f))
+(display (to-boolean #\t))
+(display (to-boolean #\f))
+(display (to-boolean "true"))
+(display (to-boolean "false"))
+******************[EXPECTED OUT]******************
+true
+false
+true
+false
+true
+false
+true
+false
