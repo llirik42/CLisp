@@ -1,0 +1,13 @@
+******************[TESTING CODE]******************
+(display (begin 1 2 3 4 5))
+
+(display (begin 
+	(display "STR1")
+	(display "STR2")
+	(display "STR3")))
+******************[EXPECTED OUT]******************
+5
+STR1
+STR2
+STR3
+unspecified
