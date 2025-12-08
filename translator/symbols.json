@@ -11,7 +11,17 @@
       "<": "cl_less",
       "<=": "cl_less_or_equal",
       "=": "cl_equal",
-      "not": "cl_not"
+      "not": "cl_not",
+      "list": "cl_make_list",
+      "car": "cl_get_pair_left",
+      "cdr": "cl_get_pair_right",
+      "length": "cl_list_length",
+      "list-ref": "cl_list_at",
+      "set-cdr!": "cl_set_pair_right",
+      "set-car!": "cl_set_pair_left",
+      "list?": "cl_is_list",
+      "cons": "cl_make_pair",
+      "pair?": "cl_is_pair"
     },
     "native_types": {
       "integer": "CL_NATIVE_INTEGER",
@@ -30,7 +40,7 @@
       "string": "cl_make_string",
       "float": "cl_make_double",
       "list": "cl_make_list",
-      "list_array": "cl_make_list_from_array",
+      "list_array": "cl_make_list",
       "unspecified": "cl_make_unspecified",
       "evaluable": "cl_make_evaluable",
       "lambda": "cl_make_lambda",

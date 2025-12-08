@@ -13,6 +13,8 @@ enum CL_ObjectType {
     VECTOR,
     LAMBDA,
     UNSPECIFIED,
+    PAIR,
+    EMPTY_LIST,
 };
 
 char* get_obj_type_name(enum CL_ObjectType type);

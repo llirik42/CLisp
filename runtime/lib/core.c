@@ -5,6 +5,8 @@
 #include "objects/primitive.h"
 #include "objects/evaluable.h"
 #include "objects/lambda.h"
+#include "objects/list.h"
+#include "objects/pair.h"
 #include "objects/vector.h"
 
 CL_Object* cl_make_unspecified() {
@@ -22,7 +24,7 @@ void cl_increase_ref_count(CL_Object* obj) {
     obj->ref_count++;
 }
 
-static void destroy_unspecified(CL_Object* obj) {
+static void cl_destroy_unspecified(CL_Object* obj) {
     cl_free_memory(obj);
 }
 
@@ -61,7 +63,14 @@ void cl_decrease_ref_count(CL_Object* obj) {
             cl_destroy_lambda(obj);
             break;
         case UNSPECIFIED:
-            destroy_unspecified(obj);
+            cl_destroy_unspecified(obj);
+            break;
+        case PAIR:
+            cl_destroy_pair(obj);
+            break;
+        case EMPTY_LIST:
+            cl_destroy_empty_list(obj);
+            break;
         default: ;
     }
 }
@@ -86,6 +95,10 @@ char* get_obj_type_name(enum CL_ObjectType type) {
             return "LAMBDA";
         case UNSPECIFIED:
             return "UNSPECIFIED";
+        case PAIR:
+            return "PAIR";
+        case EMPTY_LIST:
+            return "EMPTY_LIST";
     }
     return "UNKNOWN";
 }

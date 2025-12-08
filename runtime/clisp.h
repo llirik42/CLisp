@@ -11,3 +11,5 @@
 #include "lib/objects/vector.h"
 #include "lib/objects/lambda.h"
 #include "lib/native_calls.h"
+#include "lib/objects/pair.h"
+#include "lib/objects/list.h"

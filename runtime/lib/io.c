@@ -6,6 +6,8 @@
 #include "core.h"
 #include "utils.h"
 #include "lib/objects/vector.h"
+#include "objects/list.h"
+#include "objects/pair.h"
 
 static void display_one_object(CL_Object* obj) {
     CL_Object* to_display = obj;
@@ -42,6 +44,34 @@ static void display_one_object(CL_Object* obj) {
             break;
         case UNSPECIFIED:
             printf("unspecified");
+            break;
+        case PAIR: {
+            if (cl_is_list_internal(to_display)) {
+                putchar('(');
+                CL_Object* curr_pair = to_display;
+                while (TRUE) {
+                    display_one_object(cl_get_pair_left_internal(curr_pair));
+                    curr_pair = cl_get_pair_right_internal(curr_pair);
+                    if (cl_get_obj_type(curr_pair) != EMPTY_LIST) {
+                        putchar(' ');
+                    } else {
+                        break;
+                    }
+                }
+                putchar(')');
+            } else {
+                putchar('(');
+                display_one_object(cl_get_pair_left_internal(to_display));
+                putchar(' ');
+                putchar('.');
+                putchar(' ');
+                display_one_object(cl_get_pair_right_internal(to_display));
+                putchar(')');
+            }
+            break;
+        }
+        case EMPTY_LIST:
+            printf("%s","()");
             break;
         default:
             printf("Undisplayable type");

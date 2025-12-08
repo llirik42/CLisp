@@ -1,0 +1,24 @@
+******************[TESTING CODE]******************
+(display (cons 2 4))
+(display (cons 2 (list)))
+(display (pair? (list)))
+(display (pair? (cons 2 4)))
+(display (pair? 1))
+(display (pair? (cons 1 (list))))
+(display (let ((p (cons 1 2))) p ))
+(display (let ((p (cons 1 2))) (set-car! p 10) p))
+(display (let ((p (cons 1 2))) (set-cdr! p 10) p))
+(display (car (cons "L" "R")))
+(display (cdr (cons "L" "R")))
+******************[EXPECTED OUT]******************
+(2 . 4)
+(2)
+false
+true
+false
+true
+(1 . 2)
+(10 . 2)
+(1 . 10)
+L
+R
