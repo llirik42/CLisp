@@ -1,0 +1,22 @@
+******************[TESTING CODE]******************
+(define-platform (goto-func)
+  `int i = 0;`
+  `start:`
+  `    i++;`
+  `    CL_Object* i_obj = cl_make_int(i);`
+  `    CL_Object* display_args[] = {i_obj};`
+  `    cl_decrease_ref_count(cl_display(1, display_args));`
+  `    cl_decrease_ref_count(i_obj);`
+  `    if (i < 5) {`
+  `        goto start;`
+  `    }`
+  `return cl_make_unspecified();`)
+
+(goto-func)
+
+******************[EXPECTED OUT]******************
+1
+2
+3
+4
+5

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from src.LispParser import LispParser
 from src.LispVisitor import LispVisitor
@@ -109,6 +109,33 @@ class ASTVisitor(LispVisitor):
         return program_code.render()
 
     @visit(ast_context)
+    def visitPlatformDefinition(self, ctx:LispParser.PlatformDefinitionContext) -> ExpressionVisitResult:
+        env = self.__environment_ctx.env
+
+        variable_name = ctx.variable().getText()
+        self.__check_variable_definition(variable_name)
+        env.add(variable_name)
+
+        body_lines = ctx.platformBodyLines()
+        body_text = ""
+        for line in body_lines:
+            line_text = line.getText()[1:-1]  # Remove back quote in the beginning and in the end
+            line_text = line_text.replace("$env", "env").replace("$args_count", "count").replace("$args", "args")
+            body_text += line_text + "\n"
+
+        procedure_var, procedure_code = self.__visit_procedure(
+            formals_text="",
+            body_text=body_text,
+            env_name=env.name
+        )
+
+        return self.__visit_variable_definition(
+            variable_name=variable_name,
+            expr_var=procedure_var,
+            expr_code=procedure_code,
+        )
+
+    @visit(ast_context)
     def visitVariableDefinition(
         self, ctx: LispParser.VariableDefinitionContext
     ) -> ExpressionVisitResult:
@@ -132,15 +159,18 @@ class ASTVisitor(LispVisitor):
         env = self.__environment_ctx.env
 
         variable_name = ctx.variable().getText()
-
         self.__check_variable_definition(variable_name)
         env.add(variable_name)
 
         with self.__environment_ctx:
             self.__environment_ctx.init(name=env_var, code=env.code)
             formals_text = self.visit(ctx.procedureDefinitionFormals())
-            procedure_var, procedure_code = self.__visit_lambda(
-                formals_text=formals_text, body=ctx.procedureBody()
+            body_expr_var, body_expr_text = self.visit(ctx.procedureBody())
+            procedure_var, procedure_code = self.__visit_procedure(
+                formals_text=formals_text,
+                body_text=body_expr_text,
+                env_name=env.name,
+                ret_var=body_expr_var,
             )
 
         return self.__visit_variable_definition(
@@ -263,9 +293,13 @@ class ASTVisitor(LispVisitor):
         with self.__environment_ctx:
             self.__environment_ctx.init(name=env_var, code=env.code)
             formals_text = self.visit(ctx.procedureFormals())
+            body_expr_var, body_expr_text = self.visit(ctx.procedureBody())
 
-            return self.__visit_lambda(
-                formals_text=formals_text, body=ctx.procedureBody()
+            return self.__visit_procedure(
+                formals_text=formals_text,
+                body_text=body_expr_text,
+                env_name=env.name,
+                ret_var=body_expr_var,
             )
 
     @visit(ast_context)
@@ -748,20 +782,17 @@ class ASTVisitor(LispVisitor):
         )
 
     def __add_lambda_declaration(
-        self,
-        formals_text: str,
-        body_expr: LispParser.ProcedureBodyContext,
+        self, formals_text: str, body_text: str, ret_var: Optional[str]
     ) -> DeclaredFunctionName:
         function_code = self.__code_creator.lambda_definition()
-        body_expr_var, body_expr_text = self.visit(body_expr)
         function_name = self.__variable_manager.create_lambda_function_name()
 
         function_body_text = formals_text + "\n" if formals_text else ""
-        function_body_text += body_expr_text
+        function_body_text += body_text
 
         function_code.update_data(
             func=function_name,
-            ret_var=body_expr_var,
+            ret_var=ret_var,
             body=function_body_text,
         )
 
@@ -927,20 +958,17 @@ class ASTVisitor(LispVisitor):
 
         return var, code
 
-    def __visit_lambda(
-        self, formals_text: str, body: LispParser.ProcedureBodyContext
+    def __visit_procedure(
+        self, formals_text: str, body_text: str, env_name: str, ret_var: Optional[str] = None,
     ) -> ExpressionVisitResult:
-        parent_env = self.__environment_ctx.env.parent
-
         function_name = self.__add_lambda_declaration(
-            formals_text=formals_text,
-            body_expr=body,
+            formals_text=formals_text, body_text=body_text, ret_var=ret_var
         )
 
         lambda_var = self.__variable_manager.create_object_name()
         lambda_creation_code = self.__code_creator.make_lambda()
         lambda_creation_code.update_data(
-            var=lambda_var, func=function_name, env=parent_env.name
+            var=lambda_var, func=function_name, env=env_name
         )
 
         return lambda_var, lambda_creation_code

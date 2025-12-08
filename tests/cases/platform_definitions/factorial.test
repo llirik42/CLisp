@@ -1,0 +1,16 @@
+******************[TESTING CODE]******************
+(define-platform (fact)
+  `int n = cl_get_int_value($args[0]);`
+  `int res = 1;`
+  `for (int i = 2; i <= n; i++) {`
+  `    res *= i;`
+  `}`
+  `return cl_make_int(res);`)
+
+(display (fact 1))
+(display (fact 2))
+(display (fact 10))
+******************[EXPECTED OUT]******************
+1
+2
+3628800

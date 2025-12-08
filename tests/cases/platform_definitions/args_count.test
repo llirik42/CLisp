@@ -1,0 +1,13 @@
+******************[TESTING CODE]******************
+(define-platform (func)
+  `return cl_make_int($args_count);`)
+
+(display (func))
+(display (func 1))
+(display (func 1 2))
+(display (func 1 2 3 4 5 6 7 8 9 10))
+******************[EXPECTED OUT]******************
+0
+1
+2
+10
