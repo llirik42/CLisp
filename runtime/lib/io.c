@@ -74,8 +74,12 @@ static void display_one_object(CL_Object* obj) {
         case EMPTY_LIST:
             printf("%s","()");
             break;
-        default:
-            printf("Undisplayable type");
+        case LAMBDA:
+            printf("Lambda(%p)", (void*)to_display);
+            break;
+        case EVALUABLE:
+            printf("Promise(%p)", (void*)to_display);
+            break;
     }
 }
 
