@@ -14,13 +14,13 @@ double cl_get_double_value(CL_Object* obj);
 
 void cl_destroy_double(CL_Object* obj);
 
-CL_Object* cl_make_boolean(unsigned char value);
+CL_Object* cl_make_boolean(bool value);
 
 CL_Object* cl_make_true();
 
 CL_Object* cl_make_false();
 
-unsigned char cl_get_boolean_value(CL_Object* obj);
+bool cl_get_boolean_value(CL_Object* obj);
 
 void cl_destroy_boolean(CL_Object* obj);
 

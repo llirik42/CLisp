@@ -50,7 +50,7 @@ static void display_one_object(CL_Object* obj) {
             if (cl_is_list_internal(to_display)) {
                 putchar('(');
                 CL_Object* curr_pair = to_display;
-                while (TRUE) {
+                while (true) {
                     display_one_object(cl_get_pair_left_internal(curr_pair));
                     curr_pair = cl_get_pair_right_internal(curr_pair);
                     if (cl_get_obj_type(curr_pair) != EMPTY_LIST) {

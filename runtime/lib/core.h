@@ -1,7 +1,5 @@
 #pragma once
-
-#define TRUE 1
-#define FALSE 0
+#include <stdbool.h>
 
 enum CL_ObjectType {
     INTEGER,
@@ -39,9 +37,9 @@ void cl_decrease_ref_count(CL_Object* obj);
 
 CL_Object* cl_make_unspecified();
 
-unsigned char cl_is_numeric_internal(enum CL_ObjectType type);
+bool cl_is_numeric_internal(enum CL_ObjectType type);
 
-unsigned char cl_obj_to_boolean(CL_Object* obj);
+bool cl_obj_to_boolean(CL_Object* obj);
 
 CL_Object* cl_is_numeric(CL_FUNC_PARAMS);
 

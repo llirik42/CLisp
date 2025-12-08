@@ -51,9 +51,9 @@ void cl_destroy_double(CL_Object* obj) {
     destroy_simple_object(obj);
 }
 
-CL_Object* cl_make_boolean(unsigned char value) {
-    if (value != 0 && value != 1) {
-        cl_abort("Boolean value must be 0 or 1!\n");
+CL_Object* cl_make_boolean(bool value) {
+    if (value != false && value != true) {
+        cl_abort("Boolean value must be false or true!\n");
     }
 
     CL_BooleanObject* boolean_object = cl_allocate_memory(sizeof(CL_BooleanObject));
@@ -64,14 +64,14 @@ CL_Object* cl_make_boolean(unsigned char value) {
 }
 
 CL_Object* cl_make_true() {
-    return cl_make_boolean(1);
+    return cl_make_boolean(true);
 }
 
 CL_Object* cl_make_false() {
-    return cl_make_boolean(0);
+    return cl_make_boolean(false);
 }
 
-unsigned char cl_get_boolean_value(CL_Object* obj) {
+bool cl_get_boolean_value(CL_Object* obj) {
     CL_BooleanObject* boolean_object = (CL_BooleanObject*)obj;
     return boolean_object->value;
 }
@@ -252,8 +252,8 @@ CL_Object* cl_to_char(CL_FUNC_PARAMS) {
             return cl_make_char((char)val);
         }
         case BOOLEAN: {
-            unsigned char val = cl_get_boolean_value(obj);
-            if (val == TRUE) {
+            bool val = cl_get_boolean_value(obj);
+            if (val == true) {
                 return cl_make_char('t');
             }
             return cl_make_char('f');
@@ -298,8 +298,8 @@ CL_Object* cl_to_string(CL_FUNC_PARAMS) {
             return str;
         }
         case BOOLEAN: {
-            unsigned char val = cl_get_boolean_value(obj);
-            if (val == TRUE) {
+            bool val = cl_get_boolean_value(obj);
+            if (val == true) {
                 return cl_make_string("true");
             }
             return cl_make_string("false");
@@ -326,9 +326,9 @@ CL_Object* cl_to_boolean(CL_FUNC_PARAMS) {
         case INTEGER: {
             int val = cl_get_int_value(obj);
             switch (val) {
-                case TRUE:
+                case true:
                     return cl_make_true();
-                case FALSE:
+                case false:
                     return cl_make_false();
                 default:
                     cl_abort("Cast to boolean from int: value not equal 0 or 1!\n");

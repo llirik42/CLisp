@@ -17,7 +17,7 @@ typedef struct {
 typedef struct {
     enum CL_ObjectType type;
     unsigned short ref_count;
-    unsigned char value;
+    bool value;
 } CL_BooleanObject;
 
 typedef struct {

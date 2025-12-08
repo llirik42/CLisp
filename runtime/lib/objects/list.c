@@ -35,23 +35,23 @@ CL_Object* cl_make_list(CL_FUNC_PARAMS) {
     return (CL_Object*)result;
 }
 
-unsigned char cl_is_list_internal(CL_Object* obj) {
+bool cl_is_list_internal(CL_Object* obj) {
     CL_Object* curr_obj = obj;
     while (curr_obj != NULL) {
         enum CL_ObjectType type = cl_get_obj_type(curr_obj);
 
         if (type == EMPTY_LIST) {
-            return TRUE;
+            return true;
         }
 
         if (type != PAIR) {
-            return FALSE;
+            return false;
         }
 
         curr_obj = cl_get_pair_right_internal(curr_obj);
     }
 
-    return FALSE;
+    return false;
 }
 
 CL_Object* cl_is_list(CL_FUNC_PARAMS) {
