@@ -24,11 +24,11 @@ Launch installing script:
 ## Usage
 
 ```bash
-./clisp.sh input_file
+python3 clisp.py input_file
 ```
 
 ## Example
 
 ```bash
-./clisp.sh example.scm
+python3 clisp.py example.scm
 ```
