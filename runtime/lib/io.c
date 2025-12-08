@@ -1,6 +1,7 @@
 #include "io.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "lib/objects/primitive.h"
 #include "core.h"
@@ -91,4 +92,35 @@ CL_Object* cl_display(CL_FUNC_PARAMS) {
     putchar('\n');
 
     return cl_make_unspecified();
+}
+
+CL_Object* cl_display_newline(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(count, 0, EQUAL);
+    if (args) {}
+    putchar('\n');
+    return cl_make_unspecified();
+}
+
+CL_Object* cl_readline(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(count, 0, EQUAL);
+    if (args) {}
+
+    char *line = NULL;
+    size_t len = 0;
+    CL_Object* obj = NULL;
+
+    if (getline(&line, &len, stdin) != -1) {
+        obj = cl_make_string(line);
+    } else {
+        cl_abort("Error during reading stdin or no EOF!\n");
+    }
+
+    // getline uses default malloc.
+    free(line);
+
+    if (obj == NULL) {
+        cl_abort("Readline: no data!\n");
+    }
+
+    return obj;
 }
