@@ -1,5 +1,5 @@
 ******************[TESTING CODE]******************
-(define-platform (fact n)
+(define-platform (fact)
   `int n = cl_get_int_value($args[0]);`
   `int res = 1;`
   `for (int i = 2; i <= n; i++) {`

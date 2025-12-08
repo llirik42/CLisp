@@ -7,7 +7,7 @@ programElement
     | definition
     | expression ;
 
-platformDefinition : LBRACKET DEFINE_PLATFORM LBRACKET variable procedureDefinitionFormals RBRACKET platformBodyLines+ RBRACKET ;
+platformDefinition : LBRACKET DEFINE_PLATFORM LBRACKET variable RBRACKET platformBodyLines+ RBRACKET ;
 platformBodyLines : PLATFORM_BODY_LINE ;
 
 definition : variableDefinition | procedureDefinition;
