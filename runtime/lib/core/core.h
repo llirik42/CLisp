@@ -32,9 +32,9 @@ enum CL_ObjectType cl_get_obj_type(CL_Object* obj);
 
 void cl_init_obj(CL_Object* obj, enum CL_ObjectType type);
 
-void cl_increase_ref_count(CL_Object* obj);
+void cl_inc_refs_cnt(CL_Object* obj);
 
-void cl_decrease_ref_count(CL_Object* obj);
+void cl_dec_refs_cnt(CL_Object* obj);
 
 CL_Object* cl_make_unspecified();
 

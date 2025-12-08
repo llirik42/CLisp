@@ -8,9 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "memory.h"
-#include "utils.h"
 #include "primitive_types.h"
+
+#include "lib/memory/memory.h"
+#include "lib/core/utils.h"
+#include "lib/exit/abort.h"
+#include "lib/exit/error.h"
 
 #define TOO_LOW_DOUBLE 1e-308
 static void destroy_simple_object(CL_Object* obj) {

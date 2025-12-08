@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "native_calls.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <dlfcn.h>
@@ -8,10 +9,10 @@
 #include <signal.h>
 #include <string.h>
 
-#include "memory.h"
-#include "utils.h"
-#include "objects/lambda.h"
-#include "objects/primitive.h"
+#include "lib/memory/memory.h"
+#include "lib/exit/abort.h"
+#include "lib/objects/lambda.h"
+#include "lib/objects/primitive.h"
 
 // 8 + 1 NULL
 #define DLL_VARIANTS_COUNT_MAX 9

@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lib/objects/primitive.h"
 #include "core.h"
 #include "utils.h"
+
+#include "lib/objects/primitive.h"
+#include "lib/exit/abort.h"
 #include "lib/objects/vector.h"
-#include "objects/list.h"
-#include "objects/pair.h"
+#include "lib/objects/list.h"
+#include "lib/objects/pair.h"
 
 static void display_one_object(CL_Object* obj) {
     CL_Object* to_display = obj;

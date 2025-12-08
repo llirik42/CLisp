@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#include "lib/core.h"
+#include "lib/core/core.h"
 
 CL_Object* cl_make_int(int value);
 

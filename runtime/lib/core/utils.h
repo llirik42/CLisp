@@ -2,16 +2,10 @@
 
 #include "core.h"
 
-#define CL_ERROR_BUF_SIZE 256
-
 enum CL_CountCheckingMode {
     EQUAL,
     GREATER,
 };
-
-void cl_abort(char* message);
-
-void cl_abort_errno(char* message);
 
 void cl_check_func_args_count(const char* func_name, size_t args_count, size_t expected_count, enum CL_CountCheckingMode mode);
 

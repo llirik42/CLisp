@@ -1,13 +1,12 @@
 #include "objects/lambda.h"
-
-#include "lib/memory.h"
-#include "lib/utils.h"
-#include "vector.h"
-
 #include <stdarg.h>
-
+#include "vector.h"
 #include "list.h"
 #include "pair.h"
+
+#include "lib/memory/memory.h"
+#include "lib/core/utils.h"
+#include "lib/exit/abort.h"
 
 CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
     CL_LambdaUserObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaUserObject));

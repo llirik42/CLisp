@@ -1,9 +1,11 @@
 #include "list.h"
 
-#include "lib/memory.h"
 #include "pair.h"
 #include "primitive.h"
-#include "utils.h"
+
+#include "lib/memory/memory.h"
+#include "lib/core/utils.h"
+#include "lib/exit/abort.h"
 
 CL_Object* cl_make_list(CL_FUNC_PARAMS) {
     CL_EmptyListObject* empty_list_object = cl_allocate_memory(sizeof(CL_EmptyListObject));
@@ -30,7 +32,7 @@ CL_Object* cl_make_list(CL_FUNC_PARAMS) {
     }
 
     // After resets in cycle upper count of refs = 2. Decrease it to 1.
-    cl_decrease_ref_count((CL_Object*)empty_list_object);
+    cl_dec_refs_cnt((CL_Object*)empty_list_object);
 
     return (CL_Object*)result;
 }
@@ -92,7 +94,7 @@ CL_Object* cl_list_at(CL_FUNC_PARAMS) {
         cl_abort("Not found in list!\n");
         __builtin_unreachable();
     }
-    cl_increase_ref_count(cl_get_pair_left_internal(curr_pair));
+    cl_inc_refs_cnt(cl_get_pair_left_internal(curr_pair));
     return cl_get_pair_left_internal(curr_pair);
 }
 

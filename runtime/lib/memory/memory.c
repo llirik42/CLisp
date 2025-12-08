@@ -1,7 +1,9 @@
 #include "memory.h"
-#include "utils.h"
+#include "lib/core/utils.h"
 
 #include <stdlib.h>
+
+#include "lib/exit/abort.h"
 
 void* cl_allocate_memory(size_t size) {
     if (!size) {

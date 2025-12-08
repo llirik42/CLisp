@@ -31,7 +31,7 @@
       "procedure?": "cl_is_procedure",
       "promise?": "cl_is_evaluable",
       "newline": "cl_display_newline",
-      "read-line": "cl_readline",
+      "readline": "cl_readline",
       "to-integer": "cl_to_integer",
       "to-double": "cl_to_double",
       "to-char": "cl_to_char",
@@ -72,8 +72,8 @@
       "evaluation": "cl_evaluate",
       "native_call": "cl_native",
       "to_boolean": "cl_obj_to_boolean",
-      "ref_count++": "cl_increase_ref_count",
-      "ref_count--": "cl_decrease_ref_count"
+      "ref_count++": "cl_inc_refs_cnt",
+      "ref_count--": "cl_dec_refs_cnt"
     },
     "other": {
       "boolean_type": "bool",
@@ -83,7 +83,7 @@
       "lambda_env": "env",
       "lambda_args": "args",
       "lambda_count": "count",
-      "lambda_function_params": ["CL_Environment* env", "unsigned int count", "CL_Object** args"],
+      "lambda_function_params": ["CL_Environment* env", "size_t count", "CL_Object** args"],
       "evaluable_env": "env",
       "evaluable_function_params": ["CL_Environment* env"]
     }
