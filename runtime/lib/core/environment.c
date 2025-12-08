@@ -9,11 +9,13 @@
 #include "core.h"
 #include "io.h"
 #include "logic.h"
-#include "memory.h"
-#include "utils.h"
-#include "objects/lambda.h"
-#include "objects/list.h"
-#include "objects/pair.h"
+
+#include "lib/memory/memory.h"
+#include "lib/exit/abort.h"
+#include "lib/objects/lambda.h"
+#include "lib/objects/list.h"
+#include "lib/objects/pair.h"
+#include "lib/objects/primitive.h"
 
 #define BASIC_CAPACITY 4
 #define CAPACITY_MULTIPLIER 1.5
@@ -54,7 +56,12 @@ static const NamedFunc reserved[] = {
     {"procedure?", cl_is_procedure},
     {"promise?", cl_is_evaluable},
     {"newline", cl_display_newline},
-    {"readline", cl_readline}
+    {"read-line", cl_readline},
+    {"to-integer", cl_to_integer},
+    {"to-double", cl_to_double},
+    {"to-char", cl_to_char},
+    {"to-string", cl_to_string},
+    {"to-boolean", cl_to_boolean}
 };
 
 #define RESERVED_COUNT sizeof(reserved) / sizeof(NamedFunc)
@@ -74,7 +81,7 @@ static CL_Environment* make_environment(CL_Environment* parent, size_t capacity)
 
 static void destroy_env(CL_Environment* env) {
     for (size_t i = 0; i < env->variables_count; i++) {
-        cl_decrease_ref_count(env->variables[i].val);
+        cl_dec_refs_cnt(env->variables[i].val);
     }
     cl_free_memory(env->variables);
     cl_da_remove(reachable_envs, env);
@@ -106,12 +113,12 @@ void cl_set_variable_value(CL_Environment* env, char* name, CL_Object* value) {
         __builtin_unreachable();
     }
 
-    cl_increase_ref_count(value);
+    cl_inc_refs_cnt(value);
 
     for (size_t i = 0; i < env->variables_count; i++) {
         CL_Variable* var = &env->variables[i];
         if (!strcmp(name, var->key)) {
-            cl_decrease_ref_count(var->val);
+            cl_dec_refs_cnt(var->val);
             var->val = value;
             return;
         }
@@ -132,14 +139,14 @@ CL_Object* cl_update_variable_value(CL_Environment* env, char* name, CL_Object* 
         __builtin_unreachable();
     }
 
-    cl_increase_ref_count(value);
+    cl_inc_refs_cnt(value);
 
     CL_Environment* curr_env = env;
     while (curr_env) {
         for (size_t i = 0; i < curr_env->variables_count; i++) {
             CL_Variable* var = &curr_env->variables[i];
             if (!strcmp(name, var->key)) {
-                cl_decrease_ref_count(var->val);
+                cl_dec_refs_cnt(var->val);
                 var->val = value;
                 return cl_make_unspecified();
             }
@@ -211,8 +218,8 @@ CL_Environment* cl_move_env(CL_Environment* env) {
         new->variables = cl_allocate_memory(sizeof(CL_Variable) * BASIC_CAPACITY);
     }
 
-    for (unsigned int i = 0; i < new->variables_count; i++) {
-        cl_increase_ref_count(new->variables[i].val);
+    for (size_t i = 0; i < new->variables_count; i++) {
+        cl_inc_refs_cnt(new->variables[i].val);
     }
 
     cl_dec_env_refs_cnt(env);

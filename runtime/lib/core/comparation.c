@@ -1,16 +1,21 @@
 #include "comparation.h"
 
+#include <math.h>
 #include <string.h>
 
-#include "objects/primitive.h"
 #include "utils.h"
 
-typedef unsigned int (*comparison_fn)(double, double);
+#include "lib/objects/primitive.h"
+#include "lib/exit/abort.h"
 
-static unsigned int greater_than(double a, double b) { return a > b; }
-static unsigned int greater_or_equal_than(double a, double b) { return a >= b; }
-static unsigned int less_than(double a, double b) { return a < b; }
-static unsigned int less_or_equal_than(double a, double b) { return a <= b; }
+#define DOUBLE_EPSILON 1e-9
+
+typedef bool (*comparison_fn)(double, double);
+
+static bool greater_than(double a, double b) { return a > b; }
+static bool greater_or_equal_than(double a, double b) { return a >= b; }
+static bool less_than(double a, double b) { return a < b; }
+static bool less_or_equal_than(double a, double b) { return a <= b; }
 
 static CL_Object* numeric_comparison(CL_FUNC_PARAMS, const char* func_name, comparison_fn compare) {
     cl_check_func_args_count(func_name, count, 2, EQUAL);
@@ -21,10 +26,10 @@ static CL_Object* numeric_comparison(CL_FUNC_PARAMS, const char* func_name, comp
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(left_term));
     CL_CHECK_FUNC_ARG_NUMERIC_TYPE(cl_get_obj_type(right_term));
 
-    unsigned char result = 0;
+    bool result = false;
 
     if (compare(cl_unwrap_numeric_to_double(left_term), cl_unwrap_numeric_to_double(right_term))) {
-        result = 1;
+        result = true;
     }
 
     return cl_make_boolean(result);
@@ -62,7 +67,7 @@ CL_Object *cl_equal(CL_FUNC_PARAMS) {
         return cl_make_false();
     }
 
-    unsigned char result = 0;
+    bool result = false;
 
     switch (cl_get_obj_type(left_term)) {
         case INTEGER:
@@ -72,16 +77,16 @@ CL_Object *cl_equal(CL_FUNC_PARAMS) {
             result = cl_get_boolean_value(left_term) == cl_get_boolean_value(right_term);
             break;
         case DOUBLE:
-            result = cl_get_double_value(left_term) == cl_get_double_value(right_term);
+            result = fabs(cl_get_double_value(left_term) - cl_get_double_value(right_term)) < DOUBLE_EPSILON;
             break;
         case CHAR:
             result = cl_get_char_value(left_term) == cl_get_char_value(right_term);
             break;
         case STRING:
             if (!strcmp(cl_get_string_value(left_term), cl_get_string_value(right_term))) {
-                result = 1;
+                result = true;
             } else {
-                result = 0;
+                result = false;
             }
             break;
         default:

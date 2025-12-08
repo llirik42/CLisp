@@ -5,8 +5,8 @@
   `    i++;`
   `    CL_Object* i_obj = cl_make_int(i);`
   `    CL_Object* display_args[] = {i_obj};`
-  `    cl_decrease_ref_count(cl_display(1, display_args));`
-  `    cl_decrease_ref_count(i_obj);`
+  `    cl_dec_refs_cnt(cl_display(1, display_args));`
+  `    cl_dec_refs_cnt(i_obj);`
   `    if (i < 5) {`
   `        goto start;`
   `    }`

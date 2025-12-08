@@ -1,6 +1,6 @@
 #pragma once
 #include "lib/data_objects/dynamic_array.h"
-#include "lib/core.h"
+#include "lib/core/core.h"
 
 typedef struct {
     enum CL_ObjectType type;
@@ -18,6 +18,6 @@ CL_Object* cl_vector_at(CL_Object* list, size_t index);
 
 size_t cl_vector_length(CL_Object* list);
 
-CL_Object* cl_make_vector_from_array(unsigned int size, CL_Object** array);
+CL_Object* cl_make_vector_from_array(size_t size, CL_Object** array);
 
 void cl_destroy_vector(CL_Object* obj);

@@ -1,0 +1,12 @@
+******************[TESTING CODE]******************
+(display (to-char 65))
+(display (to-char #t))
+(display (to-char #f))
+(display (to-char #\A))
+(display (to-char "X"))
+******************[EXPECTED OUT]******************
+A
+t
+f
+A
+X

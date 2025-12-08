@@ -1,6 +1,6 @@
 #include "vector.h"
 
-#include "lib/memory.h"
+#include "lib/memory/memory.h"
 
 #define UNDEFINED_SIZE 0
 
@@ -37,7 +37,7 @@ size_t cl_vector_length(CL_Object* list) {
     return cl_da_size(list_object->list);
 }
 
-CL_Object* cl_make_vector_from_array(unsigned int size, CL_Object** array) {
+CL_Object* cl_make_vector_from_array(size_t size, CL_Object** array) {
     CL_VectorObject* list_object = cl_allocate_memory(sizeof(CL_VectorObject));
     cl_init_obj((CL_Object*)list_object, VECTOR);
 

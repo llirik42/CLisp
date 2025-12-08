@@ -2,8 +2,8 @@
 
 #include <math.h>
 
-#include "memory.h"
-#include "utils.h"
+#include "lib/exit/abort.h"
+#include "lib/memory/memory.h"
 
 #define BASIC_DA_CAPACITY 10
 #define CAPACITY_MULTIPLIER 1.5

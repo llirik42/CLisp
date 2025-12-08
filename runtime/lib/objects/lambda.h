@@ -1,7 +1,7 @@
 #pragma once
-#include "lib/native_calls.h"
-#include "lib/environment.h"
-#include "lib/core.h"
+#include "lib/core/native_calls.h"
+#include "lib/core/environment.h"
+#include "lib/core/core.h"
 
 typedef CL_Object*(*cl_func_with_env)(CL_Environment* env, CL_FUNC_PARAMS);
 typedef CL_Object*(*cl_func_native)(CL_NativeData* data, CL_FUNC_PARAMS);
@@ -50,6 +50,6 @@ CL_Object* cl_make_lambda_native(cl_func_native func, CL_NativeData* data);
 
 void cl_destroy_lambda(CL_Object* object);
 
-CL_Object* cl_lambda_call(CL_Object* obj, unsigned int count, ...);
+CL_Object* cl_lambda_call(CL_Object* obj, size_t count, ...);
 
-CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...);
+CL_Object* cl_lambda_call_list(CL_Object* obj, size_t count, ...);

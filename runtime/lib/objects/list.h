@@ -1,5 +1,5 @@
 #pragma once
-#include "lib/core.h"
+#include "lib/core/core.h"
 
 typedef struct {
     enum CL_ObjectType type;
@@ -10,11 +10,11 @@ CL_Object* cl_make_list(CL_FUNC_PARAMS);
 
 CL_Object* cl_is_list(CL_FUNC_PARAMS);
 
-unsigned char cl_is_list_internal(CL_Object* obj);
+bool cl_is_list_internal(CL_Object* obj);
 
 CL_Object* cl_list_at(CL_FUNC_PARAMS);
 
-unsigned int cl_list_length_internal(CL_Object* obj);
+size_t cl_list_length_internal(CL_Object* obj);
 
 CL_Object* cl_list_length(CL_FUNC_PARAMS);
 

@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "native_calls.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <dlfcn.h>
@@ -8,10 +9,10 @@
 #include <signal.h>
 #include <string.h>
 
-#include "memory.h"
-#include "utils.h"
-#include "objects/lambda.h"
-#include "objects/primitive.h"
+#include "lib/memory/memory.h"
+#include "lib/exit/abort.h"
+#include "lib/objects/lambda.h"
+#include "lib/objects/primitive.h"
 
 // 8 + 1 NULL
 #define DLL_VARIANTS_COUNT_MAX 9
@@ -221,7 +222,7 @@ CL_Object* cl_call_native(CL_NativeData* data, CL_FUNC_PARAMS) {
     return ret_obj;
 }
 
-CL_Object* cl_native(const char* func, const char* library, enum CL_NativeType result_type, unsigned int count, ...) {
+CL_Object* cl_native(const char* func, const char* library, enum CL_NativeType result_type, size_t count, ...) {
     va_list args;
     va_start(args, count);
 
@@ -235,7 +236,7 @@ CL_Object* cl_native(const char* func, const char* library, enum CL_NativeType r
         data->args_types = NULL;
     }
 
-    for (unsigned int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         enum CL_NativeType type = va_arg(args, enum CL_NativeType);
         data->args_types[i] = type;
     }

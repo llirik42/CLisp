@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lib/objects/primitive.h"
 #include "core.h"
 #include "utils.h"
+
+#include "lib/objects/primitive.h"
+#include "lib/exit/abort.h"
 #include "lib/objects/vector.h"
-#include "objects/list.h"
-#include "objects/pair.h"
+#include "lib/objects/list.h"
+#include "lib/objects/pair.h"
 
 static void display_one_object(CL_Object* obj) {
     CL_Object* to_display = obj;
@@ -50,7 +52,7 @@ static void display_one_object(CL_Object* obj) {
             if (cl_is_list_internal(to_display)) {
                 putchar('(');
                 CL_Object* curr_pair = to_display;
-                while (TRUE) {
+                while (true) {
                     display_one_object(cl_get_pair_left_internal(curr_pair));
                     curr_pair = cl_get_pair_right_internal(curr_pair);
                     if (cl_get_obj_type(curr_pair) != EMPTY_LIST) {
@@ -86,7 +88,7 @@ static void display_one_object(CL_Object* obj) {
 CL_Object* cl_display(CL_FUNC_PARAMS) {
     CL_CHECK_FUNC_ARGS_COUNT(count, 0, GREATER);
 
-    for (unsigned int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         display_one_object(args[i]);
         if (i != count - 1) {
             putchar(' ');

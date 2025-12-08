@@ -1,13 +1,12 @@
 #include "objects/lambda.h"
-
-#include "lib/memory.h"
-#include "lib/utils.h"
-#include "vector.h"
-
 #include <stdarg.h>
-
+#include "vector.h"
 #include "list.h"
 #include "pair.h"
+
+#include "lib/memory/memory.h"
+#include "lib/core/utils.h"
+#include "lib/exit/abort.h"
 
 CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
     CL_LambdaUserObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaUserObject));
@@ -68,6 +67,8 @@ void cl_destroy_lambda(CL_Object* obj) {
 }
 
 static CL_Object* cl_lambda_call_array(CL_Object* obj, CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(obj), LAMBDA);
+
     const CL_LambdaObject* lambda_object = (CL_LambdaObject*)obj;
     switch (lambda_object->lambda_type) {
         case USER: {
@@ -89,8 +90,9 @@ static CL_Object* cl_lambda_call_array(CL_Object* obj, CL_FUNC_PARAMS) {
     }
 }
 
-CL_Object* cl_lambda_call(CL_Object* obj, unsigned int count, ...) {
-    // The function is called by an ordinary procedure call
+// The function is called by an ordinary procedure call
+CL_Object* cl_lambda_call(CL_Object* obj, size_t count, ...) {
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(obj), LAMBDA);
 
     va_list args;
     va_start(args, count);
@@ -104,18 +106,19 @@ CL_Object* cl_lambda_call(CL_Object* obj, unsigned int count, ...) {
     return result;
 }
 
-CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...) {
-    // The function is called by (apply ...)
+// The function is called by (apply ...)
+CL_Object* cl_lambda_call_list(CL_Object* obj, size_t count, ...) {
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(obj), LAMBDA);
 
     va_list args;
     va_start(args, count);
     CL_Object* tmp[count];
-    for (unsigned int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         tmp[i] = va_arg(args, CL_Object*);
     }
     va_end(args);
 
-    unsigned int scalar_args_count = count - 1;
+    size_t scalar_args_count = count - 1;
     CL_Object* list_arg = tmp[scalar_args_count];
 
     if (!cl_is_list_internal(list_arg)) {
@@ -124,15 +127,15 @@ CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...) {
     }
 
 
-    unsigned int list_arg_length = cl_list_length_internal(list_arg);
-    unsigned int obj_args_count = scalar_args_count + list_arg_length;
+    size_t list_arg_length = cl_list_length_internal(list_arg);
+    size_t obj_args_count = scalar_args_count + list_arg_length;
     CL_Object* obj_args[obj_args_count];
 
-    for (unsigned int i = 0; i < scalar_args_count; i++) {
+    for (size_t i = 0; i < scalar_args_count; i++) {
         obj_args[i] = tmp[i];
     }
 
-    unsigned int curr_list_pos = 0;
+    size_t curr_list_pos = 0;
     while (cl_get_obj_type(list_arg) != EMPTY_LIST) {
         obj_args[scalar_args_count + curr_list_pos++] = cl_get_pair_left_internal(list_arg);
         list_arg = cl_get_pair_right_internal(list_arg);

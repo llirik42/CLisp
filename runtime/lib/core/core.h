@@ -1,7 +1,6 @@
 #pragma once
-
-#define TRUE 1
-#define FALSE 0
+#include <stdbool.h>
+#include <stddef.h>
 
 enum CL_ObjectType {
     INTEGER,
@@ -24,7 +23,7 @@ typedef struct {
     unsigned short ref_count;
 } CL_Object;
 
-#define CL_FUNC_PARAMS unsigned int count, CL_Object** args
+#define CL_FUNC_PARAMS size_t count, CL_Object** args
 #define CL_FUNC_PARAMS_WITHOUT_TYPES count, args
 
 typedef CL_Object*(*cl_func)(CL_FUNC_PARAMS);
@@ -33,15 +32,15 @@ enum CL_ObjectType cl_get_obj_type(CL_Object* obj);
 
 void cl_init_obj(CL_Object* obj, enum CL_ObjectType type);
 
-void cl_increase_ref_count(CL_Object* obj);
+void cl_inc_refs_cnt(CL_Object* obj);
 
-void cl_decrease_ref_count(CL_Object* obj);
+void cl_dec_refs_cnt(CL_Object* obj);
 
 CL_Object* cl_make_unspecified();
 
-unsigned char cl_is_numeric_internal(enum CL_ObjectType type);
+bool cl_is_numeric_internal(enum CL_ObjectType type);
 
-unsigned char cl_obj_to_boolean(CL_Object* obj);
+bool cl_obj_to_boolean(CL_Object* obj);
 
 CL_Object* cl_is_numeric(CL_FUNC_PARAMS);
 

@@ -3,20 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "objects/primitive.h"
-#include "objects/evaluable.h"
+#include "lib/exit/abort.h"
+#include "lib/exit/error.h"
+#include "lib/objects/primitive.h"
 
-void cl_abort(char* message) {
-    fprintf(stderr, "%s", message);
-    abort();
-}
-
-void cl_abort_errno(char* message) {
-    perror(message);
-    abort();
-}
-
-void cl_check_func_args_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CL_CountCheckingMode mode) {
+void cl_check_func_args_count(const char* func_name, size_t args_count, size_t expected_count, enum CL_CountCheckingMode mode) {
     const char* format_str = NULL;
     int condition = 0;
 
