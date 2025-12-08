@@ -24,10 +24,7 @@ void cl_destroy_evaluable(CL_Object* obj) {
 }
 
 CL_Object* cl_evaluate(CL_Object* obj) {
-    if (cl_get_obj_type(obj) != EVALUABLE) {
-        cl_abort("Object is not evaluable!\n");
-        __builtin_unreachable();
-    }
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(obj), EVALUABLE);
 
     CL_EvaluableObject* evaluable_object = (CL_EvaluableObject*)obj;
 

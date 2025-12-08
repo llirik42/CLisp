@@ -68,6 +68,8 @@ void cl_destroy_lambda(CL_Object* obj) {
 }
 
 static CL_Object* cl_lambda_call_array(CL_Object* obj, CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(obj), LAMBDA);
+
     const CL_LambdaObject* lambda_object = (CL_LambdaObject*)obj;
     switch (lambda_object->lambda_type) {
         case USER: {
@@ -89,13 +91,14 @@ static CL_Object* cl_lambda_call_array(CL_Object* obj, CL_FUNC_PARAMS) {
     }
 }
 
+// The function is called by an ordinary procedure call
 CL_Object* cl_lambda_call(CL_Object* obj, size_t count, ...) {
-    // The function is called by an ordinary procedure call
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(obj), LAMBDA);
 
     va_list args;
     va_start(args, count);
     CL_Object* obj_args[count];
-    for (size_t i = 0; i < count; i++) {
+    for (unsigned int i = 0; i < count; i++) {
         obj_args[i] = va_arg(args, CL_Object*);
     }
     va_end(args);
@@ -104,8 +107,9 @@ CL_Object* cl_lambda_call(CL_Object* obj, size_t count, ...) {
     return result;
 }
 
+// The function is called by (apply ...)
 CL_Object* cl_lambda_call_list(CL_Object* obj, size_t count, ...) {
-    // The function is called by (apply ...)
+    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(obj), LAMBDA);
 
     va_list args;
     va_start(args, count);
