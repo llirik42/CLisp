@@ -14,6 +14,8 @@ unsigned char cl_is_list_internal(CL_Object* obj);
 
 CL_Object* cl_list_at(CL_FUNC_PARAMS);
 
+unsigned int cl_list_length_internal(CL_Object* obj);
+
 CL_Object* cl_list_length(CL_FUNC_PARAMS);
 
 void cl_destroy_empty_list(CL_Object* obj);
