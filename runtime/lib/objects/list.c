@@ -96,16 +96,13 @@ CL_Object* cl_list_at(CL_FUNC_PARAMS) {
     return cl_get_pair_left_internal(curr_pair);
 }
 
-CL_Object* cl_list_length(CL_FUNC_PARAMS) {
-    CL_CHECK_FUNC_ARGS_COUNT(count, 1, EQUAL);
-    CL_Object* list = args[0];
-
-    if (cl_get_obj_type(list) == EMPTY_LIST) {
-        return cl_make_int(0);
+unsigned int cl_list_length_internal(CL_Object* obj) {
+    if (cl_get_obj_type(obj) == EMPTY_LIST) {
+        return 0;
     }
 
     int length = 0;
-    CL_Object* curr_pair = list;
+    CL_Object* curr_pair = obj;
     while (cl_get_obj_type(curr_pair) != EMPTY_LIST) {
         if (cl_get_obj_type(curr_pair) != PAIR) {
             cl_abort("Object is not a list!\n");
@@ -115,7 +112,13 @@ CL_Object* cl_list_length(CL_FUNC_PARAMS) {
         length++;
     }
 
-    return cl_make_int(length);
+    return length;
+}
+
+CL_Object* cl_list_length(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(count, 1, EQUAL);
+    CL_Object* list = args[0];
+    return cl_make_int((int)cl_list_length_internal(list));
 }
 
 void cl_destroy_empty_list(CL_Object* obj) {

@@ -6,6 +6,9 @@
 
 #include <stdarg.h>
 
+#include "list.h"
+#include "pair.h"
+
 CL_Object* cl_make_lambda(cl_func_with_env func, CL_Environment* environment) {
     CL_LambdaUserObject* lambda_object = cl_allocate_memory(sizeof(CL_LambdaUserObject));
     cl_init_obj((CL_Object*)lambda_object, LAMBDA);
@@ -114,16 +117,25 @@ CL_Object* cl_lambda_call_list(CL_Object* obj, unsigned int count, ...) {
 
     unsigned int scalar_args_count = count - 1;
     CL_Object* list_arg = tmp[scalar_args_count];
-    CL_CHECK_FUNC_ARG_TYPE(cl_get_obj_type(list_arg), VECTOR);
 
-    unsigned int list_arg_length = cl_vector_length(list_arg);
+    if (!cl_is_list_internal(list_arg)) {
+        cl_abort("cl_lamda_call_list: Expected list in last argument!\n");
+        __builtin_unreachable();
+    }
+
+
+    unsigned int list_arg_length = cl_list_length_internal(list_arg);
     unsigned int obj_args_count = scalar_args_count + list_arg_length;
     CL_Object* obj_args[obj_args_count];
+
     for (unsigned int i = 0; i < scalar_args_count; i++) {
         obj_args[i] = tmp[i];
     }
-    for (unsigned int i = 0; i < list_arg_length; i++) {
-        obj_args[i + scalar_args_count] = cl_vector_at(list_arg, i);
+
+    unsigned int curr_list_pos = 0;
+    while (cl_get_obj_type(list_arg) != EMPTY_LIST) {
+        obj_args[scalar_args_count + curr_list_pos++] = cl_get_pair_left_internal(list_arg);
+        list_arg = cl_get_pair_right_internal(list_arg);
     }
 
     CL_Object* result = cl_lambda_call_array(obj, obj_args_count, obj_args);
