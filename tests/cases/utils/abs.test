@@ -1,0 +1,20 @@
+******************[TESTING CODE]******************
+(define (abs x)
+  (if (>= x 0)
+    x
+    (- x)))
+
+(display (abs 0))
+(display (abs 0.0))
+(display (abs 1))
+(display (abs 1.5))
+(display (abs -1))
+(display (abs -2.3))
+
+******************[EXPECTED OUT]******************
+0
+0
+1
+1.5
+1
+2.3
