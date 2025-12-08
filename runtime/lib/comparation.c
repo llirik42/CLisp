@@ -52,7 +52,7 @@ CL_Object *cl_equal(CL_FUNC_PARAMS) {
     CL_Object* left_term = args[0];
     CL_Object* right_term = args[1];
 
-    if (cl_is_numeric(cl_get_obj_type(left_term)) && cl_is_numeric(cl_get_obj_type(right_term))) {
+    if (cl_is_numeric_internal(cl_get_obj_type(left_term)) && cl_is_numeric_internal(cl_get_obj_type(right_term))) {
         double left_double_value = cl_unwrap_numeric_to_double(left_term);
         double right_double_value = cl_unwrap_numeric_to_double(right_term);
         return cl_make_boolean(left_double_value == right_double_value);

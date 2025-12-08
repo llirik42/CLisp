@@ -1,0 +1,20 @@
+******************[TESTING CODE]******************
+(display (procedure? 1))
+(display (procedure? 1.1))
+(display (procedure? #t))
+(display (procedure? #\A))
+(display (procedure? "STRING"))
+(display (procedure? (cons 1 1)))
+(display (procedure? (list 1 2 3)))
+(display (procedure? (lambda () 1)))
+(display (procedure? (delay 1)))
+******************[EXPECTED OUT]******************
+false
+false
+false
+false
+false
+false
+false
+true
+false

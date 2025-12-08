@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "core.h"
 #include "memory.h"
+#include "utils.h"
 
 #include "objects/primitive.h"
 #include "objects/evaluable.h"
@@ -90,7 +91,7 @@ char* get_obj_type_name(enum CL_ObjectType type) {
         case CHAR:
             return "CHAR";
         case VECTOR:
-            return "LIST";
+            return "VECTOR";
         case LAMBDA:
             return "LAMBDA";
         case UNSPECIFIED:
@@ -107,7 +108,7 @@ enum CL_ObjectType cl_get_obj_type(CL_Object* obj) {
     return obj->type;
 }
 
-unsigned char cl_is_numeric(enum CL_ObjectType type) {
+unsigned char cl_is_numeric_internal(enum CL_ObjectType type) {
     return type == INTEGER || type == DOUBLE;
 }
 
@@ -119,4 +120,44 @@ unsigned char cl_obj_to_boolean(CL_Object* obj) {
     }
 
     return 1;
+}
+
+CL_Object* cl_is_numeric(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_is_numeric_internal(cl_get_obj_type(args[0])));
+}
+
+CL_Object* cl_is_integer(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_get_obj_type(args[0]) == INTEGER);
+}
+
+CL_Object* cl_is_double(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_get_obj_type(args[0]) == DOUBLE);
+}
+
+CL_Object* cl_is_string(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_get_obj_type(args[0]) == STRING);
+}
+
+CL_Object* cl_is_char(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_get_obj_type(args[0]) == CHAR);
+}
+
+CL_Object* cl_is_boolean(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_get_obj_type(args[0]) == BOOLEAN);
+}
+
+CL_Object* cl_is_procedure(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_get_obj_type(args[0]) == LAMBDA);
+}
+
+CL_Object* cl_is_evaluable(CL_FUNC_PARAMS) {
+    CL_CHECK_FUNC_ARGS_COUNT(1, count, EQUAL);
+    return cl_make_boolean(cl_get_obj_type(args[0]) == EVALUABLE);
 }

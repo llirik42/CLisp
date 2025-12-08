@@ -39,6 +39,22 @@ void cl_decrease_ref_count(CL_Object* obj);
 
 CL_Object* cl_make_unspecified();
 
-unsigned char cl_is_numeric(enum CL_ObjectType type);
+unsigned char cl_is_numeric_internal(enum CL_ObjectType type);
 
 unsigned char cl_obj_to_boolean(CL_Object* obj);
+
+CL_Object* cl_is_numeric(CL_FUNC_PARAMS);
+
+CL_Object* cl_is_integer(CL_FUNC_PARAMS);
+
+CL_Object* cl_is_double(CL_FUNC_PARAMS);
+
+CL_Object* cl_is_string(CL_FUNC_PARAMS);
+
+CL_Object* cl_is_char(CL_FUNC_PARAMS);
+
+CL_Object* cl_is_boolean(CL_FUNC_PARAMS);
+
+CL_Object* cl_is_procedure(CL_FUNC_PARAMS);
+
+CL_Object* cl_is_evaluable(CL_FUNC_PARAMS);
