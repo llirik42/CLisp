@@ -13,9 +13,9 @@ typedef struct {
     void* func;
     enum CL_NativeType return_type;
     enum CL_NativeType* args_types;
-    unsigned int count;
+    size_t count;
 } CL_NativeData;
 
-CL_Object* cl_native(const char* func, const char* library, enum CL_NativeType result_type, unsigned int count, ...);
+CL_Object* cl_native(const char* func, const char* library, enum CL_NativeType result_type, size_t count, ...);
 
 void cl_destroy_native_data(CL_NativeData* data);

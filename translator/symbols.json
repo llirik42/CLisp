@@ -76,7 +76,7 @@
       "ref_count--": "cl_decrease_ref_count"
     },
     "other": {
-      "boolean_type": "unsigned char",
+      "boolean_type": "bool",
       "object_type": "CL_Object*",
       "environment_type": "CL_Environment*",
       "native_argument_type": "enum CL_NativeType",

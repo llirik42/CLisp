@@ -217,7 +217,7 @@ CL_Environment* cl_move_env(CL_Environment* env) {
         new->variables = cl_allocate_memory(sizeof(CL_Variable) * BASIC_CAPACITY);
     }
 
-    for (unsigned int i = 0; i < new->variables_count; i++) {
+    for (size_t i = 0; i < new->variables_count; i++) {
         cl_increase_ref_count(new->variables[i].val);
     }
 

@@ -16,7 +16,7 @@ void cl_abort_errno(char* message) {
     abort();
 }
 
-void cl_check_func_args_count(const char* func_name, unsigned int args_count, unsigned int expected_count, enum CL_CountCheckingMode mode) {
+void cl_check_func_args_count(const char* func_name, size_t args_count, size_t expected_count, enum CL_CountCheckingMode mode) {
     const char* format_str = NULL;
     int condition = 0;
 

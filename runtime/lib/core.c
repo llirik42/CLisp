@@ -108,18 +108,18 @@ enum CL_ObjectType cl_get_obj_type(CL_Object* obj) {
     return obj->type;
 }
 
-unsigned char cl_is_numeric_internal(enum CL_ObjectType type) {
+bool cl_is_numeric_internal(enum CL_ObjectType type) {
     return type == INTEGER || type == DOUBLE;
 }
 
-unsigned char cl_obj_to_boolean(CL_Object* obj) {
+bool cl_obj_to_boolean(CL_Object* obj) {
     assert(cl_get_obj_type(obj) != EVALUABLE);
 
     if (cl_get_obj_type(obj) == BOOLEAN) {
         return cl_get_boolean_value(obj);
     }
 
-    return 1;
+    return true;
 }
 
 CL_Object* cl_is_numeric(CL_FUNC_PARAMS) {

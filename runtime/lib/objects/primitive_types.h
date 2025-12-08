@@ -17,14 +17,14 @@ typedef struct {
 typedef struct {
     enum CL_ObjectType type;
     unsigned short ref_count;
-    unsigned char value;
+    bool value;
 } CL_BooleanObject;
 
 typedef struct {
     enum CL_ObjectType type;
     unsigned short ref_count;
     char* value;
-    unsigned int length;
+    size_t length;
 } CL_StringObject;
 
 typedef struct {
