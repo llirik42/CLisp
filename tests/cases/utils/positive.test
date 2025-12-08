@@ -1,0 +1,15 @@
+******************[TESTING CODE]******************
+(define (positive? x) (> x 0))
+
+(display (positive? 0))
+(display (positive? -1))
+(display (positive? 1))
+(display (positive? -1.5))
+(display (positive? 3.2))
+
+******************[EXPECTED OUT]******************
+false
+false
+true
+false
+true

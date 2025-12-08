@@ -1,0 +1,26 @@
+******************[TESTING CODE]******************
+(define (member? coll el)
+  (if (> (length coll) 0)
+    (if (= (car coll) el)
+      #t
+      (member? (cdr coll) el))
+    #f))
+
+(display (member? (list) 0))
+(display (member? (list) 1))
+(display (member? (list 1 2 3 4) 1))
+(display (member? (list 1 2 3 4) 2))
+(display (member? (list 1 2 3 4) 3))
+(display (member? (list 1 2 3 4) 4))
+(display (member? (list 1 2 3 4) 5))
+(display (member? (list 1 2 3 4) 10))
+
+******************[EXPECTED OUT]******************
+false
+false
+true
+true
+true
+true
+false
+false
