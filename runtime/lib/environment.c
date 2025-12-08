@@ -55,7 +55,7 @@ static const NamedFunc reserved[] = {
     {"procedure?", cl_is_procedure},
     {"promise?", cl_is_evaluable},
     {"newline", cl_display_newline},
-    {"readline", cl_readline},
+    {"read-line", cl_readline},
     {"to-integer", cl_to_integer},
     {"to-double", cl_to_double},
     {"to-char", cl_to_char},
