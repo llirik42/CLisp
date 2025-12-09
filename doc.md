@@ -210,11 +210,13 @@ List is created by `(list ...)`.
 
 > Operation accepts only 1 argument.
 
-## Lambdas
+## Procedures
 
-Lambda is created by `(lambda (...) ...)`.
+Procedure is created by `(lambda (...) ...)`.
 
 ### Fixed arguments
+
+**Example 1**
 
 ```Scheme
 ((lambda (x) (display x)) 1)
@@ -223,6 +225,8 @@ Lambda is created by `(lambda (...) ...)`.
 ```
 1
 ```
+
+**Example 2**
 
 ```Scheme
 ((lambda (x y z) (display x) (display y) (display z)) 1 2 3)
@@ -262,43 +266,106 @@ Lambda is created by `(lambda (...) ...)`.
 
 ## Promises
 
-`to-boolean`
-`to-string`
-`to-char`
-`to-double`
-`to-integer`
+Promise is created by `(delay <expression>)`. Passed expression doesn't evaluate until `(force <promise>`. Expression evaluates only once.
 
-`promise?`
-`procedure?`
-`boolean?`
-`string?`
-`char?`
-`double?`
-`integer?`
-`number?`
-`pair?`
-`list?`
-
-## If, and, or, not
-
-
-
-## Environment
-
-set!
-define!
-
-
-## Native calls
-
-## Platform definition
+```Scheme
+(delay 5)            =>    promise
+(force (delay 5))    =>    5
+```
 
 ## Apply
 
+`Apply` puts given list into procedure arguments.
+
+```Scheme
+(apply + 1 2 (list 3 4))    =>    10
+```
+
+> In example above it transforms into `(+ 1 2 3 4 )`.
+
 ## Begin
 
+`Begin` evaluates all given expressions and returns values of the last one.
 
-## Promises
+**Example 1**
+
+```Scheme
+(begin (display 1) (display "abc") (display #t))
+```
+
+```
+1
+abc
+true
+```
+
+**Example 2**
+
+```Scheme
+(begin (+ 1 2) (+ 3 4) (+ 5 6))    => 11
+```
+
+## Environments
+
+### let, let*, letrec
+
+Environment represents variables with their values. At the very beginning, there is a global one. Environment is created by `let`, `let*` or `letrec`. 
+
+```Scheme
+(let ((x 5))
+	(display x))
+```
+
+### define, set!
+
+`Define` creates a new variable in the current environment, `set!` changes variables values. 
+
+```Scheme
+(define x "Old")
+(display x)
+(set! x "New")
+(display x)
+```
+
+```
+Old
+New
+```
 
 ## Loops
 
+Loops is organized by `do`.
+
+```Scheme
+(do ((i 0 (+ i 1))) 
+  ((> i 5))
+  (display i))
+```
+
+```
+0
+1
+2
+3
+4
+5
+```
+
+## Native calls
+
+**Supported native types**:
+
+* `integer`
+* `double`
+* `char`
+* `string`
+* `void`
+
+## Platform definition
+
+## Standard library functions
+
+* `car`, `cdr`, `set-cdr!`, `set-car!`;
+* `length`, `list-ref`;
+* `integer?`, `double?`, `number?`, `boolean?`, `char?`, `string?`, `pair?`, `list?`, `procedure?`, `promise?`;
+* `to-integer`, `to-double`, `to-boolean`, `to-char`, `to-string`.
