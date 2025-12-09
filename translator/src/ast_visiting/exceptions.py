@@ -10,7 +10,8 @@ class VisitingException(Exception):
         :param ctx: context of the visiting.
         """
 
-        super().__init__(f"{message} on lines {ctx.start.line}-{ctx.stop.line}")
+        shift = 59  # From preprocessing
+        super().__init__(f"{message} on lines {ctx.start.line - shift}-{ctx.stop.line - shift}")
         self.__ctx = ctx
 
     @property
