@@ -3,7 +3,7 @@
 The interpreter made according to the R5RS scheme.
 
 * [IO](#io)
-* [Data types](#data_types)
+* [Data types](#data-types)
 
 ## IO
 
