@@ -122,7 +122,7 @@ Test
 
 ### Pairs
 
-Pair is creates by `cons`.
+Pair is creates by `(cons ... ...)`.
 
 ```Scheme
 (display (cons 1 2))
@@ -134,9 +134,8 @@ Pair is creates by `cons`.
 
 ### Lists
 
-```
-List is created by `list`.
-```
+List is created by `(list ...)`.
+
 
 ```Scheme
 (display (list))
@@ -148,7 +147,118 @@ List is created by `list`.
 (1 2 3 4 )
 ```
 
+## Arithmetic operations
+
+```Scheme
+(+ ... ... ...)
+(* ... ... ...)
+```
+
+> accept any number of arguments.
+
+```Scheme
+(- ... ... ...)
+(/ ... ... ...)
+```
+
+> accept any number of arguments, but uses only first 2.
+
+```Scheme
+(> ... ...)
+(>= ... ...)
+(< ... ...)
+(<= ... ...)
+(= ... ...)
+```
+
+> accept only 2 arguments.
+
+## Logical operations
+
+**if**
+
+```Scheme
+(if x y z)
+```
+
+> Operation is lazy, so it won't evaluate `y` if `x` is false (similarly for `z`, if `x` is true).
+
+
+**and, or**
+
+```Scheme
+(and ... ... ...)
+(or ... ... ...)
+```
+
+> Operations are lazy and accept any number of arguments. 
+
+```Scheme
+(and)          =>    true
+(and 1)        =>    1
+(and 1 2 3)    =>    3
+(or)           =>    false
+(or 1)         =>    1
+(or 1 2 3)     => 1
+```
+
+**not**
+
+```Scheme
+(not ...)
+```
+
+> Operation accepts only 1 argument.
+
 ## Lambdas
+
+Lambda is created by `(lambda (...) ...)`.
+
+### Fixed arguments
+
+```Scheme
+((lambda (x) (display x)) 1)
+```
+
+```
+1
+```
+
+```Scheme
+((lambda (x y z) (display x) (display y) (display z)) 1 2 3)
+```
+
+```
+1
+2
+3
+```
+
+### Variadic argument
+
+```Scheme
+((lambda x (display x)))
+((lambda x (display x)) 1)
+((lambda x (display x)) 1 2 3)
+```
+
+```
+()
+(1)
+(1 2 3)
+```
+
+### Mixed arguments
+
+```Scheme
+((lambda (x y . z) (display x) (display y) (display z) 1 2 3 4)
+```
+
+```
+1
+2
+(3 4)
+```
 
 ## Promises
 
