@@ -1,5 +1,5 @@
-def preprocess(s: str) -> str:
-    standard = """
+def preprocess(code: str) -> str:
+    additional_standard_functions_code = """
 (define (abs x)
   (if (>= x 0)
     x
@@ -59,4 +59,4 @@ def preprocess(s: str) -> str:
       (remainder n1 n2)
       (+ n1 (- (* n2 (to-integer (_floor (to-double (/ n1 n2))))))))))\n\n"""
 
-    return standard + s
+    return additional_standard_functions_code + code

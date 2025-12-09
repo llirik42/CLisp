@@ -1,6 +1,6 @@
 import argparse
 
-from src.ast_reading import read_ast_from_file, read_ast_from_stdin, read_ast
+from src.ast_reading import read_ast
 from src.ast_visiting import ASTVisitor
 from src.postprocessing import postprocess, PostprocessingContext
 from src.preprocessing import preprocess
