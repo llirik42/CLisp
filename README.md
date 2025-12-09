@@ -1,21 +1,24 @@
 # CLisp — Lisp-interpreter written on C
 
+* [Documentation](doc.md)
+
 ## Prerequisites
 
-Install [ANTLR4](https://github.com/antlr/antlr4/blob/master/doc/getting-started.md#installation).
+1. Install [ANTLR4](https://github.com/antlr/antlr4/blob/master/doc/getting-started.md#installation).
 
-Install uv:
+2. Install uv:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Install libffi (example for Ubuntu)
+3. Install libffi (example for Ubuntu)
+
 ```bash
 sudo apt install libffi-dev
 ```
 
-Launch installing script:
+4. Launch installing script:
 
 ```bash
 ./install.sh
@@ -27,8 +30,12 @@ Launch installing script:
 python3 clisp.py input_file
 ```
 
-## Example
+**Example**
 
 ```bash
 python3 clisp.py example.scm
+```
+
+```
+6
 ```

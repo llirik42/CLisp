@@ -19,7 +19,7 @@ class VisitingException(Exception):
             arg = f"{message} on line {start}"
         else:
             arg = f"{message} on lines {start}-{stop}"
-        
+
         super().__init__(arg)
         self.__ctx = ctx
 
