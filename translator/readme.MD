@@ -14,5 +14,5 @@ antlr4 -Dlanguage=Python3 -visitor -o src Lisp.g4
 ## Usage
 
 ```bash
-python src/main.py [-h] [-o OUTPUT_FILE] [-p PROCEDURE_TABLE] [-t TEMPLATES] input_file
+python src/main.py [-h] (-i | -f INPUT_FILE) [-o OUTPUT_FILE] [-s SYMBOLS_TABLE] [-t TEMPLATES]
 ```
