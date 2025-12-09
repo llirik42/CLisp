@@ -37,7 +37,6 @@ class Symbols:
         self.CREATE_FALSE = self.__find_internal("false")
         self.CREATE_LAMBDA = self.__find_internal("lambda")
         self.CREATE_EVALUABLE = self.__find_internal("evaluable")
-        self.CREATE_LIST = self.__find_internal("list")
         self.CREATE_LIST_FROM_ARRAY = self.__find_internal("list_array")
         self.OBJECT_TO_BOOLEAN = self.__find_internal("to_boolean")
         self.CREATE_ENVIRONMENT = self.__find_internal("environment")

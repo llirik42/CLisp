@@ -54,7 +54,6 @@
       "character": "cl_make_char",
       "string": "cl_make_string",
       "float": "cl_make_double",
-      "list": "cl_make_list",
       "list_array": "cl_make_list",
       "unspecified": "cl_make_unspecified",
       "evaluable": "cl_make_evaluable",
