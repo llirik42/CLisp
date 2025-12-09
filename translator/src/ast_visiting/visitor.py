@@ -109,24 +109,34 @@ class ASTVisitor(LispVisitor):
         return program_code.render()
 
     @visit(ast_context)
-    def visitPlatformDefinition(self, ctx:LispParser.PlatformDefinitionContext) -> ExpressionVisitResult:
+    def visitPlatformDefinition(
+        self, ctx: LispParser.PlatformDefinitionContext
+    ) -> ExpressionVisitResult:
         env = self.__environment_ctx.env
 
         variable_name = ctx.variable().getText()
         self.__check_variable_definition(variable_name)
         env.add(variable_name)
 
+        procedure_env = self.__symbols.LAMBDA_ENV
+        procedure_args = self.__symbols.LAMBDA_ARGS
+        procedure_args_count = self.__symbols.LAMBDA_COUNT
+
         body_lines = ctx.platformBodyLines()
         body_text = ""
         for line in body_lines:
-            line_text = line.getText()[1:-1]  # Remove back quote in the beginning and in the end
-            line_text = line_text.replace("$env", "env").replace("$args_count", "count").replace("$args", "args")
+            line_text = line.getText()[
+                1:-1
+            ]  # Remove back quote in the beginning and in the end
+            line_text = (
+                line_text.replace("$env", procedure_env)
+                .replace("$args_count", procedure_args_count)
+                .replace("$args", procedure_args)
+            )
             body_text += line_text + "\n"
 
         procedure_var, procedure_code = self.__visit_procedure(
-            formals_text="",
-            body_text=body_text,
-            env_name=env.name
+            formals_text="", body_text=body_text, env_name=env.name
         )
 
         return self.__visit_variable_definition(
@@ -959,7 +969,11 @@ class ASTVisitor(LispVisitor):
         return var, code
 
     def __visit_procedure(
-        self, formals_text: str, body_text: str, env_name: str, ret_var: Optional[str] = None,
+        self,
+        formals_text: str,
+        body_text: str,
+        env_name: str,
+        ret_var: Optional[str] = None,
     ) -> ExpressionVisitResult:
         function_name = self.__add_lambda_declaration(
             formals_text=formals_text, body_text=body_text, ret_var=ret_var
