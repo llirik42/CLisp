@@ -11,7 +11,16 @@ class VisitingException(Exception):
         """
 
         shift = 59  # From preprocessing
-        super().__init__(f"{message} on lines {ctx.start.line - shift}-{ctx.stop.line - shift}")
+
+        start = ctx.start.line - shift
+        stop =  ctx.stop.line - shift
+
+        if start == stop:
+            arg = f"{message} on line {start}"
+        else:
+            arg = f"{message} on lines {start}-{stop}"
+        
+        super().__init__(arg)
         self.__ctx = ctx
 
     @property

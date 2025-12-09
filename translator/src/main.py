@@ -42,6 +42,8 @@ def main():
     args = parser.parse_args()
 
     source = read_from_stdin() if args.input_stdin else read_from_file(args.input_file)
+    read_ast(source)  # So syntax errors will be detected and printed with correct lines number
+
     preprocessed = preprocess(source)
     ast = read_ast(preprocessed)
 
