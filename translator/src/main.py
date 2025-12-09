@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from src.ast_reading import read_ast
 from src.ast_visiting import ASTVisitor
@@ -62,4 +63,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        curr_e = e
+        while curr_e:
+            print(curr_e, file=sys.stderr)
+            curr_e = curr_e.__cause__
+        exit(1)

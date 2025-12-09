@@ -58,11 +58,15 @@ def main():
         "-o", str(out_c_file)
     ]
 
-    try:
-        subprocess.run(translator_cmd, check=True, cwd=translator_dir)
-    except subprocess.CalledProcessError:
-        print_error(f"Error during translation!")
-        sys.exit(1)
+    translation_result = subprocess.run(
+        translator_cmd,
+        cwd=translator_dir,
+        capture_output=True,
+        text=True
+    )
+    if translation_result.returncode:
+        print_error(translation_result.stderr);
+        sys.exit(1);
 
     os.chdir(build_dir)
 
