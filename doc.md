@@ -3,7 +3,7 @@
 The interpreter made according to the R5RS scheme.
 
 * [IO](#io)
-
+* [Data types](#data_types)
 
 ## IO
 
@@ -41,7 +41,7 @@ Function reads the input until it encounters \n, then it returns string containi
 Hello, clisp!
 ```
 
-## Supported data types
+## Data types
 
 ### Primitives
 
