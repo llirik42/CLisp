@@ -477,6 +477,9 @@ class ASTVisitor(LispVisitor):
         variable_name = ctx.variable().getText()
         env = self.__environment_ctx.env
 
+        if self.__symbols.has_api_function_symbol(variable_name):
+            raise FunctionRedefineException(variable_name, ctx)
+
         if not env.has_variable_recursively(variable_name):
             raise UnexpectedIdentifierException(variable_name, ctx)
 

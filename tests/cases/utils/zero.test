@@ -1,5 +1,4 @@
 ******************[TESTING CODE]******************
-(define (zero? x) (= x 0))
 (display (zero? 0))
 (display (zero? 0.0))
 (display (zero? 1))

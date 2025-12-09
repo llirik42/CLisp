@@ -1,11 +1,4 @@
 ******************[TESTING CODE]******************
-(define (member? coll el)
-  (if (> (length coll) 0)
-    (if (= (car coll) el)
-      #t
-      (member? (cdr coll) el))
-    #f))
-
 (display (member? (list) 0))
 (display (member? (list) 1))
 (display (member? (list 1 2 3 4) 1))

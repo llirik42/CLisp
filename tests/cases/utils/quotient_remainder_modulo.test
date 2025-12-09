@@ -1,0 +1,119 @@
+******************[TESTING CODE]******************
+(display "quotient")
+(display (quotient 0 3))
+(display (quotient 0 -3))
+(display (quotient 3 3))
+(display (quotient 4 3))
+(display (quotient 5 3))
+(display (quotient 6 3))
+(display (quotient -3 3))
+(display (quotient -4 3))
+(display (quotient -5 3))
+(display (quotient -6 3))
+(display (quotient 3 -3))
+(display (quotient 4 -3))
+(display (quotient 5 -3))
+(display (quotient 6 -3))
+(display (quotient -3 -3))
+(display (quotient -4 -3))
+(display (quotient -5 -3))
+(display (quotient -6 -3))
+
+(display "remainder")
+(display (remainder 0 3))
+(display (remainder 0 -3))
+(display (remainder 3 3))
+(display (remainder 4 3))
+(display (remainder 5 3))
+(display (remainder 6 3))
+(display (remainder -3 3))
+(display (remainder -4 3))
+(display (remainder -5 3))
+(display (remainder -6 3))
+(display (remainder 3 -3))
+(display (remainder 4 -3))
+(display (remainder 5 -3))
+(display (remainder 6 -3))
+(display (remainder -3 -3))
+(display (remainder -4 -3))
+(display (remainder -5 -3))
+(display (remainder -6 -3))
+
+(display "modulo")
+(display (modulo 0 3))
+(display (modulo 0 -3))
+(display (modulo 3 3))
+(display (modulo 4 3))
+(display (modulo 5 3))
+(display (modulo 6 3))
+(display (modulo -3 3))
+(display (modulo -4 3))
+(display (modulo -5 3))
+(display (modulo -6 3))
+(display (modulo 3 -3))
+(display (modulo 4 -3))
+(display (modulo 5 -3))
+(display (modulo 6 -3))
+(display (modulo -3 -3))
+(display (modulo -4 -3))
+(display (modulo -5 -3))
+(display (modulo -6 -3))
+
+******************[EXPECTED OUT]******************
+quotient
+0
+0
+1
+1
+1
+2
+-1
+-1
+-1
+-2
+-1
+-1
+-1
+-2
+1
+1
+1
+2
+remainder
+0
+0
+0
+1
+2
+0
+0
+-1
+-2
+0
+0
+1
+2
+0
+0
+-1
+-2
+0
+modulo
+0
+0
+0
+1
+2
+0
+0
+2
+1
+0
+0
+-2
+-1
+0
+0
+-1
+-2
+0
