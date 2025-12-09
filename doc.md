@@ -2,6 +2,9 @@
 
 The interpreter made according to the R5RS scheme.
 
+* [IO](#io)
+
+
 ## IO
 
 ### display
