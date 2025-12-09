@@ -50,9 +50,8 @@ def preprocess(code: str) -> str:
 (define (remainder n1 n2)
   (- n1 (* n2 (quotient n1 n2))))
 
-(define _floor (native cmath/floor double double))
-
 (define (modulo n1 n2)
+  (define _floor (native cmath/floor double double))
   (if (< n2 0)
     (- (modulo (- n1) (- n2)))
     (if (>= n1 0)
