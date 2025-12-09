@@ -366,7 +366,15 @@ Loops is organized by `do`.
 
 ## Native calls
 
-**Supported native types**:
+Native call - mechanism of calling C-functions (like `printf`, `isspace` etc.). Native call is performed by `native` that creates a lambda.
+
+**Syntax**
+
+```Scheme
+(native <return type> <arguments types>*)
+```
+
+Supported native types:
 
 * `integer`
 * `double`
@@ -374,7 +382,55 @@ Loops is organized by `do`.
 * `string`
 * `void`
 
+**Example**
+
+```Scheme
+(define atoi (native stdlib/atoi integer string))
+(number? (atoi "123"))    =>    true
+(+ 47 (atoi "153"))       =>    200
+```
+
 ## Platform definitions
+
+Platform definitions let create a procedure with given body, written in C for the execution platform.
+
+**Example**
+
+```Scheme
+(define-platform (fact)
+  `int n = cl_get_int_value($args[0]);`
+  `int res = 1;`
+  `for (int i = 2; i <= n; i++) {`
+  `    res *= i;`
+  `}`
+  `return cl_make_int(res);`)
+
+(fact 1)     => 1
+(fact 2)     => 2
+(fact 10)    => 3628800
+```
+
+Compiler will create following function for the interpreter
+
+```C
+CL_Object* <func name>(CL_Environment* env, size_t count, CL_Object** args) {
+	int n = cl_get_int_value(args[0]);
+	int res = 1;
+	for (int i = 2; i <= n; i++) {
+	    res *= i;
+	}
+	return cl_make_int(res);
+}
+```
+
+This function will be called every time procedue `fact` will be called.
+
+**Special values**
+* `$args` - array of the argument objects,
+* `$args_count` - number of the arguments.
+* `$env` - environment in the lambda call.
+
+These values should be used instead of their compiled values (`args`, `count`, `env` respectively).
 
 ## Other standard library functions
 
