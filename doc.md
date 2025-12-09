@@ -44,7 +44,7 @@ Hello, clisp!
 
 **Integers**
 
-```
+```Scheme
 (display 5)
 (display 0)
 (display -13)
@@ -56,9 +56,101 @@ Hello, clisp!
 -13
 ```
 
-### Lambdas
+**Doubles**
 
-### Promises
+```Scheme
+(display 5.2)
+(display -3.5)
+(display .5)
+(display -3.)
+```
+
+```
+5.2
+-3.5
+0.5
+-3
+```
+
+**Booleans**
+
+```Scheme
+(display #t)
+(display #f)
+```
+
+```
+true
+false
+```
+
+**Characters**
+
+```Scheme
+(display #\A )
+(display #\a )
+(display #\5 )
+(display #\\\ )
+(display #\" )
+```
+
+```
+A
+a
+5
+\
+"
+```
+
+> Special values: `#\\n`, `#\\r`, `#\\t`, `#\ ` (space).
+
+**Strings**
+
+```Scheme
+(display "Test")
+(display "\"")
+(display "\\")
+```
+
+```
+Test
+"
+\
+```
+
+> Special values: `"\n"`, `"\r"`, `"\t"`.
+
+### Pairs
+
+Pair is creates by `cons`.
+
+```Scheme
+(display (cons 1 2))
+```
+
+```
+(1 . 2)
+```
+
+### Lists
+
+```
+List is created by `list`.
+```
+
+```Scheme
+(display (list))
+(display (list 1 2 3 4))
+```
+
+```
+()
+(1 2 3 4 )
+```
+
+## Lambdas
+
+## Promises
 
 `to-boolean`
 `to-string`
