@@ -4,6 +4,17 @@ The interpreter made according to the R5RS scheme.
 
 * [IO](#io)
 * [Data types](#data-types)
+* [Arithmetic operations](#arithmetic-operations)
+* [Logical operations](#logical-operations)
+* [Procedures](#procedures)
+* [Promises](#promises)
+* [Apply](#apply)
+* [Begin](#begin)
+* [Environments](#environments)
+* [Loops](#loops)
+* [Native calls](#native-calls)
+* [Plaftorm definitions](#platform-definitions)
+* [Other standard library functions](#other-standard-library-functions)
 
 ## IO
 
@@ -138,7 +149,6 @@ Pair is creates by `(cons ... ...)`.
 ### Lists
 
 List is created by `(list ...)`.
-
 
 ```Scheme
 (display (list))
@@ -364,9 +374,9 @@ Loops is organized by `do`.
 * `string`
 * `void`
 
-## Platform definition
+## Platform definitions
 
-## Standard library functions
+## Other standard library functions
 
 * `car`, `cdr`, `set-cdr!`, `set-car!`;
 * `length`, `list-ref`;
