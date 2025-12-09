@@ -5,7 +5,7 @@ from .LispLexer import LispLexer
 from .LispParser import LispParser
 
 
-__all__ = ["read_ast_file", "read_ast_stdin"]
+__all__ = ["read_ast_from_file", "read_ast_from_stdin"]
 
 
 class CustomErrorListener(ErrorListener):
@@ -28,8 +28,7 @@ class CustomErrorListener(ErrorListener):
 
         return self.__error
 
-
-def read_ast_file(input_file: str):
+def read_ast_from_file(input_file: str):
     """
     Reads the Lisp-code from the file and returns its AST.
 
@@ -41,7 +40,7 @@ def read_ast_file(input_file: str):
     return _read_ast(FileStream(input_file))
 
 
-def read_ast_stdin():
+def read_ast_from_stdin():
     """
     Reads the Lisp-file from the stdin and returns its AST.
     """
@@ -49,7 +48,7 @@ def read_ast_stdin():
     return _read_ast(StdinStream())
 
 
-def _read_ast(input_stream: InputStream):
+def read_ast(s: str):
     """
     Reads the Lisp-code from the stream and returns its AST.
 
@@ -58,6 +57,7 @@ def _read_ast(input_stream: InputStream):
     :raises FileNotFoundError: the file not found.
     """
 
+    input_stream = InputStream(s)
     lexer = LispLexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = LispParser(stream)

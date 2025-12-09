@@ -1,6 +1,4 @@
 ******************[TESTING CODE]******************
-(define (negative? x) (< x 0))
-
 (display (negative? 0))
 (display (negative? -1))
 (display (negative? 1))

@@ -1,9 +1,5 @@
 ******************[TESTING CODE]******************
 (display "quotient")
-
-(define (quotient n1 n2)
-  (to-integer(/ n1 n2)))
-
 (display (quotient 0 3))
 (display (quotient 0 -3))
 (display (quotient 3 3))
@@ -24,10 +20,6 @@
 (display (quotient -6 -3))
 
 (display "remainder")
-
-(define (remainder n1 n2)
-  (- n1 (* n2 (quotient n1 n2))))
-
 (display (remainder 0 3))
 (display (remainder 0 -3))
 (display (remainder 3 3))
@@ -48,16 +40,6 @@
 (display (remainder -6 -3))
 
 (display "modulo")
-
-(define floor (native cmath/floor double double))
-
-(define (modulo n1 n2)
-  (if (< n2 0)
-    (- (modulo (- n1) (- n2)))
-    (if (>= n1 0)
-      (remainder n1 n2)
-      (+ n1 (- (* n2 (to-integer (floor (to-double (/ n1 n2))))))))))
-
 (display (modulo 0 3))
 (display (modulo 0 -3))
 (display (modulo 3 3))

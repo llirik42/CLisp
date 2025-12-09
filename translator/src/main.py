@@ -1,9 +1,11 @@
 import argparse
 
-from src.ast_reading import read_ast_file, read_ast_stdin
+from src.ast_reading import read_ast_from_file, read_ast_from_stdin, read_ast
 from src.ast_visiting import ASTVisitor
 from src.postprocessing import postprocess, PostprocessingContext
+from src.preprocessing import preprocess
 from src.rendering import CodeCreator
+from src.source_reading import read_from_stdin, read_from_file
 from src.symbols import Symbols
 from src.templates import Templates
 
@@ -38,7 +40,9 @@ def main():
     parser.add_argument("-t", "--templates", default="code_templates")
     args = parser.parse_args()
 
-    ast = read_ast_stdin() if args.input_stdin else read_ast_file(args.input_file)
+    source = read_from_stdin() if args.input_stdin else read_from_file(args.input_file)
+    preprocessed = preprocess(source)
+    ast = read_ast(preprocessed)
 
     symbols = Symbols(args.symbols_table)
     templates = Templates(args.templates)

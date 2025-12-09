@@ -1,6 +1,4 @@
 ******************[TESTING CODE]******************
-(define (empty? coll) (= (length coll) 0))
-
 (display (empty? (list)))
 (display (empty? (list 1)))
 (display (empty? (list 2 3)))
