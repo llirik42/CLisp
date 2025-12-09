@@ -14,9 +14,9 @@ The interpreter made according to the R5RS scheme.
 Hello, world!
 ```
 
-> unlike the R5RS, `display` adds ``\n`. 
+Function accepts only one argument and prints it on stdout.
 
-> `display` accepts only one argument.
+> Unlike the R5RS, `display` adds \n. 
 
 ### newline
 
@@ -29,19 +29,57 @@ Hello, world!
 ### read-line
 
 ```Scheme
-()
+(display (read-line))
 ```
 
-> 123
-< 21331
+Function reads the input until it encounters \n, then it returns string containing user input. For example, if user inputs "Hello, clisp!", then the code above will print
+
+```
+Hello, clisp!
+```
 
 ## Supported data types
 
 ### Primitives
 
+**Integers**
+
+```
+(display 5)
+(display 0)
+(display -13)
+```
+
+```
+5
+0
+-13
+```
+
 ### Lambdas
 
 ### Promises
+
+`to-boolean`
+`to-string`
+`to-char`
+`to-double`
+`to-integer`
+
+`promise?`
+`procedure?`
+`boolean?`
+`string?`
+`char?`
+`double?`
+`integer?`
+`number?`
+`pair?`
+`list?`
+
+## If, and, or, not
+
+
 
 ## Environment
 
@@ -57,7 +95,6 @@ define!
 
 ## Begin
 
-## If, and, or
 
 ## Promises
 
