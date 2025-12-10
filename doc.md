@@ -434,7 +434,8 @@ These values should be used instead of their compiled values (`args`, `count`, `
 
 ## Other standard library functions
 
-* `car`, `cdr`, `set-cdr!`, `set-car!`;
-* `length`, `list-ref`;
-* `integer?`, `double?`, `number?`, `boolean?`, `char?`, `string?`, `pair?`, `list?`, `procedure?`, `promise?`;
+* `abs`, `zero?`, `positive?`, `negative?`, `quotient`, `remainder`, `modulo`,
+* `car`, `cdr`, `set-cdr!`, `set-car!`,
+* `length`, `list-ref`, `empty?`, `member?`, `append`, `map`,  `filter`,
+* `integer?`, `double?`, `number?`, `boolean?`, `char?`, `string?`, `pair?`, `list?`, `procedure?`, `promise?`,
 * `to-integer`, `to-double`, `to-boolean`, `to-char`, `to-string`.

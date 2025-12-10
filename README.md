@@ -1,4 +1,4 @@
-# CLisp — Lisp-interpreter written on C
+# CLisp — Lisp interpreter written on C
 
 * [Documentation](doc.md)
 
