@@ -1,5 +1,6 @@
 # CLisp — Lisp interpreter written on C
 
+* [Report](misc/report.docx)
 * [Documentation](docs/doc.md)
 
 ## Prerequisites
