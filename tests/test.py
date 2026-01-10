@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from pathlib import Path
@@ -14,6 +15,8 @@ from config import (
     COMPILE_SCRIPT_PATH,
 )
 
+
+logger = logging.getLogger(__name__)
 
 @pytest.fixture(scope="session")
 def run_translator():
@@ -126,3 +129,5 @@ def test_with_path_env(run_translator):
             )
             out_lines_pos += 1
             curr_line += 1
+
+        logger.info(f"{file_path_raw} PASSED!")
