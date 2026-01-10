@@ -77,7 +77,7 @@ if __name__ == '__main__':
     delete_all_files_in_dir(BUILD_PATH)
     copy_directory_structure(CASES_PATH, BUILD_PATH)
 
-    pytest.main(["test.py::test_with_path_env", "-v", "-s"])
+    pytest.main(["test.py::test_with_path_env", "-v", "-s", "-o", "log_cli=true", "--log-cli-level=INFO"])
 
     if args.clear:
         delete_all_files_in_dir(BUILD_PATH)

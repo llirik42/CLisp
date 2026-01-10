@@ -4,10 +4,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-parser = argparse.ArgumentParser(description= 'CLisp — Lisp-interpreter written on C.'
-                                              ' This script reads a file containing code similar to Scheme (R5RS),'
-                                              ' interprets it into the C language, compiles it into an executable file, and runs it.')
-parser.add_argument('file', help='Path to .scm file')
+parser = argparse.ArgumentParser(
+        description='CLisp — Lisp-interpreter written on C. '
+                    'This script reads a file containing code similar to Scheme (R5RS), '
+                    'translates it into the C language, compiles it into an executable file, and runs it.')
+parser.add_argument('file', help='Path to Scheme file')
 
 args = parser.parse_args()
 
