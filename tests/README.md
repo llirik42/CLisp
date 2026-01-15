@@ -7,19 +7,14 @@ Launch installing script:
 ./install.sh
 ```
 
-Activate python environment:
-```bash
-source .venv/bin/activate
-```
-
 ## Usage
-```python main.py [-h] [-wd WITH_DIRECTORIES [WITH_DIRECTORIES ...]] [-wf WITH_FILES [WITH_FILES ...]] [-ed EXCLUDE_DIRECTORIES [EXCLUDE_DIRECTORIES ...]] [-ef EXCLUDE_FILES [EXCLUDE_FILES ...]] [-c]```
+```./run.sh [-h] [-wd WITH_DIRECTORIES [WITH_DIRECTORIES ...]] [-wf WITH_FILES [WITH_FILES ...]] [-ed EXCLUDE_DIRECTORIES [EXCLUDE_DIRECTORIES ...]] [-ef EXCLUDE_FILES [EXCLUDE_FILES ...]] [-c]```
 
 ## Example
-Run all tests ```python main.py```
+Run all tests ```./run.sh```
 
-Run tests only in the **const** directory ```python main.py -wd const```
+Run tests only in the **const** directory ```./run.sh -wd const```
 
-Run all tests except those in the **logic** directory ```python main.py -ed logic```
+Run all tests except those in the **logic** directory ```./run.sh -ed logic```
 
-Run all tests in the **arithmetic** directory excludes **div.test** ```python main.py -wd arithmetic -ef arithmetic/div.test```
+Run all tests in the **arithmetic** directory excludes **div.test** ```./run.sh -wd arithmetic -ef arithmetic/div.test```
