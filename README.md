@@ -2,6 +2,9 @@
 
 * [Report](misc/report.docx)
 * [Documentation](docs/doc.md)
+* [Tests](tests)
+* [Translator](translator)
+* [Runtime](runtime)
 
 ## Prerequisites
 
@@ -28,15 +31,19 @@ sudo apt install libffi-dev
 ## Usage
 
 ```bash
-python3 clisp.py input_file
+./clisp.sh input_file
 ```
 
 **Example**
 
+Execution:
+
 ```bash
-python3 clisp.py example.scm
+./clisp.sh example.scm
 ```
 
-```
+Output:
+
+```text
 6
 ```
