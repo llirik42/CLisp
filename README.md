@@ -2,6 +2,9 @@
 
 * [Report](misc/report.docx)
 * [Documentation](docs/doc.md)
+* [Tests](tests)
+* [Translator](translator)
+* [Runtime](runtime)
 
 ## Prerequisites
 
