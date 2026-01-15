@@ -277,6 +277,48 @@ Procedure is created by `(lambda (...) ...)`.
 (3 4)
 ```
 
+### Syntax sugar
+
+**Fixed arguments**
+
+```Scheme
+(define (f1 x y) (+ x y))
+(display (f1 7 8))
+```
+
+```
+15
+```
+
+**Variadic argument**
+
+```Scheme
+(define (f2 . z) z)
+(display (f2 1 2 3))
+```
+
+```
+(1 2 3)
+```
+
+**Mixed arguments**
+
+```Scheme
+(define (f3 a1 a2 . z) a1)
+(define (f4 a1 a2 . z) a2)
+(define (f5 a1 a2 . z) z)
+
+(display (f3 1 2 3 4 5))
+(display (f4 1 2 3 4 5))
+(display (f5 1 2 3 4 5))
+```
+
+```
+1
+2
+(3 4 5)
+```
+
 ## Promises
 
 Promise is created by `(delay <expression>)`. Passed expression doesn't evaluate until `(force <promise>`. Expression evaluates only once.
